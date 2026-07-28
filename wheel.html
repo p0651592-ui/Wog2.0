@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Wheel Telegram Giga Premium</title>
+    <script src="https://telegram.org"></script>
+    <style>
+        :root {
+            --bg-main: #060709;
+            --bg-card: #0f111a;
+            --bg-button: #171a26;
+            --border-neon: #222739;
+            --neon-red: #ff4757;
+            --neon-green: #2ecc71;
+            --neon-black: #2f3542;
+            --neon-gold: #ffca28;
+            --neon-cyan: #00ffcc;
+            --text-main: #ffffff;
+            --text-muted: #718093;
+            --radius-premium: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #060709;
+            color: #ffffff;
+            padding-top: calc(env(safe-area-inset-top) + 4px);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 4px);
+            padding-left: 16px;
+            padding-right: 16px;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        @keyframes corePulseGlow {
+            0% { opacity: 0.4; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.4; transform: scale(0.95); }
+        }
+
+        @keyframes lightningStrike {
+            0% { border-color: #222739; box-shadow: none; }
+            10% { border-color: #ffca28; box-shadow: 0 0 25px #ffca28; }
+            20% { border-color: #222739; box-shadow: none; }
+            30% { border-color: #ffca28; box-shadow: 0 0 35px #ffca28; }
+            100% { border-color: #ffca28; box-shadow: 0 0 14px #ffca28; }
+        }
+
+        @keyframes chatBubblePop {
+            0% { transform: scale(0.8) translateY(12px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .app-wrapper {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding-bottom: 95px;
+            position: relative;
+        }
+        .premium-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 6px;
+            border-bottom: 1px solid #222739;
+            margin-bottom: 4px;
+        }
+
+        .header-left-zone {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .app-back-trigger {
+            font-size: 28px;
+            font-weight: 300;
+            cursor: pointer;
+            color: #ffffff;
+            transition: transform 0.2s ease;
+        }
+
+        .app-back-trigger:active {
+            transform: scale(0.85);
+        }
+
+        .brand-headline {
+            font-size: 18px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #ffffff 30%, #718093);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .server-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 210, 211, 0.1);
+            border: 1px solid rgba(0, 210, 211, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+        }
+
+        .status-pulse-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--neon-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--neon-cyan);
+            animation: corePulseGlow 1.6s infinite ease-in-out;
+        }
+
+        .history-carousel-container {
+            position: relative;
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-neon);
+            border-radius: var(--radius-premium);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+        .history-scroll-track {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            width: 100%;
+            padding: 2px 0;
+        }
+
+        .history-scroll-track::-webkit-scrollbar {
+            display: none;
+        }
+
+        .history-node {
+            min-width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-main);
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .history-node:active {
+            transform: scale(0.85);
+        }
+
+        .history-node.n-red {
+            background: linear-gradient(135deg, var(--neon-red), #ff6b81);
+            box-shadow: 0 0 12px rgba(255, 71, 87, 0.35);
+        }
+
+        .history-node.n-black {
+            background: linear-gradient(135deg, var(--neon-black), #1e222b);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .history-node.n-zero {
+            background: linear-gradient(135deg, var(--neon-green), #2ce67e);
+            box-shadow: 0 0 12px rgba(46, 204, 113, 0.35);
+        }
+        .history-scroll-track {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            width: 100%;
+            padding: 2px 0;
+        }
+
+        .history-scroll-track::-webkit-scrollbar {
+            display: none;
+        }
+
+        .history-node {
+            min-width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-main);
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .history-node:active {
+            transform: scale(0.85);
+        }
+
+        .history-node.n-red {
+            background: linear-gradient(135deg, var(--neon-red), #ff6b81);
+            box-shadow: 0 0 12px rgba(255, 71, 87, 0.35);
+        }
+
+        .history-node.n-black {
+            background: linear-gradient(135deg, var(--neon-black), #1e222b);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .history-node.n-zero {
+            background: linear-gradient(135deg, var(--neon-green), #2ce67e);
+            box-shadow: 0 0 12px rgba(46, 204, 113, 0.35);
+        }
+        .lightning-row-wrapper {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            width: 100%;
+        }
+
+        .lightning-lucky-card {
+            background: linear-gradient(135deg, #131722 0%, var(--bg-card) 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 20px;
+            padding: 14px 0;
+            text-align: center;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+            animation: corePulseGlow 2s infinite ease-in-out;
+        }
+
+        .lightning-lucky-card .lucky-card-num {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 900;
+        }
+
+        .lightning-lucky-card .lucky-card-num.c-red { color: var(--neon-red); }
+        .lightning-lucky-card .lucky-card-num.c-black { color: #ffffff; }
+        .lightning-lucky-card .lucky-card-num.c-zero { color: var(--neon-green); }
+
+        .lightning-lucky-card .multiplier-pill {
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            color: #060709;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--neon-gold), #ffa502);
+            text-transform: uppercase;
+        }
+
+        .lightning-lucky-card.l-inactive {
+            opacity: 0.15;
+            background: #07090f;
+            border-color: #121620;
+            animation: none;
+        }
+        .roulette-viewport-widget {
+            position: relative;
+            width: 100%;
+            background: linear-gradient(180deg, var(--bg-card) 0%, #0c0e17 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 32px;
+            padding: 26px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 8px 35px rgba(0, 0, 0, 0.75);
+        }
+
+        .widget-central-status-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            font-weight: 800;
+            min-height: 22px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .widget-countdown-clock {
+            font-size: 26px;
+            font-weight: 900;
+            color: var(--neon-cyan);
+            margin-bottom: 16px;
+            text-shadow: 0 0 14px rgba(0, 255, 204, 0.6);
+            font-family: monospace;
+        }
+
+        .widget-mechanical-ring {
+            width: 236px;
+            height: 236px;
+            border-radius: 50%;
+            border: 7px solid #1f2436;
+            position: relative;
+            background: #090b11;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 4px 20px rgba(0,0,0,0.9);
+        }
+
+        #wheel-canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: block;
+        }
+        .widget-payout-box {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--neon-green);
+            margin-top: 14px;
+            min-height: 28px;
+            text-shadow: 0 0 16px rgba(5, 196, 107, 0.6);
+            letter-spacing: 0.3px;
+        }
+
+        .live-bet-monitor-panel {
+            background: var(--bg-card);
+            border-radius: var(--radius-premium);
+            border: 1px dashed var(--border-neon);
+            padding: 16px;
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-muted);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .bet-monitor-string {
+            font-weight: 700;
+            color: var(--text-main);
+            word-break: break-all;
+        }
+
+        .bet-total-counter {
+            font-size: 12px;
+            color: var(--text-main);
+            margin-top: 8px;
+            display: block;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .wallet-display-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+            font-size: 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .wallet-neon-badge {
+            background: linear-gradient(180deg, #131722 0%, var(--bg-card) 100%);
+            padding: 10px 18px;
+            border-radius: var(--radius-premium);
+            font-weight: 900;
+            color: var(--neon-gold);
+            border: 1px solid var(--border-neon);
+            font-size: 16px;
+            text-shadow: 0 0 10px rgba(255, 192, 72, 0.3);
+        }
+        .bet-sizing-chassis {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .bet-sizing-chassis input {
+            flex: 1;
+            background: #040508;
+            border: 1px solid var(--border-neon);
+            color: var(--text-main);
+            padding: 16px;
+            border-radius: var(--radius-premium);
+            font-size: 18px;
+            font-weight: 900;
+            outline: none;
+            text-align: center;
+            font-family: monospace;
+        }
+
+        .size-math-trigger {
+            background: linear-gradient(180deg, #1e2235 0%, var(--bg-button) 100%);
+            border: 1px solid var(--border-neon);
+            color: var(--text-main);
+            width: 60px;
+            border-radius: var(--radius-premium);
+            font-weight: 900;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        .size-math-trigger:active {
+            transform: scale(0.92);
+        }
+
+        .fast-chips-tray {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+
+        .premium-chip-trigger {
+            background: linear-gradient(180deg, #131622 0%, var(--bg-card) 100%);
+            border: 1px solid var(--border-neon);
+            color: var(--text-main);
+            padding: 14px 0;
+            border-radius: var(--radius-premium);
+            font-size: 13px;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.1s ease;
+        }
+
+        .premium-chip-trigger:active {
+            transform: scale(0.92);
+            border-color: var(--neon-cyan);
+        }
+        .premium-layout-board {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .board-flex-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .board-flex-row.dual-split {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .table-btn {
+            padding: 16px 0;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: transform 0.1s ease;
+        }
+
+        .table-btn:active {
+            transform: scale(0.96);
+        }
+        .btn-red {
+            background: linear-gradient(135deg, var(--neon-red), #ff6b81);
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.2);
+        }
+
+        .btn-zero {
+            background: linear-gradient(135deg, var(--neon-green), #2ce67e);
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
+        }
+
+        .btn-black {
+            background: linear-gradient(135deg, var(--neon-black), #1e222b);
+            border: 1px solid #3e4453;
+        }
+
+        .btn-even {
+            background: linear-gradient(135deg, #007aff, #0040ff);
+        }
+
+        .btn-odd {
+            background: linear-gradient(135deg, #ffa502, #ff7f50);
+        }
+
+        .btn-range {
+            background: linear-gradient(135deg, #5352ed, #3742fa);
+        }
+
+        .btn-dozen {
+            background: linear-gradient(135deg, #7158e2, #533fa1);
+        }
+        .matrix-numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            width: 100%;
+            display: none;
+        }
+
+        .num-btn {
+            color: #fff;
+            padding: 15px 0;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            transition: transform 0.1s;
+        }
+
+        .num-btn:active {
+            transform: scale(0.9);
+        }
+
+        .num-btn.r-red {
+            background: linear-gradient(135deg, var(--neon-red), #cc2936);
+        }
+
+        .num-btn.r-black {
+            background: linear-gradient(135deg, var(--neon-black), #1a1e26);
+            border: 1px solid #323945;
+        }
+
+        .chip-badge {
+            font-size: 10px;
+            background: #ffffff;
+            color: #0b0d10;
+            border-radius: 6px;
+            padding: 2px 7px;
+            font-weight: 900;
+            margin-top: 3px;
+            border: 1px solid var(--neon-gold);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .mode-toggle-btn {
+            background: linear-gradient(135deg, #007aff, #0056b3);
+            color: #fff;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 14px rgba(0,122,255,0.3);
+        }
+
+        .mode-toggle-btn.numbers-active {
+            background: linear-gradient(135deg, #7158e2, #533fa1);
+            box-shadow: 0 4px 14px rgba(113,88,226,0.3);
+        }
+
+        .has-active-wager {
+            border: 2px solid var(--neon-gold) !important;
+            box-shadow: 0 0 16px rgba(255, 192, 72, 0.5) !important;
+        }
+
+        .provably-fair-zone {
+            width: 100%;
+            max-width: 360px;
+            margin: 12px auto;
+            padding: 0 6px;
+            font-size: 10px;
+            font-family: monospace;
+            color: #4b5563;
+            text-align: center;
+            word-break: break-all;
+            opacity: 0.5;
+        }
+
+        .pf-hash-inline {
+            display: inline;
+            color: #6b7280;
+        }
+
+        .chat-anchor {
+            position: fixed;
+            bottom: 16px;
+            left: 16px;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .chat-trigger {
+            width: 48px;
+            height: 46px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--neon-cyan), #00a8ff);
+            color: #000;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,255,204,0.4);
+            pointer-events: auto;
+            transition: transform 0.1s;
+        }
+
+        .chat-trigger:active {
+            transform: scale(0.9);
+        }
+        .chat-preview {
+            background: rgba(15, 17, 26, 0.95);
+            border: 1px solid var(--border-neon);
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #a5b4fc;
+            backdrop-filter: blur(8px);
+            pointer-events: auto;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(4, 5, 7, 0.92);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            backdrop-filter: blur(10px);
+        }
+
+        .chat-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-neon);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 360px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .chat-logs {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 12px;
+            font-size: 12px;
+            text-align: left;
+            padding-right: 4px;
+        }
+
+        .chat-input-zone {
+            display: flex;
+            gap: 6px;
+        }
+
+        .chat-input-zone input {
+            flex: 1;
+            background: #040508;
+            border: 1px solid var(--border-neon);
+            color: #fff;
+            padding: 12px;
+            border-radius: 12px;
+            outline: none;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <header class="premium-header">
+            <div class="header-left-zone">
+                <span class="app-back-trigger" onclick="window.parent.postMessage('close_game', '*')">&#x2039;</span>
+                <h1 class="brand-headline">Wheel Plus</h1>
+            </div>
+            <div class="server-status-pill">
+                <span class="status-pulse-dot"></span>
+                <span>TG Cloud Sync</span>
+            </div>
+        </header>
+
+        <div class="history-carousel-container">
+            <div class="history-scroll-track" id="history-box"></div>
+        </div>
+        <div id="fair-history-modal" class="neon-modal-overlay">
+            <div class="neon-modal-card">
+                <h3>VERIFICATION</h3>
+                <div class="fair-field-box">
+                    <span class="fair-meta-title">NUMBER</span>
+                    <div class="fair-meta-value" id="modal-fair-num">0</div>
+                </div>
+                <div class="fair-field-box">
+                    <span class="fair-meta-title">HASH</span>
+                    <div class="fair-meta-value" id="modal-fair-hash">-</div>
+                </div>
+                <div class="fair-field-box">
+                    <span class="fair-meta-title">SEED</span>
+                    <div class="fair-meta-value" id="modal-fair-salt">-</div>
+                </div>
+                <button class="mode-toggle-btn" style="margin-top:14px; width:100%;" onclick="closeFairHistoryModal()">CLOSE</button>
+            </div>
+        </div>
+        <div class="lightning-row-wrapper" id="lucky-cards-container">
+            <div class="lightning-lucky-card l-inactive" id="lc-0"><span class="lucky-card-num">—</span><span class="multiplier-pill">OFF</span></div>
+            <div class="lightning-lucky-card l-inactive" id="lc-1"><span class="lucky-card-num">—</span><span class="multiplier-pill">OFF</span></div>
+            <div class="lightning-lucky-card l-inactive" id="lc-2"><span class="lucky-card-num">—</span><span class="multiplier-pill">OFF</span></div>
+        </div>
+        <div class="roulette-viewport-widget">
+            <div id="wheel-msg" class="widget-central-status-label">LOADING...</div>
+            <div id="countdown-display" class="widget-countdown-clock">15s</div>
+            <div class="widget-mechanical-ring"><canvas id="wheel-canvas" width="300" height="300"></canvas></div>
+            <div id="win-display" class="widget-payout-box"></div>
+        </div>
+        <div class="live-bet-monitor-panel">
+            <div class="bet-monitor-string" id="active-bets-text">Вы еще не делали ставок</div>
+            <span class="bet-total-counter">TOTAL BET: <span id="total-bet-amount">0</span> W</span>
+        </div>
+
+        <div class="wallet-display-row">
+            <span>BALANCE</span>
+            <div class="wallet-neon-badge"><span id="bal">0</span> W</div>
+        </div>
+
+        <div class="bet-input-area bet-sizing-chassis">
+            <button class="size-math-trigger" onclick="modifyBet('multiply')">x2</button>
+            <input type="number" id="bet-value" value="50" min="5">
+            <button class="size-math-trigger" onclick="modifyBet('divide')">/2</button>
+        </div>
+        <div class="fast-chips-tray">
+            <button class="premium-chip-trigger" onclick="addChip(10)">+10</button>
+            <button class="premium-chip-trigger" onclick="addChip(100)">+100</button>
+            <button class="premium-chip-trigger" onclick="addChip(1000)">+1K</button>
+            <button class="premium-chip-trigger" onclick="addChip(25000)">+25K</button>
+        </div>
+
+        <div class="premium-layout-board" id="panel-basic">
+            <div class="board-flex-row">
+                <button class="table-btn btn-red" id="btn-red" onclick="placeTableBet('red', this)">Красное</button>
+                <button class="table-btn btn-zero" id="btn-zero" onclick="placeTableBet('zero', this)">0</button>
+                <button class="table-btn btn-black" id="btn-black" onclick="placeTableBet('black', this)">Черное</button>
+            </div>
+            <div class="board-flex-row dual-split">
+                <button class="table-btn btn-even" id="btn-even" onclick="placeTableBet('even', this)">Четное</button>
+                <button class="table-btn btn-odd" id="btn-odd" onclick="placeTableBet('odd', this)">Нечетное</button>
+            </div>
+            <div class="board-flex-row dual-split">
+                <button class="table-btn btn-range" id="btn-range1" onclick="placeTableBet('range1', this)">1 - 18</button>
+                <button class="table-btn btn-range" id="btn-range2" onclick="placeTableBet('range2', this)">19 - 36</button>
+            </div>
+            <div class="board-flex-row">
+                <button class="table-btn btn-dozen" id="btn-dozen1" onclick="placeTableBet('dozen1', this)">1 - 12</button>
+                <button class="table-btn btn-dozen" id="btn-dozen2" onclick="placeTableBet('dozen2', this)">13 - 24</button>
+                <button class="table-btn btn-dozen" id="btn-dozen3" onclick="placeTableBet('dozen3', this)">25 - 36</button>
+            </div>
+        </div>
+        <div class="matrix-numbers-grid" id="panel-numbers"></div>
+
+        <button id="toggle-mode-btn" class="mode-toggle-btn" onclick="switchTableMode()">🔄 Режим стола: Простые исходы</button>
+
+        <div class="provably-fair-zone">SHA-256: <div class="pf-hash-inline" id="game-md5-hash">WAIT...</div></div>
+    </div>
+    <div class="chat-anchor">
+        <button class="chat-trigger" onclick="toggleChat(true)">💬</button>
+        <div class="chat-preview" id="chat-bubble-preview" onclick="toggleChat(true)">System: Live chat active!</div>
+    </div>
+
+    <div class="chat-modal" id="chat-modal">
+        <div class="chat-box">
+            <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px; font-weight:bold;">
+                <span>LIVE CHAT</span>
+                <span style="cursor:pointer; color:var(--neon-red);" onclick="toggleChat(false)">✕</span>
+            </div>
+            <div class="chat-logs" id="chat-logs"></div>
+            <div class="chat-input-zone">
+                <input type="text" id="chat-msg-input" placeholder="Message...">
+                <button class="size-math-trigger" style="width:70px; background:var(--neon-cyan); color:#000;" onclick="sendPlayerChatMessage()">SEND</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        
+        let currentBallRadiusEngine = 71;
+        let wheelAngle = 0;
+        let ballAngle = 0;
+        let balance = 0;
+        let activeBets = {};
+        let isSpinning = false;
+        let currentMode = "basic";
+        let serverRoundHistory = [];
+        let countdownTime = 15;
+        let currentRoundNonce = 1;
+        let gameStatus = "BETTING";
+        let currentServerSeed = "";
+        let currentServerHash = "";
+        let currentWinningNumber = 0;
+        let activeLuckyMultipliers = {};
+
+        function triggerTelegramHaptic(type) {
+            try {
+                if (tg.HapticFeedback) {
+                    if (type === 'click') tg.HapticFeedback.impactOccurred('medium');
+                    if (type === 'tick') tg.HapticFeedback.impactOccurred('light');
+                    if (type === 'win') tg.HapticFeedback.notificationOccurred('success');
+                    if (type === 'lose') tg.HapticFeedback.notificationOccurred('error');
+                }
+            } catch (e) {}
+        }
+        const orderStr = "0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26";
+        const redStr = "1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36";
+        
+        const rouletteWheelOrder = orderStr.split(',').map(Number);
+        const redNumbersArray = redStr.split(',').map(Number);
+        
+        const botNames = ["Max_WOG", "CasinoKing", "CryptoShark", "LuckyBoy", "Zeus_X"];
+        const botPhrases = ["Betting on RED!", "Zero soon", "What is your balance?", "Crazy multipliers today", "Good luck all!", "Just in time"];
+        let audioCtx = null;
+        function initAudioContext() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function triggerPremiumFx(t) {
+            try {
+                initAudioContext();
+                if (!audioCtx || audioCtx.state === 'suspended') return;
+                let now = audioCtx.currentTime;
+                if (t === 'tick') {
+                    let o = audioCtx.createOscillator(); let g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
+                    o.type = 'triangle'; o.frequency.setValueAtTime(580, now); o.frequency.exponentialRampToValueAtTime(80, now + 0.03);
+                    g.gain.setValueAtTime(0.2, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.03); o.start(now); o.stop(now + 0.03);
+                } else if (t === 'ball') {
+                    let o = audioCtx.createOscillator(); let g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
+                    o.type = 'sine'; o.frequency.setValueAtTime(320 + Math.random() * 100, now); g.gain.setValueAtTime(0.25, now);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.05); o.start(now); o.stop(now + 0.05);
+                } else if (t === 'win') {
+                    [523.25, 659.25, 783.99].forEach((f, i) => {
+                        let o = audioCtx.createOscillator(); let g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
+                        o.type = 'sine'; o.frequency.setValueAtTime(f, now + i * 0.06); g.gain.setValueAtTime(0.15, now + i * 0.06);
+                        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.4); o.start(now + i * 0.06); o.stop(now + i * 0.06 + 0.4);
+                    });
+                } else if (t === 'lose') {
+                    let o = audioCtx.createOscillator(); let g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
+                    o.type = 'sawtooth'; o.frequency.setValueAtTime(200, now); o.frequency.linearRampToValueAtTime(100, now + 0.3);
+                    g.gain.setValueAtTime(0.15, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.3); o.start(now); o.stop(now + 0.3);
+                }
+            } catch (e) {}
+        }
+        function loadBalanceFromTelegramCloud() {
+            try {
+                tg.CloudStorage.getItem('wog_offline_balance', (error, value) => {
+                    if (!error && value) {
+                        balance = parseInt(value);
+                        if (isNaN(balance)) balance = 5000;
+                    } else {
+                        balance = parseInt(localStorage.getItem('wog_offline_balance')) || 5000;
+                    }
+                    localStorage.setItem('wog_offline_balance', balance);
+                    document.getElementById('bal').innerText = balance.toLocaleString();
+                });
+            } catch (e) {
+                balance = parseInt(localStorage.getItem('wog_offline_balance')) || 5000;
+                document.getElementById('bal').innerText = balance.toLocaleString();
+            }
+        }
+
+        async function sha256Hex(msg) {
+            const buf = new TextEncoder().encode(msg);
+            const hash = await crypto.subtle.digest('SHA-256', buf);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function genRandomHex(l) {
+            let c = 'abcdef0123456789', r = '';
+            for(let i=0; i<l; i++) r += c[Math.floor(Math.random()*16)];
+            return r;
+        }
+        async function initOfflineRoundCrypto() {
+            currentServerSeed = genRandomHex(32);
+            currentServerHash = await sha256Hex(currentServerSeed);
+            let combo = `${currentServerSeed}-${currentRoundNonce}`;
+            let sig = await sha256Hex(combo);
+            let decimal = parseInt(sig.substring(0, 8), 16);
+            currentWinningNumber = rouletteWheelOrder[decimal % 37];
+            
+            activeLuckyMultipliers = {};
+            let multiPool =;
+            
+            while (Object.keys(activeLuckyMultipliers).length < 3) {
+                let randNum = rouletteWheelOrder[Math.floor(Math.random() * 37)];
+                if (randNum !== currentWinningNumber) {
+                    activeLuckyMultipliers[randNum] = multiPool[Math.floor(Math.random() * multiPool.length)];
+                }
+            }
+            
+            if (Math.random() < 0.25) {
+                activeLuckyMultipliers[currentWinningNumber] = multiPool[Math.floor(Math.random() * multiPool.length)];
+            }
+
+            document.getElementById('game-md5-hash').innerText = currentServerHash;
+            renderLuckyCardsUI(true);
+        }
+        function startOfflineGameLoop() {
+            gameStatus = "BETTING";
+            countdownTime = 15;
+            initOfflineRoundCrypto();
+            document.getElementById('wheel-msg').innerText = "Stakes open";
+            document.getElementById('countdown-display').style.display = 'block';
+            
+            let tInterval = setInterval(() => {
+                countdownTime--;
+                document.getElementById('countdown-display').innerText = countdownTime + "s";
+                
+                if (countdownTime <= 5 && countdownTime > 0) {
+                    triggerPremiumFx('tick');
+                    triggerTelegramHaptic('tick');
+                }
+                
+                if (countdownTime <= 0) {
+                    clearInterval(tInterval);
+                    executeOfflineWheelSpin();
+                }
+            }, 1000);
+        }
+        function executeOfflineWheelSpin() {
+            gameStatus = "SPINNING";
+            isSpinning = true;
+            document.getElementById('countdown-display').style.display = 'none';
+            document.getElementById('wheel-msg').innerText = "BALL SPINNING";
+            renderLuckyCardsUI(false);
+            
+            let winningIndex = rouletteWheelOrder.indexOf(currentWinningNumber);
+            let wSpeed = 0.14;
+            let bSpeed = -0.28;
+            currentBallRadiusEngine = 95;
+            
+            let sTime = Date.now();
+            let duration = 3800;
+            triggerPremiumFx('tick');
+            
+            let animInterval = setInterval(() => {
+                let elapsed = Date.now() - sTime;
+                if (Math.random() < 0.15) {
+                    triggerPremiumFx('ball');
+                    triggerTelegramHaptic('tick');
+                }
+                
+                if (elapsed >= duration) {
+                    clearInterval(animInterval);
+                    let sAngle = (2 * Math.PI) / 37;
+                    let baseAngle = (wheelAngle + (winningIndex * sAngle)) % (2 * Math.PI);
+                    let bStep = 0;
+                    currentBallRadiusEngine = 71;
+                    
+                    let bounceInterval = setInterval(() => {
+                        bStep++;
+                        triggerPremiumFx('ball');
+                        triggerTelegramHaptic('tick');
+                        if (bStep === 1) {
+                            ballAngle = baseAngle + (sAngle * (1.1 + Math.random() * 0.5));
+                        } else if (bStep === 2) {
+                            ballAngle = baseAngle - (sAngle * (0.3 + Math.random() * 0.4));
+                        } else {
+                            clearInterval(bounceInterval);
+                            ballAngle = baseAngle;
+                            calculateOfflinePayouts();
+                        }
+                    }, 120);
+                } else {
+                    let prog = elapsed / duration;
+                    wheelAngle += wSpeed * (1 - prog * 0.75);
+                    ballAngle += bSpeed * (1 - prog * 0.92);
+                    currentBallRadiusEngine = 95 - (prog * 24);
+                }
+            }, 25);
+        }
+        function calculateOfflinePayouts() {
+            gameStatus = "RESULTS";
+            isSpinning = false;
+            
+            let isRed = redNumbersArray.includes(currentWinningNumber);
+            let numColor = currentWinningNumber === 0 ? 'zero' : (isRed ? 'red' : 'black');
+            let isEven = currentWinningNumber !== 0 && currentWinningNumber % 2 === 0;
+            let totalWin = 0;
+
+            for (let sel in activeBets) {
+                let amt = activeBets[sel];
+                
+                if (sel === `num_${currentWinningNumber}`) {
+                    totalWin += amt * (activeLuckyMultipliers[currentWinningNumber] || 35);
+                } else if (sel === 'red' && numColor === 'red') {
+                    totalWin += amt * 2;
+                } else if (sel === 'black' && numColor === 'black') {
+                    totalWin += amt * 2;
+                } else if (sel === 'zero' && currentWinningNumber === 0) {
+                    totalWin += amt * 35;
+                }
+                else if (currentWinningNumber !== 0) {
+                    if (sel === 'even' && isEven) {
+                        totalWin += amt * 2;
+                    } else if (sel === 'odd' && !isEven) {
+                        totalWin += amt * 2;
+                    } else if (sel === 'range1' && currentWinningNumber >= 1 && currentWinningNumber <= 18) {
+                        totalWin += amt * 2;
+                    } else if (sel === 'range2' && currentWinningNumber >= 19 && currentWinningNumber <= 36) {
+                        totalWin += amt * 2;
+                    } else if (sel === 'dozen1' && currentWinningNumber >= 1 && currentWinningNumber <= 12) {
+                        totalWin += amt * 3;
+                    } else if (sel === 'dozen2' && currentWinningNumber >= 13 && currentWinningNumber <= 24) {
+                        totalWin += amt * 3;
+                    } else if (sel === 'dozen3' && currentWinningNumber >= 25 && currentWinningNumber <= 36) {
+                        totalWin += amt * 3;
+                    }
+                }
+            }
+
+            balance += totalWin;
+            localStorage.setItem('wog_offline_balance', balance);
+            document.getElementById('bal').innerText = balance.toLocaleString();
+            try {
+                tg.CloudStorage.setItem('wog_offline_balance', balance.toString());
+            } catch (e) {}
+
+            let colorTitle = numColor === 'red' ? "Красное" : (numColor === 'black' ? "Черное" : "Зеро");
+            document.getElementById('wheel-msg').innerHTML = "Выпало: <strong style='color:#ffca28;'>" + currentWinningNumber + " (" + colorTitle + ")</strong>";
+            
+            let wDisp = document.getElementById('win-display');
+            if (totalWin > 0) {
+                wDisp.style.color = "#00e676";
+                wDisp.innerText = "ВЫИГРЫШ: +" + totalWin.toLocaleString() + " W!";
+                triggerPremiumFx('win');
+                triggerTelegramHaptic('win');
+            } else {
+                let hasBets = Object.keys(activeBets).length > 0;
+                wDisp.style.color = hasBets ? "#ff4757" : "#7f8c8d";
+                wDisp.innerText = hasBets ? "СТАВКА НЕ СЫГРАЛА" : "";
+                if (hasBets) {
+                    triggerPremiumFx('lose');
+                    triggerTelegramHaptic('lose');
+                }
+            }
+
+            serverRoundHistory.unshift({ num: currentWinningNumber, hash: currentServerHash, salt: currentServerSeed });
+            if (serverRoundHistory.length > 8) serverRoundHistory.pop();
+            renderHistoryRibbon();
+            setTimeout(() => {
+                activeBets = {};
+                document.querySelectorAll('.table-btn, .num-btn').forEach(b => {
+                    b.classList.remove('has-active-wager');
+                    let badge = b.querySelector('.chip-badge');
+                    if (badge) badge.remove();
+                });
+                document.getElementById('total-bet-amount').innerText = "0";
+                document.getElementById('active-bets-text').innerText = "Вы еще не делали ставок";
+                wDisp.innerText = "";
+                currentRoundNonce++;
+                startOfflineGameLoop();
+            }, 4000);
+        }
+
+        function formatShortAmount(n) {
+            if (n >= 1000) return (n / 1000).toFixed(0) + "K";
+            return n;
+        }
+
+        function placeTableBet(selection, el) {
+            if (gameStatus !== "BETTING" || isSpinning) return;
+            initAudioContext();
+            triggerTelegramHaptic('click');
+            
+            let amt = parseInt(document.getElementById('bet-value').value) || 0;
+            if (amt <= 0 || amt > balance) {
+                alert("Недостаточно монет на балансе!");
+                return;
+            }
+            
+            balance -= amt;
+            localStorage.setItem('wog_offline_balance', balance);
+            document.getElementById('bal').innerText = balance.toLocaleString();
+            
+            activeBets[selection] = (activeBets[selection] || 0) + amt;
+            el.classList.add('has-active-wager');
+            
+            let b = el.querySelector('.chip-badge');
+            if (b) b.remove();
+            
+            el.innerHTML += "<span class='chip-badge'>" + formatShortAmount(activeBets[selection]) + "</span>";
+            updateBetsPanelText();
+            triggerPremiumFx('tick');
+        }
+
+        function placeExactNumberBet(num, el) {
+            placeTableBet("num_" + num, el);
+        }
+
+        function updateBetsPanelText() {
+            let total = 0;
+            let textArr = [];
+            for (let sel in activeBets) {
+                total += activeBets[sel];
+                textArr.push(sel + ": " + formatShortAmount(activeBets[sel]));
+            }
+            document.getElementById('total-bet-amount').innerText = total.toLocaleString();
+            document.getElementById('active-bets-text').innerText = textArr.length > 0 ? textArr.join(" | ") : "Вы еще не делали ставок";
+        }
+        function renderCanvasFrame() {
+            const canvas = document.getElementById('wheel-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const numSectors = 37;
+            const arcAngle = (2 * Math.PI) / numSectors;
+            const radius = canvas.width / 2;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(radius, radius);
+            ctx.rotate(wheelAngle);
+            ctx.translate(-radius, -radius);
+            
+            for (let i = 0; i < numSectors; i++) {
+                let currentNum = rouletteWheelOrder[i];
+                let currentAngle = i * arcAngle - Math.PI / 2;
+                
+                if (currentNum === 0) ctx.fillStyle = '#2ecc71';
+                else if (redNumbersArray.includes(currentNum)) ctx.fillStyle = '#ff4757';
+                else ctx.fillStyle = '#2f3542';
+                
+                ctx.beginPath();
+                ctx.moveTo(radius, radius);
+                ctx.arc(radius, radius, radius - 10, currentAngle, currentAngle + arcAngle);
+                ctx.fill();
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = '#1e2530';
+                ctx.stroke();
+                
+                ctx.save();
+                ctx.fillStyle = '#ffffff';
+                ctx.translate(radius, radius);
+                ctx.rotate(currentAngle + arcAngle / 2);
+                ctx.font = 'bold 11px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(currentNum, radius - 22, 0);
+                ctx.restore();
+            }
+            
+            ctx.beginPath();
+            ctx.arc(radius, radius, radius - 44);
+            ctx.fillStyle = '#17212b';
+            ctx.fill();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#222a35';
+            ctx.stroke();
+            ctx.restore();
+            
+            ctx.save();
+            ctx.translate(radius, radius);
+            ctx.rotate(wheelAngle);
+            ctx.fillStyle = '#ffd700';
+            ctx.fillRect(-30, -3, 60, 6);
+            ctx.fillRect(-3, -30, 6, 60);
+            ctx.beginPath();
+            ctx.arc(0, 0, 6, 0, 2 * Math.PI);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.restore();
+            
+            ctx.save();
+            ctx.translate(radius, radius);
+            ctx.rotate(ballAngle);
+            ctx.beginPath();
+            ctx.arc(currentBallRadiusEngine, 0, 7, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function continuousRenderAnimationLoop() {
+            if (gameStatus !== "SPINNING") {
+                wheelAngle += 0.001;
+                ballAngle -= 0.0005;
+                currentBallRadiusEngine = 71;
+            }
+            renderCanvasFrame();
+            requestAnimationFrame(continuousRenderAnimationLoop);
+        }
+        function getNumberColor(num) {
+            if (num === 0) return 'zero';
+            return redNumbersArray.includes(num) ? 'red' : 'black';
+        }
+
+        function isNumberRed(num) {
+            return redNumbersArray.includes(num);
+        }
+
+        function renderLuckyCardsUI(hide) {
+            let keys = Object.keys(activeLuckyMultipliers);
+            for (let i = 0; i < 3; i++) {
+                let card = document.getElementById('lc-' + i);
+                if (!card) continue;
+                if (hide) {
+                    card.classList.add('l-inactive');
+                    card.querySelector('.lucky-card-num').innerText = "—";
+                    card.querySelector('.multiplier-pill').innerText = "OFF";
+                    card.style.borderColor = "var(--border-neon)";
+                } else {
+                    let num = keys[i];
+                    let mX = activeLuckyMultipliers[num];
+                    card.classList.remove('l-inactive');
+                    card.querySelector('.lucky-card-num').innerText = num;
+                    card.querySelector('.lucky-card-num').className = "lucky-card-num c-" + getNumberColor(parseInt(num));
+                    card.querySelector('.multiplier-pill').innerText = "x" + mX;
+                    card.style.borderColor = "var(--neon-gold)";
+                }
+            }
+        }
+
+        function renderHistoryRibbon() {
+            let box = document.getElementById('history-box');
+            if (!box) return;
+            box.innerHTML = "";
+            serverRoundHistory.forEach((item, idx) => {
+                let c = getNumberColor(item.num);
+                box.innerHTML += `<div class="history-node n-${c}" onclick="openFairHistoryModal(${idx})">${item.num}</div>`;
+            });
+        }
+
+        function openFairHistoryModal(idx) {
+            let item = serverRoundHistory[idx];
+            if (!item) return;
+            document.getElementById('modal-fair-num').innerText = item.num;
+            document.getElementById('modal-fair-hash').innerText = item.hash;
+            document.getElementById('modal-fair-salt').innerText = item.salt;
+            document.getElementById('fair-history-modal').style.display = 'flex';
+        }
+
+        function closeFairHistoryModal() {
+            document.getElementById('fair-history-modal').style.display = 'none';
+        }
+
+        function switchTableMode() {
+            if (isSpinning) return;
+            let btn = document.getElementById('toggle-mode-btn');
+            let pBasic = document.getElementById('panel-basic');
+            let pNum = document.getElementById('panel-numbers');
+            if (currentMode === "basic") {
+                currentMode = "numbers";
+                btn.innerText = "🎯 Режим стола: Точные числа (x30+)";
+                btn.classList.add('numbers-active');
+                pBasic.style.display = 'none';
+                pNum.style.display = 'grid';
+            } else {
+                currentMode = "basic";
+                btn.innerText = "🔄 Режим стола: Простые исходы";
+                btn.classList.remove('numbers-active');
+                pBasic.style.display = 'flex';
+                pNum.style.display = 'none';
+            }
+        }
+
+        function generateNumbersGridButtons() {
+            let grid = document.getElementById('panel-numbers');
+            if (!grid) return;
+            grid.innerHTML = "";
+            for (let i = 1; i <= 36; i++) {
+                let colorClass = isNumberRed(i) ? "r-red" : "r-black";
+                grid.innerHTML += "<button class='num-btn " + colorClass + "' id='btn-num-" + i + "' onclick='placeExactNumberBet(" + i + ", this)'>" + i + "</button>";
+            }
+        }
+
+        function modifyBet(type) {
+            let input = document.getElementById('bet-value');
+            let current = parseInt(input.value) || 0;
+            input.value = type === 'multiply' ? current * 2 : Math.max(5, Math.floor(current / 2));
+            triggerTelegramHaptic('click');
+        }
+
+        function addChip(amount) {
+            let input = document.getElementById('bet-value');
+            let current = parseInt(input.value) || 0;
+            input.value = current + amount;
+            triggerTelegramHaptic('click');
+        }
+
+        function toggleChat(show) {
+            document.getElementById('chat-modal').style.display = show ? 'flex' : 'none';
+            triggerTelegramHaptic('click');
+        }
+
+        function addLog(user, text, isPlayer) {
+            const logs = document.getElementById('chat-logs');
+            const el = document.createElement('div');
+            el.innerHTML = '<strong style="color:' + (isPlayer ? 'var(--neon-cyan)' : 'var(--neon-gold)') + '">' + user + ':</strong> ' + text;
+            logs.appendChild(el);
+            logs.scrollTop = logs.scrollHeight;
+            document.getElementById('chat-bubble-preview').innerText = user + ': ' + text;
+        }
+
+        function sendPlayerChatMessage() {
+            const input = document.getElementById('chat-msg-input');
+            let txt = input.value.trim();
+            if (!txt) return;
+            addLog("You", txt, true);
+            input.value = "";
+            triggerTelegramHaptic('click');
+        }
+
+        function spawnBotChat() {
+            if (Math.random() < 0.4 && gameStatus !== "SPINNING") {
+                let name = botNames[Math.floor(Math.random() * botNames.length)];
+                let phrase = botPhrases[Math.floor(Math.random() * botPhrases.length)];
+                addLog(name, phrase, false);
+            }
+            setTimeout(spawnBotChat, 4000 + Math.random() * 4000);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadBalanceFromTelegramCloud();
+            generateNumbersGridButtons();
+            continuousRenderAnimationLoop();
+            startOfflineGameLoop();
+            setTimeout(spawnBotChat, 3000);
+        });
+
+        window.addEventListener('focus', () => {
+            loadBalanceFromTelegramCloud();
+        });
+    </script>
+</body>
+</html>
