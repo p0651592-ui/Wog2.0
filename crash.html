@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Crash X Telegram Premium</title>
+    <script src="https://telegram.org"></script>
+    <style>
+        :root {
+            --bg-main: #060709;
+            --bg-card: #0f111a;
+            --bg-button: #171a26;
+            --border-neon: #222739;
+            --neon-cyan: #00ffcc;
+            --neon-gold: #ffca28;
+            --neon-green: #2ecc71;
+            --neon-red: #ff4757;
+            --text-main: #ffffff;
+            --text-muted: #718093;
+            --radius-premium: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding-top: calc(env(safe-area-inset-top) + 4px);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 4px);
+            padding-left: 16px;
+            padding-right: 16px;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        @keyframes corePulseGlow {
+            0% { opacity: 0.4; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 0.4; transform: scale(0.95); }
+        }
+
+        @keyframes crashExplodeFlash {
+            0% { background-color: rgba(255, 71, 87, 0.4); }
+            100% { background-color: transparent; }
+        }
+
+        .app-wrapper {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            position: relative;
+        }
+        .premium-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 6px;
+            border-bottom: 1px solid #222739;
+            margin-bottom: 4px;
+        }
+
+        .header-left-zone {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .app-back-trigger {
+            font-size: 28px;
+            font-weight: 300;
+            cursor: pointer;
+            color: #ffffff;
+            transition: transform 0.2s ease;
+        }
+
+        .app-back-trigger:active {
+            transform: scale(0.85);
+        }
+
+        .brand-headline {
+            font-size: 18px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #ffffff 30%, #718093);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .server-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(0, 255, 204, 0.1);
+            border: 1px solid rgba(0, 255, 204, 0.2);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+        }
+
+        .status-pulse-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--neon-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--neon-cyan);
+            animation: corePulseGlow 1.6s infinite ease-in-out;
+        }
+
+        .history-carousel-container {
+            position: relative;
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-neon);
+            border-radius: var(--radius-premium);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .history-scroll-track {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            width: 100%;
+            padding: 2px 0;
+        }
+
+        .history-scroll-track::-webkit-scrollbar {
+            display: none;
+        }
+
+        .history-node {
+            min-width: 54px;
+            height: 28px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-main);
+            cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.05);
+            background: #121422;
+        }
+
+        .history-node.c-low {
+            color: var(--neon-red);
+            background: rgba(255, 71, 87, 0.1);
+            border-color: rgba(255, 71, 87, 0.2);
+        }
+
+        .history-node.c-mid {
+            color: var(--neon-cyan);
+            background: rgba(0, 255, 204, 0.1);
+            border-color: rgba(0, 255, 204, 0.2);
+        }
+
+        .history-node.c-high {
+            color: var(--neon-gold);
+            background: rgba(255, 202, 40, 0.1);
+            border-color: rgba(255, 202, 40, 0.2);
+            box-shadow: 0 0 8px rgba(255, 202, 40, 0.2);
+        }
+
+        .roulette-viewport-widget {
+            position: relative;
+            width: 100%;
+            height: 260px;
+            background: linear-gradient(180deg, var(--bg-card) 0%, #0c0e17 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: 32px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 35px rgba(0, 0, 0, 0.75);
+            overflow: hidden;
+        }
+
+        #crash-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border-radius: 20px;
+        }
+
+        .live-multiplier-overlay {
+            position: absolute;
+            font-size: 42px;
+            font-weight: 900;
+            color: #ffffff;
+            font-family: monospace;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 10;
+        }
+        .wallet-display-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+            font-size: 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .wallet-neon-badge {
+            background: linear-gradient(180deg, #131722 0%, var(--bg-card) 100%);
+            padding: 10px 18px;
+            border-radius: var(--radius-premium);
+            font-weight: 900;
+            color: var(--neon-gold);
+            border: 1px solid var(--border-neon);
+            font-size: 16px;
+            text-shadow: 0 0 10px rgba(255, 192, 72, 0.3);
+        }
+
+        .bet-sizing-chassis {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .bet-sizing-chassis input {
+            flex: 1;
+            background: #040508;
+            border: 1px solid var(--border-neon);
+            color: var(--text-main);
+            padding: 16px;
+            border-radius: var(--radius-premium);
+            font-size: 18px;
+            font-weight: 900;
+            outline: none;
+            text-align: center;
+            font-family: monospace;
+        }
+
+        .size-math-trigger {
+            background: linear-gradient(180deg, #1e2235 0%, var(--bg-button) 100%);
+            border: 1px solid var(--border-neon);
+            color: var(--text-main);
+            width: 60px;
+            border-radius: var(--radius-premium);
+            font-weight: 900;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        .size-math-trigger:active {
+            transform: scale(0.92);
+        }
+
+        .crash-dual-inputs-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .input-labeled-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-field-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 4px;
+        }
+        .input-labeled-group input {
+            background: #040508;
+            border: 1px solid var(--border-neon);
+            color: var(--text-main);
+            padding: 14px;
+            border-radius: var(--radius-premium);
+            font-size: 15px;
+            font-weight: 800;
+            outline: none;
+            text-align: center;
+        }
+
+        .crash-action-trigger-btn {
+            background: linear-gradient(135deg, #007aff, #0040ff);
+            color: #fff;
+            border: none;
+            width: 100%;
+            padding: 18px;
+            border-radius: var(--radius-premium);
+            font-size: 16px;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0,122,255,0.3);
+            transition: transform 0.1s;
+        }
+
+        .crash-action-trigger-btn:active {
+            transform: scale(0.97);
+        }
+
+        .crash-action-trigger-btn.is-cashout-state {
+            background: linear-gradient(135deg, var(--neon-green), #2ce67e);
+            box-shadow: 0 4px 15px rgba(46,204,113,0.3);
+            color: #060709;
+        }
+
+        .provably-fair-zone {
+            width: 100%;
+            max-width: 360px;
+            margin: 4px auto;
+            font-size: 10px;
+            font-family: monospace;
+            color: #4b5563;
+            text-align: center;
+            word-break: break-all;
+            opacity: 0.5;
+        }
+
+        .pf-hash-inline {
+            display: inline;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <header class="premium-header">
+            <div class="header-left-zone">
+                <span class="app-back-trigger" onclick="window.parent.postMessage('close_game', '*')">&#x2039;</span>
+                <h1 class="brand-headline">Crash X Premium</h1>
+            </div>
+            <div class="server-status-pill">
+                <span class="status-pulse-dot"></span>
+                <span>TG Cloud Sync</span>
+            </div>
+        </header>
+
+        <div class="history-carousel-container">
+            <div class="history-scroll-track" id="history-box"></div>
+        </div>
+        <div class="roulette-viewport-widget" id="canvas-chassis-container">
+            <div class="live-multiplier-overlay" id="multiplier-display">1.00x</div>
+            <canvas id="crash-canvas" width="400" height="260"></canvas>
+        </div>
+
+        <div class="wallet-display-row">
+            <span>BALANCE</span>
+            <div class="wallet-neon-badge"><span id="bal">0</span> W</div>
+        </div>
+        <div class="crash-dual-inputs-row">
+            <div class="input-labeled-group">
+                <span class="input-field-label">Сумма ставки</span>
+                <input type="number" id="bet-value" value="50" min="5">
+            </div>
+            <div class="input-labeled-group">
+                <span class="input-field-label">Автовывод (X)</span>
+                <input type="number" id="auto-cashout-value" value="2.00" step="0.1" min="1.01">
+            </div>
+        </div>
+
+        <div class="fast-chips-tray" style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%;">
+            <button class="premium-chip-trigger" onclick="addChip(10)">+10</button>
+            <button class="premium-chip-trigger" onclick="addChip(100)">+100</button>
+            <button class="premium-chip-trigger" onclick="addChip(1000)">+1K</button>
+            <button class="premium-chip-trigger" onclick="addChip(25000)">+25K</button>
+        </div>
+
+        <button class="crash-action-trigger-btn" id="action-btn" onclick="handleCrashActionButtonClick()">ПОСТАВИТЬ СТАВКУ</button>
+        <div class="provably-fair-zone">SHA-256: <div class="pf-hash-inline" id="game-md5-hash">WAIT...</div></div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        
+        let balance = 0;
+        let gameStatus = "IDLE";
+        let currentMultiplier = 1.00;
+        let crashPoint = 1.00;
+        let currentBetAmount = 0;
+        let autoCashoutX = 2.00;
+        let flightProgressTime = 0;
+        let serverRoundHistory = [];
+        let currentRoundNonce = 1;
+        let currentServerSeed = "";
+        let currentServerHash = "";
+        let animationFrameId = null;
+
+        function triggerTelegramHaptic(type) {
+            try {
+                if (tg.HapticFeedback) {
+                    if (type === 'click') tg.HapticFeedback.impactOccurred('medium');
+                    if (type === 'pulse') tg.HapticFeedback.impactOccurred('light');
+                    if (type === 'win') tg.HapticFeedback.notificationOccurred('success');
+                    if (type === 'lose') tg.HapticFeedback.notificationOccurred('error');
+                }
+            } catch (e) {}
+        }
+
+        function loadBalanceFromTelegramCloud() {
+            try {
+                tg.CloudStorage.getItem('wog_offline_balance', (error, value) => {
+                    if (!error && value) {
+                        balance = parseInt(value);
+                        if (isNaN(balance)) balance = 5000;
+                    } else {
+                        balance = parseInt(localStorage.getItem('wog_offline_balance')) || 5000;
+                    }
+                    localStorage.setItem('wog_offline_balance', balance);
+                    document.getElementById('bal').innerText = balance.toLocaleString();
+                });
+            } catch (e) {
+                balance = parseInt(localStorage.getItem('wog_offline_balance')) || 5000;
+                document.getElementById('bal').innerText = balance.toLocaleString();
+            }
+        }
+
+        async function sha256Hex(msg) {
+            const buf = new TextEncoder().encode(msg);
+            const hash = await crypto.subtle.digest('SHA-256', buf);
+            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        function genRandomHex(l) {
+            let c = 'abcdef0123456789', r = '';
+            for(let i=0; i<l; i++) r += c[Math.floor(Math.random()*16)];
+            return r;
+        }
+        async function initProvablyFairCrashCrypto() {
+            currentServerSeed = genRandomHex(32);
+            currentServerHash = await sha256Hex(currentServerSeed);
+            document.getElementById('game-md5-hash').innerText = currentServerHash;
+            
+            let combo = `${currentServerSeed}-${currentRoundNonce}`;
+            let sig = await sha256Hex(combo);
+            let decimal = parseInt(sig.substring(0, 8), 16);
+            
+            if (decimal % 33 === 0) {
+                crashPoint = 1.00;
+            } else {
+                let e = Math.pow(2, 52);
+                let num = parseInt(sig.substring(0, 13), 16);
+                crashPoint = Math.max(1.00, Math.floor((100 * e - num) / (e - num)) / 100);
+            }
+        }
+
+        function renderCrashCanvasGraph(progress, isExploded) {
+            const canvas = document.getElementById('crash-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            ctx.clearRect(0, 0, w, h);
+            ctx.strokeStyle = '#1e2436';
+            ctx.lineWidth = 1;
+            
+            for (let i = 1; i < 5; i++) {
+                let x = (w / 5) * i;
+                let y = (h / 5) * i;
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+            }
+            
+            let startX = 40;
+            let startY = h - 40;
+            let targetX = startX + (w - startX - 60) * Math.min(1, progress / 8);
+            let targetY = startY - (startY - 40) * Math.min(1, Math.pow(progress / 8, 2));
+            
+            if (progress > 0) {
+                ctx.strokeStyle = isExploded ? 'var(--neon-red)' : 'var(--neon-cyan)';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.quadraticCurveTo((startX + targetX) / 2, startY, targetX, targetY);
+                ctx.stroke();
+                
+                ctx.fillStyle = isExploded ? 'rgba(255, 71, 87, 0.2)' : 'rgba(0, 255, 204, 0.1)';
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.quadraticCurveTo((startX + targetX) / 2, startY, targetX, targetY);
+                ctx.lineTo(targetX, startY);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            ctx.fillStyle = isExploded ? 'var(--neon-red)' : 'var(--neon-gold)';
+            ctx.beginPath();
+            if (isExploded) {
+                ctx.arc(targetX, targetY, 14, 0, 2 * Math.PI);
+            } else {
+                ctx.arc(targetX, targetY, 8, 0, 2 * Math.PI);
+            }
+            ctx.fill();
+        }
+        function handleCrashAnimationFrameLoop() {
+            if (gameStatus !== "FLYING") return;
+            
+            flightProgressTime += 0.016;
+            currentMultiplier = Math.pow(Math.E, 0.065 * flightProgressTime);
+            
+            if (currentMultiplier >= crashPoint) {
+                executeCrashExplosionState();
+                return;
+            }
+            
+            document.getElementById('multiplier-display').innerText = currentMultiplier.toFixed(2) + "x";
+            renderCrashCanvasGraph(flightProgressTime, false);
+            
+            if (Math.random() < 0.15) triggerTelegramHaptic('pulse');
+            
+            if (currentBetAmount > 0 && currentMultiplier >= autoCashoutX) {
+                executeCrashCashOutPayout();
+            } else {
+                animationFrameId = requestAnimationFrame(handleCrashAnimationFrameLoop);
+            }
+        }
+
+        function handleCrashActionButtonClick() {
+            if (gameStatus === "IDLE") {
+                triggerTelegramHaptic('click');
+                let amt = parseInt(document.getElementById('bet-value').value) || 0;
+                let autoX = parseFloat(document.getElementById('auto-cashout-value').value) || 2.00;
+                
+                if (amt <= 0 || amt > balance) {
+                    alert("Недостаточно монет на балансе!");
+                    return;
+                }
+                
+                currentBetAmount = amt;
+                autoCashoutX = Math.max(1.01, autoX);
+                balance -= amt;
+                
+                localStorage.setItem('wog_offline_balance', balance);
+                document.getElementById('bal').innerText = balance.toLocaleString();
+                
+                gameStatus = "FLYING";
+                flightProgressTime = 0;
+                currentMultiplier = 1.00;
+                
+                const btn = document.getElementById('action-btn');
+                btn.innerText = "ЗАБРАТЬ (CASH OUT)";
+                btn.classList.add('is-cashout-state');
+                
+                handleCrashAnimationFrameLoop();
+            } else if (gameStatus === "FLYING" && currentBetAmount > 0) {
+                executeCrashCashOutPayout();
+            }
+        }
+
+        function executeCrashCashOutPayout() {
+            let winAmount = Math.floor(currentBetAmount * currentMultiplier);
+            currentBetAmount = 0;
+            balance += winAmount;
+            
+            localStorage.setItem('wog_offline_balance', balance);
+            document.getElementById('bal').innerText = balance.toLocaleString();
+            
+            try {
+                tg.CloudStorage.setItem('wog_offline_balance', balance.toString());
+            } catch (e) {}
+            
+            triggerTelegramHaptic('win');
+            document.getElementById('multiplier-display').innerText = "CASH OUT: " + currentMultiplier.toFixed(2) + "x!";
+            document.getElementById('multiplier-display').style.color = "var(--neon-green)";
+            
+            const btn = document.getElementById('action-btn');
+            btn.innerText = "ОЖИДАНИЕ КРАША...";
+            btn.classList.remove('is-cashout-state');
+            btn.disabled = true;
+        }
+
+        function executeCrashExplosionState() {
+            gameStatus = "IDLE";
+            cancelAnimationFrame(animationFrameId);
+            
+            document.getElementById('canvas-chassis-container').style.animation = "crashExplodeFlash 0.3s ease-out";
+            document.getElementById('multiplier-display').innerText = "FLEW AWAY @ " + crashPoint.toFixed(2) + "x";
+            document.getElementById('multiplier-display').style.color = "var(--neon-red)";
+            
+            renderCrashCanvasGraph(flightProgressTime, true);
+            
+            if (currentBetAmount > 0) {
+                currentBetAmount = 0;
+                triggerTelegramHaptic('lose');
+            }
+            
+            const btn = document.getElementById('action-btn');
+            btn.innerText = "ПОСТАВИТЬ СТАВКУ";
+            btn.classList.remove('is-cashout-state');
+            btn.disabled = false;
+            
+            serverRoundHistory.unshift({ x: crashPoint });
+            if (serverRoundHistory.length > 8) serverRoundHistory.pop();
+            renderCrashHistoryRibbon();
+            
+            currentRoundNonce++;
+            setTimeout(() => {
+                document.getElementById('canvas-chassis-container').style.animation = "none";
+                document.getElementById('multiplier-display').style.color = "#ffffff";
+                document.getElementById('multiplier-display').innerText = "1.00x";
+                renderCrashCanvasGraph(0, false);
+                initProvablyFairCrashCrypto();
+            }, 3000);
+        }
+
+        function renderCrashHistoryRibbon() {
+            let box = document.getElementById('history-box');
+            if (!box) return;
+            box.innerHTML = "";
+            serverRoundHistory.forEach(item => {
+                let hClass = item.x < 2.0 ? "c-low" : (item.x < 10.0 ? "c-mid" : "c-high");
+                box.innerHTML += `<div class="history-node ${hClass}">${item.x.toFixed(2)}x</div>`;
+            });
+        }
+
+        function addChip(amount) {
+            if (gameStatus === "FLYING") return;
+            let input = document.getElementById('bet-value');
+            let current = parseInt(input.value) || 0;
+            input.value = current + amount;
+            triggerTelegramHaptic('click');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadBalanceFromTelegramCloud();
+            renderCrashCanvasGraph(0, false);
+            initProvablyFairCrashCrypto();
+        });
+
+        window.addEventListener('focus', () => {
+            loadBalanceFromTelegramCloud();
+        });
+    </script>
+</body>
+</html>
