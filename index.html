@@ -33,9 +33,9 @@
             background-color: var(--bg-main);
             color: var(--text-main);
             padding: 16px;
-            /* Добавляем увеличенные безопасные отступы, чтобы нижние кнопки Telegram ничего не перекрывали */
-            padding-top: calc(env(safe-area-inset-top) + 20px);
-            padding-bottom: calc(env(safe-area-inset-bottom) + 90px);
+            /* УВЕЛИЧИВАЕМ ОТСТУП СНИЗУ ДО 140px, ЧТОБЫ КОНТЕНТ УШЕЛ ВВЕРХ И ОТ КНОПОК ТГ БЫЛО МЕСТО */
+            padding-top: calc(env(safe-area-inset-top) + 15px);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 140px);
             overflow-x: hidden;
             user-select: none;
             -webkit-user-select: none;
@@ -50,16 +50,14 @@
             max-width: 480px;
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            /* Сдвигаем интерфейс немного вверх, освобождая место снизу */
-            margin-bottom: 20px;
+            gap: 12px;
         }
         
         .tg-profile-card {
             background: linear-gradient(135deg, #121622 0%, var(--bg-card) 100%);
             border: 1px solid var(--border-neon);
             border-radius: var(--radius-premium);
-            padding: 14px;
+            padding: 12px;
             display: flex;
             align-items: center;
             gap: 12px;
@@ -67,8 +65,8 @@
         }
 
         .tg-avatar-frame {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             border: 2px solid var(--neon-cyan);
             background: #1e2235;
@@ -94,13 +92,13 @@
         }
 
         .tg-username-label {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
             color: var(--text-main);
         }
 
         .tg-status-text {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--neon-cyan);
             font-weight: 700;
             text-transform: uppercase;
@@ -111,7 +109,7 @@
             background: linear-gradient(180deg, #101322 0%, var(--bg-card) 100%);
             border: 1px solid var(--border-neon);
             border-radius: var(--radius-premium);
-            padding: 16px;
+            padding: 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -125,7 +123,7 @@
         }
 
         .wallet-title-label {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-muted);
             font-weight: 800;
             text-transform: uppercase;
@@ -133,7 +131,7 @@
         }
 
         .wallet-balance-value {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 900;
             color: var(--neon-gold);
             font-family: monospace;
@@ -145,6 +143,7 @@
             color: var(--text-muted);
             cursor: pointer;
             transition: transform 0.3s ease;
+            padding: 5px;
         }
 
         .sync-spinner-icon.spinning {
@@ -159,7 +158,7 @@
         .games-neon-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
             width: 100%;
         }
 
@@ -171,10 +170,10 @@
             background: linear-gradient(180deg, var(--bg-card) 0%, #0a0b12 100%);
             border: 1px solid var(--border-neon);
             border-radius: var(--radius-premium);
-            padding: 16px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             cursor: pointer;
             transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s;
             box-shadow: 0 6px 20px rgba(0,0,0,0.4);
@@ -193,15 +192,15 @@
         }
 
         .game-card-emoji {
-            font-size: 24px;
+            font-size: 22px;
         }
 
         .game-card-badge {
-            font-size: 9px;
+            font-size: 8px;
             font-weight: 800;
             background: rgba(0, 210, 211, 0.1);
             color: var(--neon-cyan);
-            padding: 3px 8px;
+            padding: 2px 6px;
             border-radius: 20px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -209,14 +208,14 @@
         }
 
         .game-card-headline {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.3px;
         }
 
         .game-card-subtext {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-muted);
             line-height: 1.3;
         }
@@ -225,10 +224,10 @@
             background: var(--bg-card);
             border: 1px solid var(--border-neon);
             border-radius: var(--radius-premium);
-            padding: 14px;
+            padding: 12px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
@@ -243,9 +242,9 @@
             background: #040508;
             border: 1px solid var(--border-neon);
             border-radius: 12px;
-            padding: 12px;
+            padding: 10px;
             color: var(--text-main);
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             outline: none;
             text-transform: uppercase;
@@ -255,23 +254,18 @@
             background: linear-gradient(135deg, #1e2235 0%, var(--bg-button) 100%);
             border: 1px solid var(--border-neon);
             color: var(--text-main);
-            padding: 0 16px;
+            padding: 0 14px;
             border-radius: 12px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 800;
             cursor: pointer;
             text-transform: uppercase;
         }
 
-        .promo-activation-btn:active {
-            transform: scale(0.95);
-            border-color: var(--neon-cyan);
-        }
-
-        /* ПЕРЕМЕСТИЛИ КНОПКУ АДМИНКИ ЧУТЬ ВЫШЕ И СДЕЛАЛИ ЗАМЕТНЕЕ */
+        /* ПОДНЯЛИ КНОПКУ АДМИНКИ ЕЩЕ ВЫШЕ НАД ИНТЕРФЕЙСОМ ТЕЛЕГРАМА */
         .admin-neon-btn {
             position: fixed;
-            bottom: calc(env(safe-area-inset-bottom) + 25px);
+            bottom: calc(env(safe-area-inset-bottom) + 105px);
             right: 20px;
             background: linear-gradient(135deg, #ffca28 0%, #ffb300 100%);
             color: #000000;
@@ -299,7 +293,7 @@
         <div class="tg-profile-card">
             <div class="tg-avatar-frame" id="avatar-container">W</div>
             <div class="tg-meta-info">
-                <span class="tg-username-label" id="username-display">Сервер просыпается... Жмите 🔄</span>
+                <span class="tg-username-label" id="username-display">Загрузка сессии...</span>
                 <span class="tg-status-text" id="status-display">PLAYER</span>
             </div>
         </div>
@@ -356,41 +350,36 @@
     <!-- СКРЫТАЯ КНОПКА АДМИНКИ -->
     <button class="admin-neon-btn" id="admin-trigger-btn" onclick="openAdminMenu()">⚙️ Админка</button>
     <script>
-        // Инициализируем Telegram WebApp API
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) {
             try { 
                 tg.expand();
-                // Сообщаем Telegram, что интерфейс готов к отрисовке
                 tg.ready(); 
-            } catch(e) {
-                console.error(e);
-            }
+            } catch(e) { console.error(e); }
         }
 
-        // Адрес вашего запущенного сервера на Render (исправлено на backend)
         const SERVER_URL = "https://onrender.com";
-
-        // Проверенный Telegram ID владельца
         const MY_ADMIN_ID = 6682822292;
-
-        // Безопасное извлечение пользователя из сессии Mini App
         const tgUser = tg && tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
 
-        // Стартовые данные для локального теста (если открыли в обычном браузере)
         let playerBalance = 5000;
         let userId = MY_ADMIN_ID; 
         let userFirstName = "Разработчик";
         let userUsername = "LocalDev";
 
-        // Если зашли через Telegram Mini App — берем настоящие данные игрока
         if (tgUser) {
             userId = tgUser.id;
             userFirstName = tgUser.first_name;
             userUsername = tgUser.username || "";
         }
 
-        // Запрос профиля и баланса с сервера Render
+        // ВКЛЮЧАЕМ АДМИНКУ МГНОВЕННО (До локального запроса к серверу)
+        if (Number(userId) === MY_ADMIN_ID) {
+            document.getElementById('status-display').innerText = "FOUNDER / ADMIN";
+            document.getElementById('status-display').style.color = "var(--neon-gold)";
+            document.getElementById('admin-trigger-btn').style.display = "block";
+        }
+
         fetch(`${SERVER_URL}/api/user`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -404,34 +393,20 @@
         .then(data => {
             if (data && data.balance !== undefined) {
                 playerBalance = data.balance;
-                
-                // Выводим Имя и Никнейм
                 document.getElementById('username-display').innerText = data.name + (data.username ? ` (@${data.username})` : '');
                 
-                // Проверка роли админа на сервере ИЛИ по прямому совпадению ID
-                if (data.role === "admin" || Number(userId) === MY_ADMIN_ID) {
-                    document.getElementById('status-display').innerText = "FOUNDER / ADMIN";
-                    document.getElementById('status-display').style.color = "var(--neon-gold)";
-                    document.getElementById('admin-trigger-btn').style.display = "block"; // Включаем кнопку админки
-                } else {
-                    document.getElementById('status-display').innerText = "PLAYER";
-                }
-                
-                // Рендерим аватарку пользователя из Телеграма
                 const avatarFrame = document.getElementById('avatar-container');
                 if (tgUser && tgUser.photo_url) {
                     avatarFrame.innerHTML = `<img src="${tgUser.photo_url}" class="tg-avatar-img">`;
                 } else {
                     avatarFrame.innerText = data.name.charAt(0).toUpperCase();
                 }
-
                 updateUI();
             }
         })
         .catch(err => {
-            console.error("Ошибка сервера:", err);
-            // Если сервер спал, оставляем подсказку пользователю
-            document.getElementById('username-display').innerText = "Сервер проснулся! Нажмите 🔄";
+            console.error(err);
+            document.getElementById('username-display').innerText = "Нажмите 🔄 для синхронизации";
             updateUI();
         });
 
@@ -442,20 +417,14 @@
         function refreshData() {
             const spinner = document.getElementById('sync-btn');
             spinner.classList.add('spinning');
-            
-            // Принудительно перезагружаем сессию для подтягивания баланса
-            setTimeout(() => {
-                location.reload();
-            }, 300);
+            setTimeout(() => { location.reload(); }, 300);
         }
 
         function navigateToGame(pageUrl) {
-            // Передаем текущий серверный баланс в мини-игры через локальное хранилище
             localStorage.setItem('wog_player_balance', playerBalance);
             location.href = pageUrl;
         }
 
-        // АКТИВАЦИЯ ПРОМОКОДА НА СЕРВЕРЕ
         function claimPromoCode() {
             const input = document.getElementById('promo-input');
             const code = input.value.trim().toUpperCase();
@@ -464,10 +433,7 @@
             fetch(`${SERVER_URL}/api/promo/activate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id: userId,
-                    code: code
-                })
+                body: JSON.stringify({ id: userId, code: code })
             })
             .then(res => {
                 if (res.status === 440) throw new Error("Указанный промокод не найден!");
@@ -480,20 +446,13 @@
                     playerBalance = data.balance;
                     updateUI();
                     input.value = "";
-                    
-                    if (tg && typeof tg.showAlert === 'function') {
-                        tg.showAlert(data.message);
-                    } else {
-                        alert(data.message);
-                    }
+                    if (tg && typeof tg.showAlert === 'function') tg.showAlert(data.message);
+                    else alert(data.message);
                 }
             })
-            .catch(err => {
-                alert(err.message || "Ошибка соединения с сервером");
-            });
+            .catch(err => { alert(err.message || "Ошибка соединения с сервером"); });
         }
 
-        // МЕНЮ АДМИНИСТРАТОРА WOG
         function openAdminMenu() {
             let choice = prompt("УПРАВЛЕНИЕ ХАБОМ WOG (БЭКЕНД):\n1 - Начислить монеты на сервере\n2 - Создать промокод на сервере\n3 - Просмотр кодов с сервера", "1");
             if (!choice) return;
@@ -504,10 +463,7 @@
                     fetch(`${SERVER_URL}/api/balance`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            id: userId,
-                            amount: parseInt(amt)
-                        })
+                        body: JSON.stringify({ id: userId, amount: parseInt(amt) })
                     })
                     .then(res => res.json())
                     .then(data => {
@@ -519,8 +475,7 @@
                     })
                     .catch(err => alert("Ошибка обновления баланса"));
                 }
-            } 
-            else if (choice === "2") {
+            } else if (choice === "2") {
                 let name = prompt("Название промокода (Пример: WOGCOINS):");
                 if (!name) return;
                 name = name.trim().toUpperCase();
@@ -531,23 +486,13 @@
                     fetch(`${SERVER_URL}/api/promo/create`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            admin_id: userId,
-                            code: name,
-                            reward: parseInt(prize),
-                            uses: parseInt(count)
-                        })
+                        body: JSON.stringify({ admin_id: userId, code: name, reward: parseInt(prize), uses: parseInt(count) })
                     })
                     .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(`Промокод ${name} успешно сохранен на сервере Render!`);
-                        }
-                    })
+                    .then(data => { if (data.success) alert(`Промокод ${name} успешно сохранен на сервере Render!`); })
                     .catch(err => alert("Ошибка создания промокода"));
                 }
-            } 
-            else if (choice === "3") {
+            } else if (choice === "3") {
                 fetch(`${SERVER_URL}/api/promo/list`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
