@@ -574,3 +574,202 @@
 
     <!-- СКРЫТАЯ КНОПКА АДМИНКИ -->
     <button class="admin-neon-btn" id="admin-trigger-btn" onclick="openAdminMenu()">⚙️ Админка</button>
+        <script>
+        // Инициализируем Telegram WebApp API
+        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+        if (tg) {
+            try { 
+                tg.expand();
+                tg.ready();
+                // На главной странице нативная кнопка "Назад" должна быть скрыта
+                if (tg.BackButton) tg.BackButton.hide();
+            } catch(e) { console.error(e); }
+        }
+
+        const SERVER_URL = "https://onrender.com";
+        const MY_ADMIN_ID = 6682822292; // Ваш ID разработчика
+        
+        const tgAuthData = tg ? tg.initData : "";
+        const tgUser = tg && tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
+
+        let playerBalance = 5000;
+        let userId = MY_ADMIN_ID; 
+        let userFirstName = "Основатель (WOG)";
+        let userUsername = "FounderAdmin";
+        let userPhotoUrl = "";
+
+        // Считываем реальные данные профиля, если они доступны
+        if (tgUser && tgUser.id) {
+            userId = tgUser.id;
+            userFirstName = tgUser.first_name;
+            userUsername = tgUser.username || "";
+            userPhotoUrl = tgUser.photo_url || "";
+        }
+
+        // Распределяем роли на клиенте до ответа сервера
+        if (Number(userId) === MY_ADMIN_ID) {
+            document.getElementById('username-display').innerText = userFirstName;
+            document.getElementById('status-display').innerText = userFirstName + " / ADMIN";
+            document.getElementById('status-display').style.color = "var(--neon-gold)";
+            document.getElementById('admin-trigger-btn').style.display = "block";
+        } else {
+            document.getElementById('username-display').innerText = userFirstName + (userUsername ? ` (@${userUsername})` : '');
+            document.getElementById('status-display').innerText = "PLAYER";
+            document.getElementById('status-display').style.color = "var(--text-muted)";
+            document.getElementById('admin-trigger-btn').style.display = "none";
+        }
+
+        // Ставим аватарку
+        const avatarFrame = document.getElementById('avatar-container');
+        if (userPhotoUrl) {
+            avatarFrame.innerHTML = `<img src="${userPhotoUrl}" class="avatar-img">`;
+        } else {
+            avatarFrame.innerText = userFirstName.charAt(0).toUpperCase();
+        }
+
+        // СИНХРОНИЗАЦИЯ БАЛАНСА С СЕРВЕРОМ RENDER
+        function syncWithServer() {
+            fetch(`${SERVER_URL}/api/user`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id: userId,
+                    first_name: userFirstName,
+                    username: userUsername,
+                    photo_url: userPhotoUrl,
+                    auth_data: tgAuthData
+                })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("Синхронизация...");
+                return res.json();
+            })
+            .then(data => {
+                if (data && data.balance !== undefined) {
+                    playerBalance = data.balance;
+                    updateUI();
+                }
+            })
+            .catch(err => {
+                console.log("Используется резервный баланс...");
+                updateUI();
+            });
+        }
+
+        syncWithServer();
+
+        function updateUI() {
+            document.getElementById('balance-display').innerText = playerBalance;
+        }
+
+        function refreshData() {
+            syncWithServer();
+            if (tg && typeof tg.HapticFeedback === 'object') {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        }
+
+        function togglePromoBox() {
+            const promoBox = document.getElementById('promo-box-wrapper');
+            if (promoBox.style.display === "none") {
+                promoBox.style.display = "flex";
+                promoBox.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                promoBox.style.display = "none";
+            }
+        }
+
+        function navigateToGame(pageUrl) {
+            localStorage.setItem('wog_player_balance', playerBalance);
+            location.href = pageUrl;
+        }
+
+        function claimPromoCode() {
+            const input = document.getElementById('promo-input');
+            const code = input.value.trim().toUpperCase();
+            if (!code) return;
+
+            fetch(`${SERVER_URL}/api/promo/activate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: userId, code: code })
+            })
+            .then(res => {
+                if (res.status === 440) throw new Error("Указанный промокод не найден!");
+                if (res.status === 400) throw new Error("Промокод исчерпал лимит активаций!");
+                if (!res.ok) throw new Error("Ошибка активации кода");
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    playerBalance = data.balance;
+                    updateUI();
+                    input.value = "";
+                    if (tg && typeof tg.showAlert === 'function') tg.showAlert(data.message);
+                    else alert(data.message);
+                }
+            })
+            .catch(err => { alert(err.message || "Ошибка соединения с сервером"); });
+        }
+
+        function openAdminMenu() {
+            let choice = prompt("УПРАВЛЕНИЕ ХАБОМ WOG (БЭКЕНД):\n1 - Начислить монеты на сервере\n2 - Создать промокод на сервере\n3 - Просмотр кодов с сервера", "1");
+            if (!choice) return;
+
+            if (choice === "1") {
+                let amt = prompt("Сколько монет начислить на баланс?", "100000");
+                if (amt && !isNaN(amt)) {
+                    fetch(`${SERVER_URL}/api/balance`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: userId, amount: parseInt(amt) })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            playerBalance = data.balance;
+                            updateUI();
+                            alert("Баланс успешно изменен на сервере!");
+                        }
+                    })
+                    .catch(err => alert("Ошибка обновления баланса"));
+                }
+            } else if (choice === "2") {
+                let name = prompt("Название промокода (Пример: WOGCOINS):");
+                if (!name) return;
+                name = name.trim().toUpperCase();
+                let prize = prompt("Сумма выигрыша по коду:", "5000");
+                let count = prompt("Количество возможных использований:", "10");
+
+                if (name && prize && count) {
+                    fetch(`${SERVER_URL}/api/promo/create`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ admin_id: userId, code: name, reward: parseInt(prize), uses: parseInt(count) })
+                    })
+                    .then(res => res.json())
+                    .then(data => { if (data.success) alert(`Промокод ${name} успешно сохранен на сервере Render!`); })
+                    .catch(err => alert("Ошибка создания промокода"));
+                }
+            } else if (choice === "3") {
+                fetch(`${SERVER_URL}/api/promo/list`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ admin_id: userId })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    let out = "Список активных промокодов на сервере:\n";
+                    let hasKeys = false;
+                    for (let k in data) {
+                        hasKeys = true;
+                        out += `${k} -> Награда: ${data[k].reward} монет (Осталось: ${data[k].uses})\n`;
+                    }
+                    alert(!hasKeys ? "Промокодов на сервере пока нет" : out);
+                })
+                .catch(err => alert("Ошибка получения списка промокодов"));
+            }
+        }
+    </script>
+</body>
+</html>
