@@ -33,8 +33,8 @@
             background-color: var(--bg-main);
             color: var(--text-main);
             padding: 16px;
-            padding-top: calc(env(safe-area-inset-top) + 10px);
-            /* ПРИНУДИТЕЛЬНО ПОДНИМАЕМ КОНТЕНТ НА 180px, КАК И НА ГЛАВНОЙ СТРАНИЦЕ */
+            /* ПРАВИЛЬНЫЕ БЕЗОПАСНЫЕ ОТСТУПЫ: СВЕРХУ 50px ОПУСКАЮТ ИГРУ ОТ КНОПКИ «ЗАКРЫТЬ» */
+            padding-top: calc(env(safe-area-inset-top) + 50px);
             padding-bottom: calc(env(safe-area-inset-bottom) + 180px);
             display: flex;
             flex-direction: column;
@@ -49,15 +49,6 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
-        }
-
-        .back-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-            cursor: pointer;
-            padding: 4px 0;
         }
 
         .lottery-card {
@@ -160,13 +151,7 @@
 <body>
 
     <div class="app-wrapper">
-        <!-- ШАПКА С КОРРЕКТНЫМ ПЕРЕХОДОМ НАЗАД -->
-        <div class="back-header" onclick="goBack()">
-            <span style="font-size: 18px; color: var(--text-muted);">❮</span>
-            <span style="font-size: 16px; font-weight: 700;">Бонусы</span>
-        </div>
-
-        <!-- ОКНО ЛОТЕРЕИ 3Х3 -->
+        <!-- ОКНО ЛОТЕРЕИ 3Х3 (ВЕРСТКА ОПУЩЕНА ВНИЗ НА 50px ДЛЯ ЗАЩИТЫ ОТ КНОПКИ ЗАКРЫТЬ) -->
         <div class="lottery-card">
             <div class="lottery-title">
                 <span>🎁</span> <span id="game-status-text">Угадайте 3 одинаковых ячейки</span>
@@ -228,12 +213,12 @@
             try {
                 tg.expand();
                 tg.ready();
-                // НА СТРАНИЦЕ БОНУСОВ ОФИЦИАЛЬНО ВКЛЮЧАЕМ НАПРАВЛЕННУЮ КНОПКУ НАЗАД ОТ ТЕЛЕГРАМА
+                
+                // СВЕРХНАДЕЖНОЕ ВКЛЮЧЕНИЕ НАТИВНОЙ КНОПКИ НАЗАД В ТЕЛЕГРАМЕ
                 if (tg.BackButton) {
                     tg.BackButton.show();
-                    tg.BackButton.onClick(() => {
-                        goBack();
-                    });
+                    tg.BackButton.offClick(); // Очищаем старые дубли кликов
+                    tg.BackButton.onClick(goBack); // Привязываем переход назад
                 }
             } catch(e) { console.error(e); }
             
@@ -258,7 +243,6 @@
             { text: "100K W", style: "revealed-red", value: 100000 }
         ];
 
-        // Случайно перемешиваем сетку при каждом входе
         let generatedGrid = [...PRIZE_POOL].sort(() => Math.random() - 0.5);
         let openedCounts = {};
 
@@ -319,7 +303,6 @@
             .catch(err => console.error("Ошибка сервера:", err));
         }
 
-        // --- ДОПОЛНИТЕЛЬНЫЕ КНОПКИ БОНУСОВ ---
         function getDailyBonus() {
             let randomBonus = Math.floor(Math.random() * (1500 - 300 + 1)) + 300;
             sendRewardToServer(randomBonus);
@@ -330,10 +313,9 @@
             sendRewardToServer(adPrize);
         }
 
-        // БЕЗОПАСНЫЙ ВОЗВРАТ НА ГЛАВНУЮ СТРАНИЦУ С ОТКЛЮЧЕНИЕМ КНОПКИ
         function goBack() {
             if (tg && tg.BackButton) {
-                tg.BackButton.hide(); // Скрываем кнопку, чтобы она убралась с экрана
+                tg.BackButton.hide(); // Гарантированно убираем стрелочку на главном экране
             }
             location.href = "index.html";
         }
