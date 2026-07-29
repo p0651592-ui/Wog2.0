@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wog 2.0</title>
 
-    <!-- ВАШИ СТАРЫЕ СТИЛИ (ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ) -->
     <style>
         body { 
             background-color: #111111; 
@@ -61,16 +60,15 @@
 
     <!-- ПОДКЛЮЧЕНИЕ СДК ТЕЛЕГРАМА -->
     <script src="https://telegram.org"></script>
-
 </head>
 <body>
 
-    <!-- ИГРОВОЙ ИНТЕРФЕЙС И ВЕРСТКА -->
     <div class="game-container">
+        <!-- Сюда запишется имя из Telegram -->
         <h1 id="username-display">Загрузка профиля...</h1>
         
         <div class="balance-box">
-            Баланс: <span id="balance-display" class="balance-amount">0</span> 🪙
+            Баланс: <span id="balance-display" class="balance-amount">5,000</span> 🪙
         </div>
 
         <h2>Выберите режим игры:</h2>
@@ -81,63 +79,66 @@
         </div>
     </div>
 
-    <!-- ЛОГИКА АВТОРИЗАЦИИ, БАЛАНСА И АДМИНКИ -->
     <script>
         // Инициализируем Telegram WebApp API
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Раскрываем приложение на максимум
+        
+        try {
+            tg.expand(); // Расширяем экран
+        } catch(e) {
+            console.error("Не удалось расширить WebApp", e);
+        }
 
         // Ваш проверенный Telegram ID для активации прав разработчика
         const MY_ADMIN_ID = 6682822292; 
 
-        // Достаем данные сессии текущего пользователя
-        const tgUser = tg.initDataUnsafe?.user;
+        // Получаем данные текущего пользователя
+        let tgUser = null;
+        try {
+            tgUser = tg.initDataUnsafe?.user;
+        } catch(e) {
+            console.error("Ошибка получения данных пользователя", e);
+        }
 
-        // Инициализация баланса (тянем из общей памяти браузера, либо выдаем 5000 по умолчанию)
-        let playerBalance = localStorage.getItem('wog_player_balance') ? parseInt(localStorage.getItem('wog_player_balance')) : 5000;
+        // Загрузка баланса из памяти (если пусто — ставим 5000 монет)
+        let savedBalance = localStorage.getItem('wog_player_balance');
+        let playerBalance = (savedBalance !== null) ? parseInt(savedBalance) : 5000;
         let playerRole = "user";
 
-        // Проверка авторизации
-        if (tgUser) {
-            // Подставляем имя игрока из Telegram
-            document.getElementById('username-display').innerText = `Игрок: ${tgUser.first_name}`;
+        // Проверяем авторизацию
+        if (tgUser && tgUser.first_name) {
+            document.getElementById('username-display').innerText = "Игрок: " + tgUser.first_name;
 
-            // Проверяем, админ ли зашел (сверка с вашим ID)
-            if (tgUser.id === MY_ADMIN_ID) {
+            // Сверка с вашим ID для админки
+            if (Number(tgUser.id) === MY_ADMIN_ID) {
                 playerRole = "admin";
-                activateAdminPanel(); // Включаем админку
+                activateAdminPanel();
             }
         } else {
-            // Запуск вне Telegram (для тестов в браузере)
             document.getElementById('username-display').innerText = "Игрок: Гость (Тестовый режим)";
         }
 
-        // Выводим баланс на экран
+        // Отображаем баланс
         updateBalanceUI();
 
-        // Функция обновления отображения баланса
         function updateBalanceUI() {
             const balanceEl = document.getElementById('balance-display');
-            if (balanceEl) balanceEl.innerText = playerBalance.toLocaleString();
+            if (balanceEl) {
+                balanceEl.innerText = playerBalance;
+            }
         }
 
-        // Функция безопасного перехода между страницами с сохранением баланса
         function navigateToGame(pageUrl) {
-            // Перед уходом на другую страницу фиксируем текущий баланс в памяти
             localStorage.setItem('wog_player_balance', playerBalance);
             location.href = pageUrl;
         }
 
-        // ФУНКЦИЯ ДИНАМИЧЕСКОЙ АДМИН-ПАНЕЛИ (доступна только вам)
+        // АДМИН-ПАНЕЛЬ С ЗАЩИТОЙ ОТ ОШИБОК
         function activateAdminPanel() {
-            console.log("Доступ подтвержден. Панель создана.");
-            
-            // Создаем плавающую кнопку управления
             const adminBtn = document.createElement('button');
             adminBtn.innerText = "⚙️ Меню Админа";
             adminBtn.style.cssText = "position:fixed; bottom:20px; right:20px; background:#ffcc00; color:#000; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; z-index:9999; cursor:pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); font-size:14px;";
             
-            // Действие при клике на админку
             adminBtn.onclick = function() {
                 let action = prompt("Выберите действие:\n1 - Начислить себе баланс\n2 - Обнулить баланс", "1");
                 
@@ -147,7 +148,11 @@
                         playerBalance += parseInt(amount);
                         updateBalanceUI();
                         localStorage.setItem('wog_player_balance', playerBalance);
-                        tg.showAlert(`Успешно начислено ${amount} монет!`);
+                        if (tg && typeof tg.showAlert === 'function') {
+                            tg.showAlert("Успешно начислено " + amount + " монет!");
+                        } else {
+                            alert("Успешно начислено " + amount + " монет!");
+                        }
                     }
                 } else if (action === "2") {
                     if (confirm("Вы уверены, что хотите обнулить свой баланс?")) {
@@ -161,6 +166,5 @@
             document.body.appendChild(adminBtn);
         }
     </script>
-
 </body>
 </html>
