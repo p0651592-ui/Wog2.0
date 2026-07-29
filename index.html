@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>WOG Casino Telegram Hub</title>
-    <!-- ПОДКЛЮЧЕНИЕ ОФИЦИАЛЬНОГО СДК TELEGRAM WEB APP -->
+    <!-- ПРАВИЛЬНОЕ ПОДКЛЮЧЕНИЕ СДК TELEGRAM WEB APP -->
     <script src="https://telegram.org"></script>
     <style>
         :root {
@@ -33,8 +33,9 @@
             background-color: var(--bg-main);
             color: var(--text-main);
             padding: 16px;
-            padding-top: calc(env(safe-area-inset-top) + 12px);
-            padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+            /* Добавляем увеличенные безопасные отступы, чтобы нижние кнопки Telegram ничего не перекрывали */
+            padding-top: calc(env(safe-area-inset-top) + 20px);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 90px);
             overflow-x: hidden;
             user-select: none;
             -webkit-user-select: none;
@@ -44,18 +45,14 @@
             min-height: 100vh;
         }
 
-        @keyframes tgPulseGlow {
-            0% { opacity: 0.3; transform: scale(0.97); }
-            50% { opacity: 1; transform: scale(1.03); }
-            100% { opacity: 0.3; transform: scale(0.97); }
-        }
-
         .app-wrapper {
             width: 100%;
             max-width: 480px;
             display: flex;
             flex-direction: column;
             gap: 14px;
+            /* Сдвигаем интерфейс немного вверх, освобождая место снизу */
+            margin-bottom: 20px;
         }
         
         .tg-profile-card {
@@ -70,8 +67,8 @@
         }
 
         .tg-avatar-frame {
-            width: 42px;
-            height: 42px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             border: 2px solid var(--neon-cyan);
             background: #1e2235;
@@ -87,6 +84,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            border-radius: 50%;
         }
 
         .tg-meta-info {
@@ -270,23 +268,27 @@
             border-color: var(--neon-cyan);
         }
 
+        /* ПЕРЕМЕСТИЛИ КНОПКУ АДМИНКИ ЧУТЬ ВЫШЕ И СДЕЛАЛИ ЗАМЕТНЕЕ */
         .admin-neon-btn {
             position: fixed;
-            bottom: calc(env(safe-area-inset-bottom) + 15px);
-            right: 16px;
-            background: #ffca28;
+            bottom: calc(env(safe-area-inset-bottom) + 25px);
+            right: 20px;
+            background: linear-gradient(135deg, #ffca28 0%, #ffb300 100%);
             color: #000000;
             border: none;
-            padding: 10px 16px;
-            border-radius: 20px;
+            padding: 12px 20px;
+            border-radius: 25px;
             font-weight: 900;
-            font-size: 12px;
+            font-size: 13px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            box-shadow: 0 0 15px rgba(255, 202, 40, 0.4);
+            box-shadow: 0 4px 20px rgba(255, 202, 40, 0.5);
             cursor: pointer;
-            z-index: 9999;
+            z-index: 99999;
             display: none;
+        }
+        .admin-neon-btn:active {
+            transform: scale(0.95);
         }
     </style>
 </head>
@@ -297,7 +299,7 @@
         <div class="tg-profile-card">
             <div class="tg-avatar-frame" id="avatar-container">W</div>
             <div class="tg-meta-info">
-                <span class="tg-username-label" id="username-display">Загрузка сессии...</span>
+                <span class="tg-username-label" id="username-display">Сервер просыпается... Жмите 🔄</span>
                 <span class="tg-status-text" id="status-display">PLAYER</span>
             </div>
         </div>
@@ -354,31 +356,41 @@
     <!-- СКРЫТАЯ КНОПКА АДМИНКИ -->
     <button class="admin-neon-btn" id="admin-trigger-btn" onclick="openAdminMenu()">⚙️ Админка</button>
     <script>
-        // Инициализируем защищенный Telegram WebApp API
+        // Инициализируем Telegram WebApp API
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) {
-            try { tg.expand(); } catch(e) {}
+            try { 
+                tg.expand();
+                // Сообщаем Telegram, что интерфейс готов к отрисовке
+                tg.ready(); 
+            } catch(e) {
+                console.error(e);
+            }
         }
 
-        // Адрес вашего запущенного сервера на Render
+        // Адрес вашего запущенного сервера на Render (исправлено на backend)
         const SERVER_URL = "https://onrender.com";
 
-        // Получаем профиль игрока из Телеграма
+        // Проверенный Telegram ID владельца
+        const MY_ADMIN_ID = 6682822292;
+
+        // Безопасное извлечение пользователя из сессии Mini App
         const tgUser = tg && tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
 
-        // Данные игрока по умолчанию (если сервер не ответит)
+        // Стартовые данные для локального теста (если открыли в обычном браузере)
         let playerBalance = 5000;
-        let userId = 6682822292; // Тестовый ваш ID, если зашли через браузер
+        let userId = MY_ADMIN_ID; 
         let userFirstName = "Разработчик";
         let userUsername = "LocalDev";
 
+        // Если зашли через Telegram Mini App — берем настоящие данные игрока
         if (tgUser) {
             userId = tgUser.id;
             userFirstName = tgUser.first_name;
             userUsername = tgUser.username || "";
         }
 
-        // Автоматически запрашиваем профиль с сервера при старте приложения
+        // Запрос профиля и баланса с сервера Render
         fetch(`${SERVER_URL}/api/user`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -393,19 +405,19 @@
             if (data && data.balance !== undefined) {
                 playerBalance = data.balance;
                 
-                // Отображаем настоящее имя и никнейм на экране
+                // Выводим Имя и Никнейм
                 document.getElementById('username-display').innerText = data.name + (data.username ? ` (@${data.username})` : '');
                 
-                // Если сервер вернул роль admin — включаем вашу кнопку админки
-                if (data.role === "admin") {
+                // Проверка роли админа на сервере ИЛИ по прямому совпадению ID
+                if (data.role === "admin" || Number(userId) === MY_ADMIN_ID) {
                     document.getElementById('status-display').innerText = "FOUNDER / ADMIN";
                     document.getElementById('status-display').style.color = "var(--neon-gold)";
-                    document.getElementById('admin-trigger-btn').style.display = "block";
+                    document.getElementById('admin-trigger-btn').style.display = "block"; // Включаем кнопку админки
                 } else {
                     document.getElementById('status-display').innerText = "PLAYER";
                 }
                 
-                // Настраиваем неоновую аватарку
+                // Рендерим аватарку пользователя из Телеграма
                 const avatarFrame = document.getElementById('avatar-container');
                 if (tgUser && tgUser.photo_url) {
                     avatarFrame.innerHTML = `<img src="${tgUser.photo_url}" class="tg-avatar-img">`;
@@ -417,8 +429,9 @@
             }
         })
         .catch(err => {
-            console.error("Ошибка подключения к серверу:", err);
-            document.getElementById('username-display').innerText = "Сервер просыпается... Жмите 🔄";
+            console.error("Ошибка сервера:", err);
+            // Если сервер спал, оставляем подсказку пользователю
+            document.getElementById('username-display').innerText = "Сервер проснулся! Нажмите 🔄";
             updateUI();
         });
 
@@ -429,15 +442,20 @@
         function refreshData() {
             const spinner = document.getElementById('sync-btn');
             spinner.classList.add('spinning');
-            location.reload();
+            
+            // Принудительно перезагружаем сессию для подтягивания баланса
+            setTimeout(() => {
+                location.reload();
+            }, 300);
         }
 
         function navigateToGame(pageUrl) {
+            // Передаем текущий серверный баланс в мини-игры через локальное хранилище
             localStorage.setItem('wog_player_balance', playerBalance);
             location.href = pageUrl;
         }
 
-        // АКТИВАЦИЯ ПРОМОКОДА ЧЕРЕЗ СЕРВЕР RENDER
+        // АКТИВАЦИЯ ПРОМОКОДА НА СЕРВЕРЕ
         function claimPromoCode() {
             const input = document.getElementById('promo-input');
             const code = input.value.trim().toUpperCase();
@@ -454,7 +472,7 @@
             .then(res => {
                 if (res.status === 440) throw new Error("Указанный промокод не найден!");
                 if (res.status === 400) throw new Error("Промокод исчерпал лимит активаций!");
-                if (!res.ok) throw new Error("Ошибка при активации кода");
+                if (!res.ok) throw new Error("Ошибка активации кода");
                 return res.json();
             })
             .then(data => {
@@ -475,7 +493,7 @@
             });
         }
 
-        // УПРАВЛЕНИЕ АДМИН-МЕНЮ ЧЕРЕЗ СЕРВЕР
+        // МЕНЮ АДМИНИСТРАТОРА WOG
         function openAdminMenu() {
             let choice = prompt("УПРАВЛЕНИЕ ХАБОМ WOG (БЭКЕНД):\n1 - Начислить монеты на сервере\n2 - Создать промокод на сервере\n3 - Просмотр кодов с сервера", "1");
             if (!choice) return;
@@ -496,14 +514,14 @@
                         if (data.success) {
                             playerBalance = data.balance;
                             updateUI();
-                            alert("Баланс успешно обновлен на сервере!");
+                            alert("Баланс успешно изменен на сервере!");
                         }
                     })
-                    .catch(err => alert("Ошибка при обновлении баланса на сервере"));
+                    .catch(err => alert("Ошибка обновления баланса"));
                 }
             } 
             else if (choice === "2") {
-                let name = prompt("Название промокода (Пример: NEWBONUS):");
+                let name = prompt("Название промокода (Пример: WOGCOINS):");
                 if (!name) return;
                 name = name.trim().toUpperCase();
                 let prize = prompt("Сумма выигрыша по коду:", "5000");
@@ -526,7 +544,7 @@
                             alert(`Промокод ${name} успешно сохранен на сервере Render!`);
                         }
                     })
-                    .catch(err => alert("Ошибка при создании промокода на сервере"));
+                    .catch(err => alert("Ошибка создания промокода"));
                 }
             } 
             else if (choice === "3") {
@@ -545,7 +563,7 @@
                     }
                     alert(!hasKeys ? "Промокодов на сервере пока нет" : out);
                 })
-                .catch(err => alert("Ошибка при獲取 промокодов"));
+                .catch(err => alert("Ошибка получения списка"));
             }
         }
     </script>
