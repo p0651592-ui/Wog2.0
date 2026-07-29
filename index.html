@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>WOG Launcher</title>
-    <!-- ПОДКЛЮЧЕНИЕ СДК TELEGRAM WEB APP -->
+    <!-- ПОДКЛЮЧЕНИЕ ОБНОВЛЕННОЙ СДК TELEGRAM WEB APP -->
     <script src="https://telegram.org"></script>
     <style>
         :root {
@@ -16,6 +16,7 @@
             --neon-gold: #ffca28;
             --neon-cyan: #00d2d3;
             --neon-green: #05c46b;
+            --neon-red: #ff3838;
             --text-main: #ffffff;
             --text-muted: #64748b;
             --radius-premium: 16px;
@@ -34,7 +35,6 @@
             color: var(--text-main);
             padding: 14px;
             padding-top: calc(env(safe-area-inset-top) + 10px);
-            /* Оставляем фиксированное место в 95px снизу под новый красивый меню-бар */
             padding-bottom: calc(env(safe-area-inset-bottom) + 95px);
             overflow-x: hidden;
             user-select: none;
@@ -151,9 +151,51 @@
             align-items: center;
             gap: 6px;
             cursor: pointer;
-            transition: transform 0.1s, background 0.2s;
+            transition: transform 0.1s;
         }
-        .control-circle-item:active { transform: scale(0.94); background: var(--bg-inner); }
+        .control-circle-item:active { transform: scale(0.94); }
+
+        .promo-activation-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-neon);
+            border-radius: var(--radius-premium);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+
+        .promo-input-wrapper {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .promo-input-wrapper input {
+            flex: 1;
+            background: #040508;
+            border: 1px solid var(--border-neon);
+            border-radius: 12px;
+            padding: 12px;
+            color: var(--text-main);
+            font-size: 14px;
+            font-weight: 700;
+            outline: none;
+            text-transform: uppercase;
+        }
+        
+        .promo-activation-btn {
+            background: linear-gradient(135deg, #1e2235 0%, var(--bg-button) 100%);
+            border: 1px solid var(--border-neon);
+            color: var(--text-main);
+            padding: 0 18px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
 
         .tournament-banner-box {
             background: linear-gradient(135deg, #112c6d 0%, #0d1626 100%);
@@ -162,6 +204,17 @@
             padding: 18px;
             text-align: left;
             box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .games-neon-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .games-neon-grid .full-span-card {
+            grid-column: span 2;
         }
 
         .game-grid-card {
@@ -177,6 +230,12 @@
         }
         .game-grid-card:active { transform: scale(0.96); }
 
+        .game-card-icon-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
         .game-card-badge {
             font-size: 10px;
             font-weight: 800;
@@ -186,7 +245,6 @@
             border: 1px solid var(--border-neon);
         }
 
-        /* ОФИЦИАЛЬНЫЙ НИЖНИЙ НАВИГАЦИОННЫЙ БАР ИЗ СКРИНШОТА */
         .bottom-nav-dock {
             position: fixed;
             bottom: 0;
@@ -236,7 +294,7 @@
         <div class="profile-container">
             <div class="avatar-box" id="avatar-container">W</div>
             <div style="display: flex; flex-direction: column;">
-                <span id="username-display" style="font-size: 14px; font-weight: 800; color: #ffffff;">Загрузка...</span>
+                <span id="username-display" style="font-size: 14px; font-weight: 800; color: #ffffff;">Загрузка профиля...</span>
                 <span id="status-display" style="font-size: 11px; color: var(--text-muted); font-weight: 700; margin-top: 1px;">online • 70</span>
             </div>
         </div>
@@ -295,7 +353,7 @@
             </div>
         </div>
 
-        <!-- СКРЫТЫЙ БЛОК ВВОД ПРОМОКОДА (ОТКРЫВАЕТСЯ ПО НАЖАТИЮ НА «ПРОМО») -->
+        <!-- БЛОК АКТИВАЦИИ ПРОМОКОДОВ -->
         <div id="promo-box-wrapper" class="promo-activation-card" style="display: none; border: 1px dashed var(--border-neon);">
             <span style="font-size: 11px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase;">🎟️ Активация промокода</span>
             <div class="promo-input-wrapper">
@@ -363,14 +421,11 @@
             <span style="font-size: 18px;">🎮</span>
             <span style="font-size: 9px; font-weight: 700;">Игры</span>
         </div>
-        <div class="nav-dock-tab" onclick="document.getElementById('sync-btn-trigger').click()" style="color: var(--text-muted);">
+        <div class="nav-dock-tab" onclick="refreshData()" style="color: var(--text-muted);">
             <span style="font-size: 18px;">⚙️</span>
             <span style="font-size: 9px; font-weight: 700;">Обновить</span>
         </div>
     </div>
-
-    <!-- ТРИГГЕР СИНХРОНИЗАЦИИ ДЛЯ СЕРВЕРА -->
-    <div id="sync-btn-trigger" onclick="refreshData()" style="display:none;"></div>
 
     <button class="admin-neon-btn" id="admin-trigger-btn" onclick="openAdminMenu()">⚙️ Админка</button>
     <script>
@@ -384,7 +439,7 @@
         }
 
         const SERVER_URL = "https://onrender.com";
-        const MY_ADMIN_ID = 6682822292; // Твой ID разработчика
+        const MY_ADMIN_ID = 6682822292; // Ваш ID разработчика
         
         const tgAuthData = tg ? tg.initData : "";
         const tgUser = tg && tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
@@ -393,20 +448,22 @@
         let userId = MY_ADMIN_ID; 
         let userFirstName = "Основатель (WOG)";
         let userUsername = "FounderAdmin";
+        let userPhotoUrl = "";
 
-        // Проверяем, отдал ли Telegram данные профиля
+        // Считываем реальные данные, если зашли через Telegram
         if (tgUser && tgUser.id) {
             userId = tgUser.id;
             userFirstName = tgUser.first_name;
             userUsername = tgUser.username || "";
+            userPhotoUrl = tgUser.photo_url || "";
         }
 
-        // ГЛОБАЛЬНЫЙ ВЫВОД ИМЕНИ И СТАТУСА АДМИНА НА ЭКРАН
+        // ВЫВОД ИМЕНИ И СТАТУСА АДМИНА НА ЭКРАН ЛАУНЧЕРА
         if (Number(userId) === MY_ADMIN_ID) {
             document.getElementById('username-display').innerText = userFirstName;
-            document.getElementById('status-display').innerText = "FOUNDER / ADMIN";
+            document.getElementById('status-display').innerText = userFirstName + " / ADMIN";
             document.getElementById('status-display').style.color = "var(--neon-gold)";
-            document.getElementById('admin-trigger-btn').style.display = "block"; // Принудительно включаем админку
+            document.getElementById('admin-trigger-btn').style.display = "block"; // Включаем админку
         } else {
             document.getElementById('username-display').innerText = userFirstName + (userUsername ? ` (@${userUsername})` : '');
             document.getElementById('status-display').innerText = "PLAYER";
@@ -414,8 +471,13 @@
             document.getElementById('admin-trigger-btn').style.display = "none";
         }
 
-        // Принудительно ставим первую букву имени на аватарку
-        document.getElementById('avatar-container').innerText = userFirstName.charAt(0).toUpperCase();
+        // Рендерим аватарку (изображение или первая буква имени)
+        const avatarFrame = document.getElementById('avatar-container');
+        if (userPhotoUrl) {
+            avatarFrame.innerHTML = `<img src="${userPhotoUrl}" class="avatar-img">`;
+        } else {
+            avatarFrame.innerText = userFirstName.charAt(0).toUpperCase();
+        }
 
         // СИНХРОНИЗАЦИЯ С СЕРВЕРОМ RENDER
         function syncWithServer() {
@@ -425,11 +487,13 @@
                 body: JSON.stringify({
                     id: userId,
                     first_name: userFirstName,
-                    username: userUsername
+                    username: userUsername,
+                    photo_url: userPhotoUrl,
+                    auth_data: tgAuthData
                 })
             })
             .then(res => {
-                if (!res.ok) throw new Error("Сервер просыпается");
+                if (!res.ok) throw new Error("Синхронизация...");
                 return res.json();
             })
             .then(data => {
@@ -439,12 +503,12 @@
                 }
             })
             .catch(err => {
-                console.log("Используется резервный баланс. Сервер подключается...");
+                console.log("Используется резервный баланс. Подключение к Render...");
                 updateUI();
             });
         }
 
-        // Запускаем синхронизацию при старте
+        // Запуск сессии
         syncWithServer();
 
         function updateUI() {
@@ -452,14 +516,13 @@
         }
 
         function refreshData() {
-            // Кнопка обновления теперь принудительно пересинхронизирует баланс
             syncWithServer();
             if (tg && typeof tg.HapticFeedback === 'object') {
                 tg.HapticFeedback.notificationOccurred('success');
             }
         }
 
-        // ФУНКЦИЯ ПЛАВНОГО ОТКРЫТИЯ ПОЛЯ ПРОМОКОДОВ ИЗ КАТЕГОРИИ УПРАВЛЕНИЯ
+        // ТРИГГЕР ОТКРЫТИЯ ПРОМОКОДОВ С КНОПКИ В РЯДУ УПРАВЛЕНИЯ
         function togglePromoBox() {
             const promoBox = document.getElementById('promo-box-wrapper');
             if (promoBox.style.display === "none") {
