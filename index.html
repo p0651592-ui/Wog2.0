@@ -2,539 +2,165 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>WOG Casino Telegram Hub</title>
-    <!-- ПОДКЛЮЧЕНИЕ ОФИЦИАЛЬНОГО СДК TELEGRAM WEB APP -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wog 2.0</title>
+
+    <!-- ВАШИ СТАРЫЕ СТИЛИ (ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ) -->
     <style>
-        :root {
-            --bg-main: #060709;
-            --bg-card: #0f111a;
-            --bg-button: #171a26;
-            --border-neon: #222739;
-            --neon-cyan: #00d2d3;
-            --neon-gold: #ffca28;
-            --neon-green: #05c46b;
-            --neon-red: #ff3838;
-            --text-main: #ffffff;
-            --text-muted: #718093;
-            --radius-premium: 16px;
-        }
-
-        * {
-            box-sizing: border-box;
+        body { 
+            background-color: #111111; 
+            color: #ffffff; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
             margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 20px;
         }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            padding: 16px;
-            padding-top: calc(env(safe-area-inset-top) + 12px);
-            padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
-            overflow-x: hidden;
-            user-select: none;
-            -webkit-user-select: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
+        .game-container { 
+            margin-top: 40px; 
+            background: #1e1e1e;
+            padding: 25px;
+            border-radius: 15px;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 450px;
         }
-
-        @keyframes tgPulseGlow {
-            0% { opacity: 0.3; transform: scale(0.97); }
-            50% { opacity: 1; transform: scale(1.03); }
-            100% { opacity: 0.3; transform: scale(0.97); }
-        }
-
-        .app-wrapper {
-            width: 100%;
-            max-width: 480px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-        .tg-profile-card {
-            background: linear-gradient(135deg, #121622 0%, var(--bg-card) 100%);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-        }
-
-        .tg-avatar-frame {
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            border: 2px solid var(--neon-cyan);
-            background: #1e2235;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            color: var(--neon-cyan);
-        }
-
-        .tg-avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .tg-meta-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .tg-username-label {
-            font-size: 14px;
-            font-weight: 800;
-            color: var(--text-main);
-        }
-
-        .tg-status-text {
-            font-size: 11px;
-            color: var(--neon-cyan);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .wallet-neon-widget {
-            background: linear-gradient(180deg, #101322 0%, var(--bg-card) 100%);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .wallet-title-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .wallet-title-label {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-        }
-
-        .wallet-balance-value {
-            font-size: 24px;
-            font-weight: 900;
-            color: var(--neon-gold);
-            font-family: monospace;
-            text-shadow: 0 0 10px rgba(255, 202, 40, 0.3);
-        }
-
-        .sync-spinner-icon {
+        h1 { color: #4db8ff; margin-bottom: 5px; font-size: 24px; }
+        .balance-box {
             font-size: 18px;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: transform 0.3s ease;
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0 25px 0;
+            border: 1px solid #333;
         }
-
-        .sync-spinner-icon.spinning {
-            animation: tgIconRotate 0.8s linear infinite;
-        }
-
-        @keyframes tgIconRotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .games-neon-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+        .balance-amount { color: #ffcc00; font-weight: bold; }
+        
+        .menu-grid {
+            display: flex;
+            flex-direction: column;
             gap: 12px;
-            width: 100%;
         }
-
-        .games-neon-grid .full-span-card {
-            grid-column: span 2;
+        .menu-btn { 
+            padding: 15px; 
+            background: #0088cc; 
+            border: none; 
+            color: #ffffff; 
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer; 
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
-
-        .game-selection-card {
-            background: linear-gradient(180deg, var(--bg-card) 0%, #0a0b12 100%);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-        }
-
-        .game-selection-card:active {
-            transform: scale(0.96);
-            border-color: var(--neon-cyan);
-        }
-
-        .game-card-icon-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .game-card-emoji {
-            font-size: 24px;
-        }
-
-        .game-card-badge {
-            font-size: 9px;
-            font-weight: 800;
-            background: rgba(0, 210, 211, 0.1);
-            color: var(--neon-cyan);
-            padding: 3px 8px;
-            border-radius: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border: 1px solid rgba(0, 210, 211, 0.15);
-        }
-
-        .game-card-headline {
-            font-size: 15px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .game-card-subtext {
-            font-size: 12px;
-            color: var(--text-muted);
-            line-height: 1.3;
-        }
-
-        .promo-activation-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        .promo-input-wrapper {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .promo-input-wrapper input {
-            flex: 1;
-            background: #040508;
-            border: 1px solid var(--border-neon);
-            border-radius: 12px;
-            padding: 12px;
-            color: var(--text-main);
-            font-size: 14px;
-            font-weight: 700;
-            outline: none;
-            text-transform: uppercase;
-        }
-        .promo-activation-btn {
-            background: linear-gradient(135deg, #1e2235 0%, var(--bg-button) 100%);
-            border: 1px solid var(--border-neon);
-            color: var(--text-main);
-            padding: 0 16px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 800;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-
-        .promo-activation-btn:active {
-            transform: scale(0.95);
-            border-color: var(--neon-cyan);
-        }
-
-        .premium-game-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-main);
-            z-index: 99999;
-            display: none;
-            flex-direction: column;
-            box-sizing: border-box;
-        }
-
-        #game-frame {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: var(--bg-main);
+        .menu-btn:active {
+            transform: scale(0.98);
+            background: #0077b3;
         }
     </style>
+
+    <!-- ПОДКЛЮЧЕНИЕ СДК ТЕЛЕГРАМА -->
     <script src="https://telegram.org"></script>
+
 </head>
 <body>
 
-    <div class="app-wrapper">
-
-        <header class="premium-header" style="border-bottom:none; margin-bottom:0;">
-            <div class="header-left-zone">
-                <h1 class="brand-headline" style="font-size:20px;">WOG Mini App</h1>
-            </div>
-        </header>
-        <!-- КАРТОЧКА ПРОФИЛЯ TELEGRAM -->
-        <div class="tg-profile-card">
-            <div class="tg-avatar-frame" id="user-avatar-zone">W</div>
-            <div class="tg-meta-info">
-                <span class="tg-username-label" id="user-name-display">Telegram User</span>
-                <span class="tg-status-text">Cloud Wallet Connected</span>
-            </div>
+    <!-- ИГРОВОЙ ИНТЕРФЕЙС И ВЕРСТКА -->
+    <div class="game-container">
+        <h1 id="username-display">Загрузка профиля...</h1>
+        
+        <div class="balance-box">
+            Баланс: <span id="balance-display" class="balance-amount">0</span> 🪙
         </div>
 
-        <!-- ТАБЛО ЕДИНОГО ОБЛАЧНОГО КОШЕЛЬКА -->
-        <div class="wallet-neon-widget">
-            <div class="wallet-title-group">
-                <span class="wallet-title-label">Cloud Balance</span>
-                <div class="wallet-balance-value"><span id="bal">0</span> W</div>
-            </div>
-            <span class="sync-spinner-icon" id="sync-icon-trigger" onclick="syncWalletWithTelegramCloud()">🔄</span>
+        <h2>Выберите режим игры:</h2>
+        <div class="menu-grid">
+            <button class="menu-btn" onclick="navigateToGame('dice.html')">🎲 Играть в Кости</button>
+            <button class="menu-btn" onclick="navigateToGame('wheel.html')">🎡 Колесо Фортуны</button>
+            <button class="menu-btn" onclick="navigateToGame('crash.html')">🚀 Краш-Игра</button>
         </div>
-
-        <!-- СЕТКА ИГРОВЫХ АВТОМАТОВ ПЛАТФОРМЫ -->
-        <div class="games-neon-grid">
-            <!-- КАРТОЧКА 1: РУЛЕТКА WHEEL PLUS -->
-            <div class="game-selection-card" onclick="launchPremiumTelegramGame('wheel.html')">
-                <div class="game-card-icon-row">
-                    <span class="game-card-emoji">🔮</span>
-                    <span class="game-card-badge">Lucky</span>
-                </div>
-                <h3 class="game-card-headline">Wheel Plus</h3>
-                <p class="game-card-subtext">Европейское колесо, молнии Lucky Numbers и живой чат.</p>
-            </div>
-
-            <!-- КАРТОЧКА 2: КУБИКИ DICE PREMIUM -->
-            <div class="game-selection-card" onclick="launchPremiumTelegramGame('dice.html')">
-                <div class="game-card-icon-row">
-                    <span class="game-card-emoji">🎲</span>
-                    <span class="game-card-badge">Stats</span>
-                </div>
-                <h3 class="game-card-headline">Dice Premium</h3>
-                <p class="game-card-subtext">Выбор шансов, ползунок множителей и оффлайн генератор.</p>
-            </div>
-            <!-- КАРТОЧКА 3: РАКЕТА CRASH X (FULL SPAN) -->
-            <div class="game-selection-card full-span-card" onclick="launchPremiumTelegramGame('crash.html')">
-                <div class="game-card-icon-row">
-                    <span class="game-card-emoji">🚀</span>
-                    <span class="game-card-badge">Multiplier</span>
-                </div>
-                <h3 class="game-card-headline">Crash X Premium</h3>
-                <p class="game-card-subtext">Экспоненциальный Canvas-взлет. Заберите выигрыш до крушения неонового двигателя.</p>
-            </div>
-        </div> <!-- Конец games-neon-grid -->
-
-        <!-- БЛОК АКТИВАЦИИ ПРОМОКОДОВ -->
-        <div class="promo-activation-card" style="margin-top: 4px;">
-            <div class="wallet-title-label" style="font-size: 11px;">Активация Промокода</div>
-            <div class="promo-input-wrapper">
-                <input type="text" id="promo-code-field" placeholder="Введите код...">
-                <button class="promo-activation-btn" onclick="activateTelegramHubPromo()">OK</button>
-            </div>
-        </div>
-    </div> <!-- Конец app-wrapper -->
-
-    <!-- ПОЛНОЭКРАННЫЙ ОВЕРЛЕЙ ДЛЯ БЕСШОВНОГО РАЗВЕРТЫВАНИЯ ИГР -->
-    <div class="premium-game-overlay" id="game-overlay-container">
-        <iframe id="game-frame" src="about:blank"></iframe>
     </div>
 
+    <!-- ЛОГИКА АВТОРИЗАЦИИ, БАЛАНСА И АДМИНКИ -->
     <script>
-        // ИНИЦИАЛИЗАЦИЯ И НАСТРОЙКА TG WEB APP SDK
+        // Инициализируем Telegram WebApp API
         const tg = window.Telegram.WebApp;
-        
-        let cloudBalance = 5000;
-        let isSyncingProcess = false;
+        tg.expand(); // Раскрываем приложение на максимум
 
-        function initTelegramAppCore() {
-            tg.ready();
-            tg.expand(); // Принудительно разворачиваем Mini App на весь экран смартфона
-            
-            // Настройка корпоративного стиля верхней панели Telegram под цвет хаба
-            tg.setHeaderColor('#060709');
-            tg.setBackgroundColor('#060709');
-            
-            // Извлечение реальных данных профиля игрока из Telegram
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                const user = tg.initDataUnsafe.user;
-                const nameDisplay = document.getElementById('user-name-display');
-                const avatarZone = document.getElementById('user-avatar-zone');
-                
-                nameDisplay.innerText = user.username ? "@" + user.username : user.first_name;
-                
-                if (user.photo_url) {
-                    avatarZone.innerHTML = `<img src="${user.photo_url}" class="tg-avatar-img" alt="avatar">`;
-                } else {
-                    const letter = (user.username || user.first_name || "W").substring(0, 1).toUpperCase();
-                    avatarZone.innerText = letter;
-                }
+        // Ваш проверенный Telegram ID для активации прав разработчика
+        const MY_ADMIN_ID = 6682822292; 
+
+        // Достаем данные сессии текущего пользователя
+        const tgUser = tg.initDataUnsafe?.user;
+
+        // Инициализация баланса (тянем из общей памяти браузера, либо выдаем 5000 по умолчанию)
+        let playerBalance = localStorage.getItem('wog_player_balance') ? parseInt(localStorage.getItem('wog_player_balance')) : 5000;
+        let playerRole = "user";
+
+        // Проверка авторизации
+        if (tgUser) {
+            // Подставляем имя игрока из Telegram
+            document.getElementById('username-display').innerText = `Игрок: ${tgUser.first_name}`;
+
+            // Проверяем, админ ли зашел (сверка с вашим ID)
+            if (tgUser.id === MY_ADMIN_ID) {
+                playerRole = "admin";
+                activateAdminPanel(); // Включаем админку
             }
-            
-            // Первичный импорт монет из защищенного облака Telegram CloudStorage
-            importBalanceFromTelegramCloud();
+        } else {
+            // Запуск вне Telegram (для тестов в браузере)
+            document.getElementById('username-display').innerText = "Игрок: Гость (Тестовый режим)";
         }
 
-        // ТАКТИЛЬНАЯ ОТДАЧА TELEGRAM (ВИБРАЦИЯ ПРИ НАЖАТИЯХ)
-        function triggerTelegramHaptic(type) {
-            try {
-                if (tg.HapticFeedback) {
-                    if (type === 'click') tg.HapticFeedback.impactOccurred('medium');
-                    if (type === 'success') tg.HapticFeedback.notificationOccurred('success');
-                    if (type === 'error') tg.HapticFeedback.notificationOccurred('error');
-                }
-            } catch (e) {}
+        // Выводим баланс на экран
+        updateBalanceUI();
+
+        // Функция обновления отображения баланса
+        function updateBalanceUI() {
+            const balanceEl = document.getElementById('balance-display');
+            if (balanceEl) balanceEl.innerText = playerBalance.toLocaleString();
         }
-        // АСИНХРОННЫЙ ИМПОРТ МОНЕТ ИЗ ОБЛАКА TELEGRAM CLOUD STORAGE
-        function importBalanceFromTelegramCloud() {
-            try {
-                tg.CloudStorage.getItem('wog_offline_balance', (error, value) => {
-                    if (!error && value) {
-                        cloudBalance = parseInt(value);
-                        if (isNaN(cloudBalance)) cloudBalance = 5000;
-                    } else {
-                        cloudBalance = 5000;
-                        tg.CloudStorage.setItem('wog_offline_balance', cloudBalance.toString());
+
+        // Функция безопасного перехода между страницами с сохранением баланса
+        function navigateToGame(pageUrl) {
+            // Перед уходом на другую страницу фиксируем текущий баланс в памяти
+            localStorage.setItem('wog_player_balance', playerBalance);
+            location.href = pageUrl;
+        }
+
+        // ФУНКЦИЯ ДИНАМИЧЕСКОЙ АДМИН-ПАНЕЛИ (доступна только вам)
+        function activateAdminPanel() {
+            console.log("Доступ подтвержден. Панель создана.");
+            
+            // Создаем плавающую кнопку управления
+            const adminBtn = document.createElement('button');
+            adminBtn.innerText = "⚙️ Меню Админа";
+            adminBtn.style.cssText = "position:fixed; bottom:20px; right:20px; background:#ffcc00; color:#000; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; z-index:9999; cursor:pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); font-size:14px;";
+            
+            // Действие при клике на админку
+            adminBtn.onclick = function() {
+                let action = prompt("Выберите действие:\n1 - Начислить себе баланс\n2 - Обнулить баланс", "1");
+                
+                if (action === "1") {
+                    let amount = prompt("Сколько монет добавить?", "50000");
+                    if (amount && !isNaN(amount)) {
+                        playerBalance += parseInt(amount);
+                        updateBalanceUI();
+                        localStorage.setItem('wog_player_balance', playerBalance);
+                        tg.showAlert(`Успешно начислено ${amount} монет!`);
                     }
-                    // Синхронизируем старый локальный ключ для совместимости с играми
-                    localStorage.setItem('wog_offline_balance', cloudBalance);
-                    document.getElementById('bal').innerText = cloudBalance.toLocaleString();
-                });
-            } catch (e) {
-                // Резервный оффлайн-режим, если запущено вне Telegram
-                cloudBalance = parseInt(localStorage.getItem('wog_offline_balance')) || 5000;
-                document.getElementById('bal').innerText = cloudBalance.toLocaleString();
-            }
-        }
-
-        // РУЧНАЯ И АВТОМАТИЧЕСКАЯ СИНХРОНИЗАЦИЯ БАЛАНСА С ВИЗУАЛЬНЫМ ЭФФЕКТОМ ВРАЩЕНИЯ
-        function syncWalletWithTelegramCloud() {
-            if (isSyncingProcess) return;
-            isSyncingProcess = true;
-            triggerTelegramHaptic('click');
-
-            const icon = document.getElementById('sync-icon-trigger');
-            icon.classList.add('spinning');
-
-            // Подтягиваем актуальные изменения, которые могли произойти внутри фреймов игр
-            cloudBalance = parseInt(localStorage.getItem('wog_offline_balance')) || 5000;
-
-            try {
-                tg.CloudStorage.setItem('wog_offline_balance', cloudBalance.toString(), (error, success) => {
-                    setTimeout(() => {
-                        icon.classList.remove('spinning');
-                        isSyncingProcess = false;
-                        if (success) {
-                            triggerTelegramHaptic('success');
-                            document.getElementById('bal').innerText = cloudBalance.toLocaleString();
-                        } else {
-                            triggerTelegramHaptic('error');
-                        }
-                    }, 600);
-                });
-            } catch (e) {
-                setTimeout(() => {
-                    icon.classList.remove('spinning');
-                    isSyncingProcess = false;
-                    document.getElementById('bal').innerText = cloudBalance.toLocaleString();
-                }, 600);
-            }
-        }
-        // РАЗВЕРТЫВАНИЕ IFRAME-ИГРЫ ВО ВЕСЬ ЭКРАН ТЕЛЕФОНА
-        function launchPremiumTelegramGame(pageUrl) {
-            triggerTelegramHaptic('click');
+                } else if (action === "2") {
+                    if (confirm("Вы уверены, что хотите обнулить свой баланс?")) {
+                        playerBalance = 0;
+                        updateBalanceUI();
+                        localStorage.setItem('wog_player_balance', playerBalance);
+                    }
+                }
+            };
             
-            // Синхронизируем баланс перед входом в игровой автомат
-            localStorage.setItem('wog_offline_balance', cloudBalance);
-
-            const overlay = document.getElementById('game-overlay-container');
-            const frame = document.getElementById('game-frame');
-
-            if (overlay && frame) {
-                frame.src = pageUrl;
-                overlay.style.display = 'flex';
-                document.body.style.overflow = 'hidden'; // Блокируем скролл лобби
-            }
+            document.body.appendChild(adminBtn);
         }
-
-        // ОБРАБОТЧИК МЕЖФРЕЙМОВЫХ СИГНАЛОВ ЗАКРЫТИЯ (КНОПКА НАЗАД ИЗ ИГР)
-        window.addEventListener('message', function(event) {
-            if (event.data === 'close_game') {
-                const overlay = document.getElementById('game-overlay-container');
-                const frame = document.getElementById('game-frame');
-
-                if (overlay && frame) {
-                    overlay.style.display = 'none';
-                    frame.src = 'about:blank'; // Очищаем RAM устройства от графики Canvas
-                }
-
-                document.body.style.overflow = 'auto'; // Возвращаем скролл лобби
-                
-                // Считываем баланс, измененный игрой, и отправляем в облако TG
-                cloudBalance = parseInt(localStorage.getItem('wog_offline_balance')) || 5000;
-                document.getElementById('bal').innerText = cloudBalance.toLocaleString();
-                
-                try {
-                    tg.CloudStorage.setItem('wog_offline_balance', cloudBalance.toString());
-                } catch (e) {}
-                
-                triggerTelegramHaptic('success');
-            }
-        });
-
-        // МОДУЛЬ АКТИВАЦИИ ПРОМОКОДОВ В ТЕЛЕГРАМ-ОБЛАКЕ
-        function activateTelegramHubPromo() {
-            const field = document.getElementById('promo-code-field');
-            const code = field.value.trim().toUpperCase();
-
-            if (code === 'WOG2026' || code === 'TGAPP') {
-                triggerTelegramHaptic('success');
-                cloudBalance += 25000;
-                
-                localStorage.setItem('wog_offline_balance', cloudBalance);
-                document.getElementById('bal').innerText = cloudBalance.toLocaleString();
-                field.value = "";
-
-                try {
-                    tg.CloudStorage.setItem('wog_offline_balance', cloudBalance.toString(), (err, success) => {
-                        if (success) {
-                            alert("Промокод активирован! Зачислено +25,000 W");
-                        }
-                    });
-                } catch (e) {
-                    alert("Промокод активирован оффлайн! Зачислено +25,000 W");
-                }
-            } else {
-                triggerTelegramHaptic('error');
-                alert("Неверный или устаревший промокод!");
-            }
-        }
-
-        // ПЕРВИЧНЫЙ СТАРТ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
-        window.addEventListener('DOMContentLoaded', () => {
-            initTelegramAppCore();
-        });
     </script>
+
 </body>
 </html>
