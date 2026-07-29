@@ -33,7 +33,7 @@
             background-color: var(--bg-main);
             color: var(--text-main);
             padding: 16px;
-            /* УВЕЛИЧИВАЕМ ОТСТУП СНИЗУ ДО 140px, ЧТОБЫ КОНТЕНТ УШЕЛ ВВЕРХ И ОТ КНОПОК ТГ БЫЛО МЕСТО */
+            /* Увеличенный отступ снизу до 140px уводит элементы выше навигации TG */
             padding-top: calc(env(safe-area-inset-top) + 15px);
             padding-bottom: calc(env(safe-area-inset-bottom) + 140px);
             overflow-x: hidden;
@@ -262,7 +262,6 @@
             text-transform: uppercase;
         }
 
-        /* ПОДНЯЛИ КНОПКУ АДМИНКИ ЕЩЕ ВЫШЕ НАД ИНТЕРФЕЙСОМ ТЕЛЕГРАМА */
         .admin-neon-btn {
             position: fixed;
             bottom: calc(env(safe-area-inset-bottom) + 105px);
@@ -337,7 +336,6 @@
             </div>
         </div>
 
-        <!-- КАРТОЧКА АКТИВАЦИИ ПРОМОКОДОВ -->
         <div class="promo-activation-card">
             <span class="wallet-title-label">Промокоды</span>
             <div class="promo-input-wrapper">
@@ -360,6 +358,9 @@
 
         const SERVER_URL = "https://onrender.com";
         const MY_ADMIN_ID = 6682822292;
+        
+        // Передаем сырую строку валидации Telegram для сверки с токеном бота
+        const tgAuthData = tg ? tg.initData : "";
         const tgUser = tg && tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
 
         let playerBalance = 5000;
@@ -373,23 +374,28 @@
             userUsername = tgUser.username || "";
         }
 
-        // ВКЛЮЧАЕМ АДМИНКУ МГНОВЕННО (До локального запроса к серверу)
+        // МГНОВЕННОЕ ВКЛЮЧЕНИЕ АДМИНКИ (Локальная проверка до ответа бэкенда)
         if (Number(userId) === MY_ADMIN_ID) {
             document.getElementById('status-display').innerText = "FOUNDER / ADMIN";
             document.getElementById('status-display').style.color = "var(--neon-gold)";
             document.getElementById('admin-trigger-btn').style.display = "block";
         }
 
+        // Запрос профиля на сервер с передачей auth_data
         fetch(`${SERVER_URL}/api/user`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 id: userId,
                 first_name: userFirstName,
-                username: userUsername
+                username: userUsername,
+                auth_data: tgAuthData
             })
         })
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error("Сервер отклонил авторизацию токена");
+            return res.json();
+        })
         .then(data => {
             if (data && data.balance !== undefined) {
                 playerBalance = data.balance;
