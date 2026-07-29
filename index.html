@@ -91,208 +91,15 @@
             gap: 2px;
         }
 
-        .tg-username-label {
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--text-main);
-        }
-
-        .tg-status-text {
-            font-size: 10px;
-            color: var(--neon-cyan);
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .wallet-neon-widget {
-            background: linear-gradient(180deg, #101322 0%, var(--bg-card) 100%);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-        }
-
-        .wallet-title-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .wallet-title-label {
-            font-size: 10px;
-            color: var(--text-muted);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-        }
-
-        .wallet-balance-value {
-            font-size: 22px;
-            font-weight: 900;
-            color: var(--neon-gold);
-            font-family: monospace;
-            text-shadow: 0 0 10px rgba(255, 202, 40, 0.3);
-        }
-
-        .sync-spinner-icon {
-            font-size: 18px;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            padding: 5px;
-        }
-
-        .sync-spinner-icon.spinning {
-            animation: tgIconRotate 0.8s linear infinite;
-        }
-
-        @keyframes tgIconRotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .games-neon-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .games-neon-grid .full-span-card {
-            grid-column: span 2;
-        }
-
-        .game-selection-card {
-            background: linear-gradient(180deg, var(--bg-card) 0%, #0a0b12 100%);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            cursor: pointer;
-            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
-            text-align: left;
-        }
-
-        .game-selection-card:active {
-            transform: scale(0.96);
-            border-color: var(--neon-cyan);
-        }
-
-        .game-card-icon-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .game-card-emoji {
-            font-size: 22px;
-        }
-
-        .game-card-badge {
-            font-size: 8px;
-            font-weight: 800;
-            background: rgba(0, 210, 211, 0.1);
-            color: var(--neon-cyan);
-            padding: 2px 6px;
-            border-radius: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border: 1px solid rgba(0, 210, 211, 0.15);
-        }
-
-        .game-card-headline {
-            font-size: 14px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .game-card-subtext {
-            font-size: 11px;
-            color: var(--text-muted);
-            line-height: 1.3;
-        }
-
-        .promo-activation-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-        }
-
-        .promo-input-wrapper {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .promo-input-wrapper input {
-            flex: 1;
-            background: #040508;
-            border: 1px solid var(--border-neon);
-            border-radius: 12px;
-            padding: 10px;
-            color: var(--text-main);
-            font-size: 13px;
-            font-weight: 700;
-            outline: none;
-            text-transform: uppercase;
-        }
-        
-        .promo-activation-btn {
-            background: linear-gradient(135deg, #1e2235 0%, var(--bg-button) 100%);
-            border: 1px solid var(--border-neon);
-            color: var(--text-main);
-            padding: 0 14px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 800;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-
-        .admin-neon-btn {
-            position: fixed;
-            bottom: calc(env(safe-area-inset-bottom) + 105px);
-            right: 20px;
-            background: linear-gradient(135deg, #ffca28 0%, #ffb300 100%);
-            color: #000000;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-weight: 900;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 20px rgba(255, 202, 40, 0.5);
-            cursor: pointer;
-            z-index: 99999;
-            display: none;
-        }
-        .admin-neon-btn:active {
-            transform: scale(0.95);
-        }
-    </style>
-</head>
-<body>
+        .tg-username-label 
+        <body>
 
     <div class="app-wrapper">
         <!-- ТЕЛЕГРАМ ПРОФИЛЬ КАРТОЧКА -->
         <div class="tg-profile-card">
             <div class="tg-avatar-frame" id="avatar-container">W</div>
             <div class="tg-meta-info">
-                <span class="tg-username-label" id="username-display">Загрузка сессии...</span>
+                <span class="tg-username-label" id="username-display">Загрузка профиля...</span>
                 <span class="tg-status-text" id="status-display">PLAYER</span>
             </div>
         </div>
@@ -348,18 +155,18 @@
     <!-- СКРЫТАЯ КНОПКА АДМИНКИ -->
     <button class="admin-neon-btn" id="admin-trigger-btn" onclick="openAdminMenu()">⚙️ Админка</button>
     <script>
+        // Инициализируем Telegram WebApp API
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) {
             try { 
                 tg.expand();
-                tg.ready(); 
+                tg.ready(); // Сообщаем Telegram, что приложение готово передавать профиль
             } catch(e) { console.error(e); }
         }
 
         const SERVER_URL = "https://onrender.com";
-        const MY_ADMIN_ID = 6682822292;
+        const MY_ADMIN_ID = 6682822292; // Ваш персональный ID
         
-        // Передаем сырую строку валидации Telegram для сверки с токеном бота
         const tgAuthData = tg ? tg.initData : "";
         const tgUser = tg && tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
 
@@ -368,20 +175,44 @@
         let userFirstName = "Разработчик";
         let userUsername = "LocalDev";
 
+        // КРИТИЧЕСКИЙ ФИКС: Умное распределение прав Имя + Роль
         if (tgUser) {
             userId = tgUser.id;
             userFirstName = tgUser.first_name;
             userUsername = tgUser.username || "";
-        }
 
-        // МГНОВЕННОЕ ВКЛЮЧЕНИЕ АДМИНКИ (Локальная проверка до ответа бэкенда)
-        if (Number(userId) === MY_ADMIN_ID) {
+            // Выводим имя обычного игрока или админа на экран
+            document.getElementById('username-display').innerText = userFirstName + (userUsername ? ` (@${userUsername})` : '');
+
+            if (Number(userId) === MY_ADMIN_ID) {
+                // Если это вы зашли через бота — пишем имя админа и статус /admin
+                document.getElementById('status-display').innerText = userFirstName + " / ADMIN";
+                document.getElementById('status-display').style.color = "var(--neon-gold)";
+                document.getElementById('admin-trigger-btn').style.display = "block"; // Показываем админку
+            } else {
+                // Если зашел любой другой случайный игрок
+                document.getElementById('status-display').innerText = "PLAYER";
+                document.getElementById('status-display').style.color = "var(--neon-cyan)";
+                document.getElementById('admin-trigger-btn').style.display = "none"; // Прячем админку
+            }
+            
+            // Загружаем аватарку пользователя из Телеграма
+            const avatarFrame = document.getElementById('avatar-container');
+            if (tgUser.photo_url) {
+                avatarFrame.innerHTML = `<img src="${tgUser.photo_url}" class="tg-avatar-img">`;
+            } else {
+                avatarFrame.innerText = userFirstName.charAt(0).toUpperCase();
+            }
+        } else {
+            // Если открыли просто в браузере (для тестов разработчика)
+            document.getElementById('username-display').innerText = "Основатель (Локальный тест)";
             document.getElementById('status-display').innerText = "FOUNDER / ADMIN";
             document.getElementById('status-display').style.color = "var(--neon-gold)";
             document.getElementById('admin-trigger-btn').style.display = "block";
+            document.getElementById('avatar-container').innerText = "A";
         }
 
-        // Запрос профиля на сервер с передачей auth_data
+        // ЗАПРОС НА СЕРВЕР С ВАЛИДАЦИЕЙ СЕССИИ ТЕЛЕГРАМА
         fetch(`${SERVER_URL}/api/user`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -393,26 +224,17 @@
             })
         })
         .then(res => {
-            if (!res.ok) throw new Error("Сервер отклонил авторизацию токена");
+            if (!res.ok) throw new Error("Сервер не отвечает");
             return res.json();
         })
         .then(data => {
             if (data && data.balance !== undefined) {
                 playerBalance = data.balance;
-                document.getElementById('username-display').innerText = data.name + (data.username ? ` (@${data.username})` : '');
-                
-                const avatarFrame = document.getElementById('avatar-container');
-                if (tgUser && tgUser.photo_url) {
-                    avatarFrame.innerHTML = `<img src="${tgUser.photo_url}" class="tg-avatar-img">`;
-                } else {
-                    avatarFrame.innerText = data.name.charAt(0).toUpperCase();
-                }
                 updateUI();
             }
         })
         .catch(err => {
-            console.error(err);
-            document.getElementById('username-display').innerText = "Нажмите 🔄 для синхронизации";
+            console.log("Бэкенд недоступен, включен резервный баланс.");
             updateUI();
         });
 
