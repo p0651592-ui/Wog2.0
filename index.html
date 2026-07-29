@@ -64,11 +64,11 @@
 <body>
 
     <div class="game-container">
-        <!-- Сюда запишется имя из Telegram -->
+        <!-- Сюда запишется имя -->
         <h1 id="username-display">Загрузка профиля...</h1>
         
         <div class="balance-box">
-            Баланс: <span id="balance-display" class="balance-amount">5,000</span> 🪙
+            Баланс: <span id="balance-display" class="balance-amount">5000</span> 🪙
         </div>
 
         <h2>Выберите режим игры:</h2>
@@ -77,55 +77,51 @@
             <button class="menu-btn" onclick="navigateToGame('wheel.html')">🎡 Колесо Фортуны</button>
             <button class="menu-btn" onclick="navigateToGame('crash.html')">🚀 Краш-Игра</button>
         </div>
+        
+        <!-- Кнопка ввода промокода для обычных игроков -->
+        <button class="menu-btn" style="background:#22c55e; margin-top:15px; width:100%;" onclick="activatePromo()">🎟️ Активировать промокод</button>
     </div>
 
     <script>
-        // Инициализируем Telegram WebApp API
-        const tg = window.Telegram.WebApp;
+        // Сверхнадежная инициализация (защита от падения скрипта)
+        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         
-        try {
-            tg.expand(); // Расширяем экран
-        } catch(e) {
-            console.error("Не удалось расширить WebApp", e);
+        if (tg) {
+            try { tg.expand(); } catch(e) {}
         }
 
-        // Ваш проверенный Telegram ID для активации прав разработчика
+        // Ваш Telegram ID для админки
         const MY_ADMIN_ID = 6682822292; 
 
-        // Получаем данные текущего пользователя
+        // Безопасное извлечение пользователя
         let tgUser = null;
-        try {
-            tgUser = tg.initDataUnsafe?.user;
-        } catch(e) {
-            console.error("Ошибка получения данных пользователя", e);
+        if (tg && tg.initDataUnsafe) {
+            tgUser = tg.initDataUnsafe.user;
         }
 
-        // Загрузка баланса из памяти (если пусто — ставим 5000 монет)
+        // Загрузка баланса
         let savedBalance = localStorage.getItem('wog_player_balance');
         let playerBalance = (savedBalance !== null) ? parseInt(savedBalance) : 5000;
-        let playerRole = "user";
 
-        // Проверяем авторизацию
+        // Принудительно выводим имя и включаем кнопки, даже если Телеграм завис
         if (tgUser && tgUser.first_name) {
             document.getElementById('username-display').innerText = "Игрок: " + tgUser.first_name;
-
-            // Сверка с вашим ID для админки
+            
+            // Проверка на админа
             if (Number(tgUser.id) === MY_ADMIN_ID) {
-                playerRole = "admin";
                 activateAdminPanel();
             }
         } else {
-            document.getElementById('username-display').innerText = "Игрок: Гость (Тестовый режим)";
+            // Включаем тестовый режим (кнопки заработают!), если зашли не из ТГ или скрипт не определил ID
+            document.getElementById('username-display').innerText = "Игрок: Разработчик (Тест)";
+            activateAdminPanel(); // На этапе настройки включаем админку и в обычном браузере
         }
 
-        // Отображаем баланс
+        // Выводим баланс
         updateBalanceUI();
 
         function updateBalanceUI() {
-            const balanceEl = document.getElementById('balance-display');
-            if (balanceEl) {
-                balanceEl.innerText = playerBalance;
-            }
+            document.getElementById('balance-display').innerText = playerBalance;
         }
 
         function navigateToGame(pageUrl) {
@@ -133,14 +129,44 @@
             location.href = pageUrl;
         }
 
-        // АДМИН-ПАНЕЛЬ С ЗАЩИТОЙ ОТ ОШИБОК
+        // --- ЛОГИКА ПРОМОКОДОВ ---
+        function activatePromo() {
+            let code = prompt("Введите промокод:");
+            if (!code) return;
+            
+            // Загружаем список созданных промокодов
+            let promos = JSON.parse(localStorage.getItem('wog_promocodes') || '{}');
+            
+            if (promos[code]) {
+                if (promos[code].uses <= 0) {
+                    alert("Этот промокод уже закончился!");
+                    return;
+                }
+                
+                playerBalance += promos[code].reward;
+                promos[code].uses -= 1; // Уменьшаем количество активаций
+                
+                localStorage.setItem('wog_promocodes', JSON.stringify(promos));
+                localStorage.setItem('wog_player_balance', playerBalance);
+                updateBalanceUI();
+                
+                alert("Успешно! Вы получили " + promos[code].reward + " монет.");
+            } else {
+                alert("Такого промокода не существует!");
+            }
+        }
+
+        // --- ОБНОВЛЕННАЯ АДМИН-ПАНЕЛЬ С ПРОМОКОДАМИ ---
         function activateAdminPanel() {
+            if (document.getElementById('admin-btn-root')) return; // Защита от дублирования
+            
             const adminBtn = document.createElement('button');
+            adminBtn.id = 'admin-btn-root';
             adminBtn.innerText = "⚙️ Меню Админа";
             adminBtn.style.cssText = "position:fixed; bottom:20px; right:20px; background:#ffcc00; color:#000; border:none; padding:12px 20px; border-radius:8px; font-weight:bold; z-index:9999; cursor:pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); font-size:14px;";
             
             adminBtn.onclick = function() {
-                let action = prompt("Выберите действие:\n1 - Начислить себе баланс\n2 - Обнулить баланс", "1");
+                let action = prompt("Выберите действие:\n1 - Начислить себе баланс\n2 - Создать ПРОМОКОД\n3 - Посмотреть активные промокоды", "1");
                 
                 if (action === "1") {
                     let amount = prompt("Сколько монет добавить?", "50000");
@@ -148,18 +174,32 @@
                         playerBalance += parseInt(amount);
                         updateBalanceUI();
                         localStorage.setItem('wog_player_balance', playerBalance);
-                        if (tg && typeof tg.showAlert === 'function') {
-                            tg.showAlert("Успешно начислено " + amount + " монет!");
-                        } else {
-                            alert("Успешно начислено " + amount + " монет!");
-                        }
                     }
-                } else if (action === "2") {
-                    if (confirm("Вы уверены, что хотите обнулить свой баланс?")) {
-                        playerBalance = 0;
-                        updateBalanceUI();
-                        localStorage.setItem('wog_player_balance', playerBalance);
+                } 
+                else if (action === "2") {
+                    let codeName = prompt("Придумайте текст промокода (например, BONUS777):");
+                    if (!codeName) return;
+                    
+                    let reward = prompt("Сколько монет даст этот промокод?", "1000");
+                    let uses = prompt("Сколько раз его можно активировать?", "10");
+                    
+                    if(codeName && reward && uses) {
+                        let promos = JSON.parse(localStorage.getItem('wog_promocodes') || '{}');
+                        promos[codeName] = {
+                            reward: parseInt(reward),
+                            uses: parseInt(uses)
+                        };
+                        localStorage.setItem('wog_promocodes', JSON.stringify(promos));
+                        alert("Промокод " + codeName + " успешно создан на " + uses + " активаций!");
                     }
+                }
+                else if (action === "3") {
+                    let promos = JSON.parse(localStorage.getItem('wog_promocodes') || '{}');
+                    let list = "Список промокодов:\n";
+                    for (let key in promos) {
+                        list += key + " — Награда: " + promos[key].reward + ", Осталось активаций: " + promos[key].uses + "\n";
+                    }
+                    alert(list === "Список промокодов:\n" ? "Активных промокодов нет" : list);
                 }
             };
             
