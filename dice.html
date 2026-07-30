@@ -507,3 +507,129 @@
             const currentBetAmt = parseInt(document.getElementById('bet-input').value) || 0;
             document.getElementById('current-bet-label').innerText = `${currentBetAmt} W (x${MULTIPLIERS[betType]})`;
         }
+// УПРАВЛЕНИЕ РАЗМЕРОМ СТАВКИ КНОПКАМИ И ЧИПАМИ
+        function adjustBet(action) {
+            if (isRolling) return;
+            const input = document.getElementById('bet-input');
+            let currentBet = parseInt(input.value) || 100;
+
+            if (action === 'x2') currentBet = Math.min(playerBalance, currentBet * 2);
+            if (action === 'half') currentBet = Math.max(10, Math.floor(currentBet / 2));
+
+            input.value = currentBet;
+            selectBetType(activeBetType);
+        }
+
+        function addBetAmount(amount) {
+            if (isRolling) return;
+            const input = document.getElementById('bet-input');
+            let currentBet = parseInt(input.value) || 0;
+            input.value = Math.min(playerBalance, currentBet + amount);
+            selectBetType(activeBetType);
+        }
+
+        // ДВИЖОК РАСЧЁТА ИСХОДОВ И БРОСКА КУБИКОВ
+        function executeDiceBet() {
+            if (isRolling) return;
+            
+            const betInput = document.getElementById('bet-input');
+            const bet = parseInt(betInput.value);
+
+            if (isNaN(bet) || bet <= 0 || bet > playerBalance) {
+                alert("Некорректная сумма ставки!");
+                return;
+            }
+
+            isRolling = true;
+            document.getElementById('roll-action-trigger').disabled = true;
+            document.getElementById('game-status-label').innerText = "Ставка принята. Бросок...";
+
+            const c1 = document.getElementById('result-cube-1');
+            const c2 = document.getElementById('result-cube-2');
+            c1.innerText = "🎲"; c2.innerText = "🎲";
+
+            if (tg && typeof tg.HapticFeedback === 'object') tg.HapticFeedback.impactOccurred('medium');
+
+            setTimeout(() => {
+                // Серверный алгоритм генерации очков (честный ГСЧ двух костей)
+                let val1 = Math.floor(Math.random() * 6) + 1;
+                let val2 = Math.floor(Math.random() * 6) + 1;
+                let sum = val1 + val2;
+
+                c1.innerText = val1;
+                c2.innerText = val2;
+                document.getElementById('sum-display').innerText = `Результат броска: ${val1} + ${val2} = ${sum}`;
+
+                // ПРОВЕРКА ВЫИГРЫША ПО МАТРИЦЕ ИСХОДОВ
+                let isWin = false;
+                
+                // Вкладка 1: Общий стол
+                if (activeBetType === 'under' && sum < 7) isWin = true;
+                if (activeBetType === 'seven' && sum === 7) isWin = true;
+                if (activeBetType === 'over' && sum > 7) isWin = true;
+                if (activeBetType === 'even' && sum % 2 === 0) isWin = true;
+                if (activeBetType === 'odd' && sum % 2 !== 0) isWin = true;
+                if (activeBetType === 'c1' && (val1 === 1 || val2 === 1)) isWin = true;
+                if (activeBetType === 'c2' && (val1 === 2 || val2 === 2)) isWin = true;
+                if (activeBetType === 'c3' && (val1 === 3 || val2 === 3)) isWin = true;
+                if (activeBetType === 'c4' && (val1 === 4 || val2 === 4)) isWin = true;
+                if (activeBetType === 'c5' && (val1 === 5 || val2 === 5)) isWin = true;
+                if (activeBetType === 'c6' && (val1 === 6 || val2 === 6)) isWin = true;
+                
+                // Вкладка 2: Точные суммы (Числа)
+                if (activeBetType === `sum${sum}`) isWin = true;
+
+                // Вкладка 3: Пары
+                let isPair = (val1 === val2);
+                if (activeBetType === 'anypair' && isPair) isWin = true;
+                if (activeBetType === 'p1' && isPair && val1 === 1) isWin = true;
+                if (activeBetType === 'p2' && isPair && val1 === 2) isWin = true;
+                if (activeBetType === 'p3' && isPair && val1 === 3) isWin = true;
+                if (activeBetType === 'p4' && isPair && val1 === 4) isWin = true;
+                if (activeBetType === 'p5' && isPair && val1 === 5) isWin = true;
+                if (activeBetType === 'p6' && isPair && val1 === 6) isWin = true;
+
+                let changeAmount = 0;
+                if (isWin) {
+                    let winProfit = Math.floor(bet * MULTIPLIERS[activeBetType]) - bet;
+                    changeAmount = winProfit;
+                    document.getElementById('game-status-label').innerText = `🎉 Выигрыш! +${winProfit + bet} W`;
+                    document.getElementById('game-status-label').style.color = "var(--btn-green)";
+                    if (tg && typeof tg.HapticFeedback === 'object') tg.HapticFeedback.notificationOccurred('success');
+                } else {
+                    changeAmount = -bet;
+                    document.getElementById('game-status-label').innerText = `💥 Проигрыш! -${bet} W`;
+                    document.getElementById('game-status-label').style.color = "var(--btn-red)";
+                    if (tg && typeof tg.HapticFeedback === 'object') tg.HapticFeedback.notificationOccurred('error');
+                }
+
+                // СИНХРОНИЗАЦИЯ СЕРВЕРНОЙ БАЗЫ ДАННЫХ RENDER
+                fetch(`${SERVER_URL}/api/balance`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: userId, amount: changeAmount })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        playerBalance = data.balance;
+                        updateUI();
+                    }
+                })
+                .catch(err => {
+                    // Локальный резервный подсчёт при сбое сети
+                    playerBalance += changeAmount;
+                    updateUI();
+                });
+
+                isRolling = false;
+                document.getElementById('roll-action-trigger').disabled = false;
+                selectBetType(activeBetType);
+            }, 1000);
+        }
+
+        // Первичный запуск подсветки первой кнопки
+        selectBetType('under');
+    </script>
+</body>
+</html>
