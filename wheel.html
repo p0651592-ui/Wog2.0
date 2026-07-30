@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>WOG Wheel Plus Premium</title>
-    <!-- ПОДКЛЮЧЕНИЕ СДК И БИБЛИОТЕК ШИФРОВАНИЯ -->
     <script src="https://telegram.org"></script>
     <script src="https://cloudflare.com"></script>
     <style>
@@ -37,7 +36,7 @@
             color: var(--text-main);
             padding: 14px;
             padding-top: calc(env(safe-area-inset-top) + 10px);
-            padding-bottom: calc(env(safe-area-inset-bottom) + 160px);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 180px);
             overflow-x: hidden;
             user-select: none;
             -webkit-user-select: none;
@@ -64,7 +63,7 @@
             text-transform: uppercase;
         }
 
-        /* ЛЕНТА ИСТОРИИ ИГР ИЗ СКРИНШОТА */
+        /* КРУГЛЫЕ ПЛАШКИ ИСТОРИИ ИГР СВЕРХУ */
         .history-card-scroll {
             background: var(--bg-card);
             border: 1px solid var(--border-neon);
@@ -94,7 +93,7 @@
         .hist-circle.black { background: var(--color-black); border: 1px solid var(--border-neon); }
         .hist-circle.green { background: var(--color-green); }
 
-        /* ВЕРХНЯЯ ЗОНА КОЛЕСА И БОНУСОВ */
+        /* ВЕРХНИЙ ЭКРАН ИГРОВОГО АВТОМАТА */
         .wheel-display-zone {
             background: radial-gradient(circle at center, #1b223c 0%, var(--bg-main) 100%);
             border: 1px solid var(--border-neon);
@@ -106,70 +105,6 @@
             align-items: center;
             overflow: hidden;
             box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-        }
-        /* БОНУСНЫЕ ЧИСЛА НАД КОЛЕСОМ ИЗ СКРИНШОТА */
-        .wp-bonus-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
-            width: 100%;
-            justify-content: center;
-        }
-        .wp-bonus-box {
-            background: rgba(15, 26, 48, 0.8);
-            border: 1px solid var(--border-neon);
-            border-radius: 12px;
-            padding: 8px 12px;
-            text-align: center;
-            min-width: 80px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-        }
-        .wp-bonus-num { font-size: 18px; font-weight: 900; }
-        .wp-bonus-multiplier { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; margin-top: 4px; display: inline-block; text-transform: uppercase; }
-        .wp-m100 { background: rgba(99, 102, 241, 0.2); border: 1px solid var(--color-purple); color: #a5b4fc; }
-        .wp-m50 { background: rgba(37, 99, 235, 0.2); border: 1px solid var(--color-blue); color: #93c5fd; }
-
-        .wheel-canvas-container {
-            position: relative;
-            width: 260px;
-            height: 260px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 10px 0;
-        }
-        #wheel-render-canvas {
-            width: 100%;
-            height: 100%;
-        }
-
-        /* ПОП-АП С ТАЙМЕРОМ ВНУТРИ КОЛЕСА */
-        .wheel-center-popup {
-            position: absolute;
-            width: 120px;
-            height: 120px;
-            background: rgba(11, 14, 26, 0.95);
-            border: 2px solid var(--border-neon);
-            border-radius: 24px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            box-shadow: 0 4px 25px rgba(0,0,0,0.7);
-            z-index: 5;
-            text-align: center;
-        }
-        .wp-pointer-top {
-            position: absolute;
-            top: -6px;
-            width: 0;
-            height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-top: 20px solid var(--color-gold);
-            z-index: 6;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
         }
         /* ПАНЕЛИ ИНФОРМАЦИИ О СТАВКАХ И БАЛАНСЕ */
         .wp-info-plate {
@@ -354,7 +289,7 @@
 <body>
 
     <div class="app-wrapper">
-        <!-- БЕГУЩАЯ ЛЕНТА ИСТОРИИ ИГР -->
+        <!-- БЕГУЩАЯ ЛЕНТА ИСТОРИИ ИГР СВЕРХУ -->
         <div class="history-card-scroll" id="wp-history-line">
             <div class="hist-circle black">33</div>
             <div class="hist-circle red">9</div>
@@ -383,19 +318,19 @@
                 </div>
             </div>
 
-            <!-- ИНТЕРФЕЙС CANVAS: РУЛЕТКА И БЕГУЩИЙ ШАРИК -->
+            <!-- ИНТЕРФЕЙС CANVAS ДЛЯ ОТРИСОВКИ КОЛЕСА И ШАРИКА -->
             <div class="wheel-canvas-container">
                 <div class="wp-pointer-top"></div>
                 <canvas id="wheel-render-canvas" width="500" height="500"></canvas>
                 
-                <!-- ЦЕНТРАЛЬНОЕ ОКНО СОСТОЯНИЯ И ТАЙМЕРА -->
+                <!-- ЦЕНТРАЛЬНОЕ ОКНО ТАЙМЕРА -->
                 <div class="wheel-center-popup" id="wp-center-status-box">
                     <div style="font-size: 32px;" id="wp-center-emoji">😎</div>
                     <div style="font-size: 11px; font-weight: 900; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;" id="wp-center-text">Сделай ставку!</div>
                 </div>
             </div>
         </div>
-        <!-- ИНФОРМАЦИОННАЯ ПАНЕЛЬ СТАВОК И ТЕКУЩЕГО БАЛАНСА -->
+        <!-- ИНФОРМАЦИОННАЯ ПАНЕЛЬ СТАВОК И ТЕКУГО БАЛАНСА -->
         <div class="wp-info-plate">
             <div class="wp-row-between">
                 <span style="font-size: 13px; color: var(--text-muted); font-weight: 700;">Ваши ставки</span>
@@ -426,7 +361,7 @@
         </div>
         <span class="section-title">Стол ставок</span>
 
-        <!-- СЕКТОР ОБЩИХ СТАВОК (ГЛАВНЫЙ СТОЛ) -->
+        <!-- СЕКТОР ОБЩИХ СТАВОК (ГЛАВНЫЙ СТОЛ КАЗИНО) -->
         <div class="wp-table-layout" id="wp-main-table-view">
             <div class="wp-grid-3">
                 <button class="wp-bet-trigger-btn wp-btn-red" id="cell-red" onclick="placeBetOnCell('red')">Красное <span class="wp-badge-x">x2</span></button>
@@ -450,7 +385,9 @@
                 <button class="wp-bet-trigger-btn wp-btn-purple" id="cell-doz3" onclick="placeBetOnCell('doz3')">25 - 36 <span class="wp-badge-x">x3</span></button>
             </div>
 
-            <button class="wp-bet-trigger-btn" onclick="toggleKeyboardLayout('numbers')" style="background: #4f46e5; padding: 16px 0; font-size: 14px;">🎯 Поставить на точное число (x30)</button>
+            <button class="wp-bet-trigger-btn" onclick="toggleKeyboardLayout('numbers')" style="background: #4f46e5; padding: 16px 0; font-size: 14px; font-weight: 800; gap: 8px;">
+                🎯 Поставить на точное число (x30)
+            </button>
         </div>
         <!-- СКРЫТАЯ СЕТКА КЛАВИАТУРЫ ЧИСЕЛ 1-36 -->
         <div class="wp-table-layout" id="wp-numbers-keyboard-view" style="display: none;">
@@ -458,7 +395,7 @@
             <button class="wp-bet-trigger-btn" onclick="toggleKeyboardLayout('main')" style="background: var(--color-red); padding: 14px 0; font-size: 14px; font-weight: 800; margin-top: 4px;">↩ Назад к общему столу</button>
         </div>
 
-        <!-- КРИПТОГРАФИЧЕСКИЙ КАЗИНО-ФУТЕР SHA-256 (PROVABLY FAIR) -->
+        <!-- КРИПТОГРАФИЧЕСКИЙ КАЗИНО-ФУТЕР ДЛЯ ЧЕСТНОЙ ИГРЫ (PROVABLY FAIR) -->
         <div class="wp-crypto-footer">
             <div>Hash: <span id="wp-crypto-hash-sha256" style="color: var(--text-main);">Генерация раунда...</span></div>
             <div id="wp-crypto-md5-string" style="margin-top: 4px; color: var(--color-gold); display: none;"></div>
