@@ -1,60 +1,51 @@
+// ГЛОБАЛЬНЫЙ ОБЪЕКТ ДЛЯ СВЯЗИ С TELEGRAM API
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-if (tg) {
-    try { 
-        tg.expand(); tg.ready();
-        if (tg.BackButton) {
-            tg.BackButton.show(); tg.BackButton.offClick();
-            tg.BackButton.onClick(() => { location.href = "index.html"; });
-        }
-    } catch(e) { console.error(e); }
-}
 
+// НАСТРОЙКИ СВЯЗИ С СЕРВЕРОМ
 const SERVER_URL = "https://onrender.com";
 const MY_ADMIN_ID = 6682822292;
 let userId = MY_ADMIN_ID;
-if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) { userId = tg.initDataUnsafe.user.id; }
+let username = "Guest_Player";
 
-// ПОЛНЫЕ РАБОЧИЕ МАССИВЫ БЕЗ СОКРАЩЕНИЙ И ПУСТЫХ СТРОК
+// ПОЛНЫЕ МАССИВЫ КОЛЕСА И МНОЖИТЕЛЕЙ (ЖЕСТКАЯ ФИКСАЦИЯ БЕЗ ПРОПУСКОВ)
 const WHEEL_NUMBERS =;
 const multiplierOptions =;
 
-const NUMBER_COLORS = {
-    0: "green",  1: "red",    2: "black",  3: "red",    4: "black",  5: "red",
-    6: "black",  7: "red",    8: "black",  9: "red",    10: "black", 11: "black",
-    12: "red",   13: "black", 14: "red",   15: "black", 16: "red",   17: "black",
-    18: "red",   19: "red",   20: "black", 21: "red",   22: "black", 23: "red",
-    24: "black", 25: "red",   26: "black", 27: "red",   28: "black", 29: "black",
-    30: "red",   31: "black", 32: "red",   33: "black", 34: "red",   35: "black", 36: "red"
-};
+if (tg) {
+    try {
+        // Инициализируем Mini App и разворачиваем на весь экран
+        tg.ready();
+        tg.expand();
 
-let playerBalance = parseInt(localStorage.getItem('wog_secure_balance')) || 5000;
-let activeBetAmount = 100;
-let currentRoundBets = {}; 
-let totalRoundBetSum = 0;
-let isGameSessionActive = false; 
-let countdownTimerInterval = null;
-let secondsRemaining = 20;
-let roundSecretSalt = "";
-let roundWinningNumber = 0;
-let roundLuckyNumbersList = [];
-function buildNumbersKeyboardLayout() {
-    const container = document.getElementById('wp-num-keys-generator-box');
-    if (!container) return;
-    container.innerHTML = "";
-    const zeroBtn = document.createElement('button');
-    zeroBtn.className = "wp-bet-trigger-btn wp-btn-green";
-    zeroBtn.id = "cell-num0";
-    zeroBtn.innerHTML = `0 <span class="wp-badge-x">x30</span>`;
-    zeroBtn.onclick = () => placeBetOnCell('num0');
-    container.appendChild(zeroBtn);
-    for (let i = 1; i <= 36; i++) {
-        const btn = document.createElement('button');
-        const btnColorClass = NUMBER_COLORS[i] === 'red' ? 'wp-btn-red' : 'wp-btn-black';
-        btn.className = `wp-bet-trigger-btn ${btnColorClass}`;
-        btn.id = `cell-num${i}`;
-        btn.innerHTML = `${i} <span class="wp-badge-x">x30</span>`;
-        btn.onclick = () => placeBetOnCell(`num${i}`);
-        container.appendChild(btn);
+        // ВКЛЮЧАЕМ СИСТЕМНУЮ ЗАЩИТУ: Игрок не закроет игру случайным свайпом вниз во время ставки
+        if (typeof tg.enableClosingConfirmation === 'function') {
+            tg.enableClosingConfirmation();
+        }
+
+        // АВТОМАТИЧЕСКАЯ НАСТРОЙКА ЦВЕТОВОЙ ПАЛИТРЫ ПОД ТЕМУ ТЕЛЕГРАМА ИГРОКА
+        if (tg.themeParams) {
+            document.documentElement.style.setProperty('--bg-main', tg.themeParams.bg_color || '#0c0f1d');
+            document.documentElement.style.setProperty('--bg-card', tg.themeParams.secondary_bg_color || '#151a30');
+            document.documentElement.style.setProperty('--text-main', tg.themeParams.text_color || '#ffffff');
+            document.documentElement.style.setProperty('--text-muted', tg.themeParams.hint_color || '#64748b');
+        }
+
+        // СЧИТЫВАЕМ РЕАЛЬНЫЕ ДАННЫЕ АВТОРИЗАЦИИ ИЗ СДК ТЕЛЕГРАМА
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            userId = tg.initDataUnsafe.user.id;
+            username = tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name || "User";
+        }
+
+        // НАСТРОЙКА НАТИВНОЙ КНОПКИ ТЕЛЕФОНА "НАЗАД"
+        if (tg.BackButton) {
+            tg.BackButton.show();
+            tg.BackButton.offClick(); // Очищаем старые дубликаты кликов
+            tg.BackButton.onClick(() => {
+                location.href = "index.html"; // Мягкий возврат на главное меню лобби
+            });
+        }
+    } catch (error) {
+        console.error("Ошибка активации Telegram WebApp API:", error);
     }
 }
 buildNumbersKeyboardLayout();
