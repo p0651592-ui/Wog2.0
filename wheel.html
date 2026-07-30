@@ -3,21 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Wheel Telegram Giga Premium</title>
+    <title>WOG Wheel Plus Premium</title>
+    
+    <!-- ПОДКЛЮЧЕНИЕ ОБНОВЛЕННОЙ СДК TELEGRAM MINI APPS -->
     <script src="https://telegram.org"></script>
+    
+    <!-- КРИПТОГРАФИЧЕСКИЙ МОДУЛЬ ДЛЯ ЧЕСТНОЙ ИГРЫ SHA-256 И MD5 НА КЛИЕНТЕ -->
+    <script src="https://cloudflare.com"></script>
+    
     <style>
         :root {
-            --bg-main: #060709;
-            --bg-card: #0f111a;
-            --bg-button: #171a26;
-            --border-neon: #222739;
-            --neon-red: #ff4757;
-            --neon-green: #2ecc71;
-            --neon-black: #2f3542;
-            --neon-gold: #ffca28;
-            --neon-cyan: #00ffcc;
+            --bg-main: #0c0f1d;
+            --bg-card: #151a30;
+            --bg-inner: #1d233d;
+            --border-neon: #29315c;
+            --color-red: #e52e4d;
+            --color-black: #1e2336;
+            --color-green: #10b981;
+            --color-blue: #2563eb;
+            --color-gold: #f59e0b;
+            --color-purple: #6366f1;
             --text-main: #ffffff;
-            --text-muted: #718093;
+            --text-muted: #64748b;
             --radius-premium: 16px;
         }
 
@@ -30,12 +37,11 @@
         }
 
         body {
-            background-color: #060709;
-            color: #ffffff;
-            padding-top: calc(env(safe-area-inset-top) + 4px);
-            padding-bottom: calc(env(safe-area-inset-bottom) + 4px);
-            padding-left: 16px;
-            padding-right: 16px;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding: 14px;
+            padding-top: calc(env(safe-area-inset-top) + 10px);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 160px);
             overflow-x: hidden;
             user-select: none;
             -webkit-user-select: none;
@@ -45,1339 +51,1126 @@
             min-height: 100vh;
         }
 
-        @keyframes corePulseGlow {
-            0% { opacity: 0.4; transform: scale(0.95); }
-            50% { opacity: 1; transform: scale(1.05); }
-            100% { opacity: 0.4; transform: scale(0.95); }
-        }
-
-        @keyframes lightningStrike {
-            0% { border-color: #222739; box-shadow: none; }
-            10% { border-color: #ffca28; box-shadow: 0 0 25px #ffca28; }
-            20% { border-color: #222739; box-shadow: none; }
-            30% { border-color: #ffca28; box-shadow: 0 0 35px #ffca28; }
-            100% { border-color: #ffca28; box-shadow: 0 0 14px #ffca28; }
-        }
-
-        @keyframes chatBubblePop {
-            0% { transform: scale(0.8) translateY(12px); opacity: 0; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-
         .app-wrapper {
             width: 100%;
             max-width: 480px;
             display: flex;
             flex-direction: column;
             gap: 14px;
-            padding-bottom: 95px;
-            position: relative;
-        }
-        .premium-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 6px;
-            border-bottom: 1px solid #222739;
-            margin-bottom: 4px;
         }
 
-        .header-left-zone {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .app-back-trigger {
-            font-size: 28px;
-            font-weight: 300;
-            cursor: pointer;
-            color: #ffffff;
-            transition: transform 0.2s ease;
-        }
-
-        .app-back-trigger:active {
-            transform: scale(0.85);
-        }
-
-        .brand-headline {
-            font-size: 18px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            background: linear-gradient(135deg, #ffffff 30%, #718093);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .server-status-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(0, 210, 211, 0.1);
-            border: 1px solid rgba(0, 210, 211, 0.2);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
+        .section-title {
+            font-size: 13px;
+            color: var(--text-muted);
             font-weight: 700;
-            color: var(--neon-cyan);
-            text-transform: uppercase;
-        }
-
-        .status-pulse-dot {
-            width: 6px;
-            height: 6px;
-            background-color: var(--neon-cyan);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--neon-cyan);
-            animation: corePulseGlow 1.6s infinite ease-in-out;
-        }
-
-        .history-carousel-container {
-            position: relative;
-            width: 100%;
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 10px 14px;
-            display: flex;
-            align-items: center;
-            overflow: hidden;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
-        }
-        .history-scroll-track {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            scrollbar-width: none;
-            width: 100%;
-            padding: 2px 0;
-        }
-
-        .history-scroll-track::-webkit-scrollbar {
-            display: none;
-        }
-
-        .history-node {
-            min-width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--text-main);
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .history-node:active {
-            transform: scale(0.85);
-        }
-
-        .history-node.n-red {
-            background: linear-gradient(135deg, var(--neon-red), #ff6b81);
-            box-shadow: 0 0 12px rgba(255, 71, 87, 0.35);
-        }
-
-        .history-node.n-black {
-            background: linear-gradient(135deg, var(--neon-black), #1e222b);
-            border-color: rgba(255, 255, 255, 0.15);
-        }
-
-        .history-node.n-zero {
-            background: linear-gradient(135deg, var(--neon-green), #2ce67e);
-            box-shadow: 0 0 12px rgba(46, 204, 113, 0.35);
-        }
-        .history-scroll-track {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            scrollbar-width: none;
-            width: 100%;
-            padding: 2px 0;
-        }
-
-        .history-scroll-track::-webkit-scrollbar {
-            display: none;
-        }
-
-        .history-node {
-            min-width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 800;
-            color: var(--text-main);
-            cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .history-node:active {
-            transform: scale(0.85);
-        }
-
-        .history-node.n-red {
-            background: linear-gradient(135deg, var(--neon-red), #ff6b81);
-            box-shadow: 0 0 12px rgba(255, 71, 87, 0.35);
-        }
-
-        .history-node.n-black {
-            background: linear-gradient(135deg, var(--neon-black), #1e222b);
-            border-color: rgba(255, 255, 255, 0.15);
-        }
-
-        .history-node.n-zero {
-            background: linear-gradient(135deg, var(--neon-green), #2ce67e);
-            box-shadow: 0 0 12px rgba(46, 204, 113, 0.35);
-        }
-        .lightning-row-wrapper {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            width: 100%;
-        }
-
-        .lightning-lucky-card {
-            background: linear-gradient(135deg, #131722 0%, var(--bg-card) 100%);
-            border: 1px solid var(--border-neon);
-            border-radius: 20px;
-            padding: 14px 0;
-            text-align: center;
-            font-weight: bold;
-            position: relative;
-            overflow: hidden;
-            animation: corePulseGlow 2s infinite ease-in-out;
-        }
-
-        .lightning-lucky-card .lucky-card-num {
-            font-size: 24px;
-            display: block;
-            margin-bottom: 4px;
-            font-weight: 900;
-        }
-
-        .lightning-lucky-card .lucky-card-num.c-red { color: var(--neon-red); }
-        .lightning-lucky-card .lucky-card-num.c-black { color: #ffffff; }
-        .lightning-lucky-card .lucky-card-num.c-zero { color: var(--neon-green); }
-
-        .lightning-lucky-card .multiplier-pill {
-            font-size: 11px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            display: inline-block;
-            color: #060709;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--neon-gold), #ffa502);
-            text-transform: uppercase;
-        }
-
-        .lightning-lucky-card.l-inactive {
-            opacity: 0.15;
-            background: #07090f;
-            border-color: #121620;
-            animation: none;
-        }
-        .roulette-viewport-widget {
-            position: relative;
-            width: 100%;
-            background: linear-gradient(180deg, var(--bg-card) 0%, #0c0e17 100%);
-            border: 1px solid var(--border-neon);
-            border-radius: 32px;
-            padding: 26px 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: 0 8px 35px rgba(0, 0, 0, 0.75);
-        }
-
-        .widget-central-status-label {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-            font-weight: 800;
-            min-height: 22px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .widget-countdown-clock {
-            font-size: 26px;
-            font-weight: 900;
-            color: var(--neon-cyan);
-            margin-bottom: 16px;
-            text-shadow: 0 0 14px rgba(0, 255, 204, 0.6);
-            font-family: monospace;
-        }
-
-        .widget-mechanical-ring {
-            width: 236px;
-            height: 236px;
-            border-radius: 50%;
-            border: 7px solid #1f2436;
-            position: relative;
-            background: #090b11;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: inset 0 4px 20px rgba(0,0,0,0.9);
-        }
-
-        #wheel-canvas {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            display: block;
-        }
-        .widget-payout-box {
-            font-size: 20px;
-            font-weight: 900;
-            color: var(--neon-green);
-            margin-top: 14px;
-            min-height: 28px;
-            text-shadow: 0 0 16px rgba(5, 196, 107, 0.6);
-            letter-spacing: 0.3px;
-        }
-
-        .live-bet-monitor-panel {
-            background: var(--bg-card);
-            border-radius: var(--radius-premium);
-            border: 1px dashed var(--border-neon);
-            padding: 16px;
-            text-align: center;
-            font-size: 13px;
-            color: var(--text-muted);
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
-        }
-
-        .bet-monitor-string {
-            font-weight: 700;
-            color: var(--text-main);
-            word-break: break-all;
-        }
-
-        .bet-total-counter {
-            font-size: 12px;
-            color: var(--text-main);
-            margin-top: 8px;
-            display: block;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .wallet-display-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 4px;
-            font-size: 15px;
-            font-weight: 800;
-            text-transform: uppercase;
-            color: var(--text-muted);
-        }
-
-        .wallet-neon-badge {
-            background: linear-gradient(180deg, #131722 0%, var(--bg-card) 100%);
-            padding: 10px 18px;
-            border-radius: var(--radius-premium);
-            font-weight: 900;
-            color: var(--neon-gold);
-            border: 1px solid var(--border-neon);
-            font-size: 16px;
-            text-shadow: 0 0 10px rgba(255, 192, 72, 0.3);
-        }
-        .bet-sizing-chassis {
-            display: flex;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .bet-sizing-chassis input {
-            flex: 1;
-            background: #040508;
-            border: 1px solid var(--border-neon);
-            color: var(--text-main);
-            padding: 16px;
-            border-radius: var(--radius-premium);
-            font-size: 18px;
-            font-weight: 900;
-            outline: none;
-            text-align: center;
-            font-family: monospace;
-        }
-
-        .size-math-trigger {
-            background: linear-gradient(180deg, #1e2235 0%, var(--bg-button) 100%);
-            border: 1px solid var(--border-neon);
-            color: var(--text-main);
-            width: 60px;
-            border-radius: var(--radius-premium);
-            font-weight: 900;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.1s ease;
-        }
-
-        .size-math-trigger:active {
-            transform: scale(0.92);
-        }
-
-        .fast-chips-tray {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            width: 100%;
-        }
-
-        .premium-chip-trigger {
-            background: linear-gradient(180deg, #131622 0%, var(--bg-card) 100%);
-            border: 1px solid var(--border-neon);
-            color: var(--text-main);
-            padding: 14px 0;
-            border-radius: var(--radius-premium);
-            font-size: 13px;
-            font-weight: 900;
-            cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.1s ease;
-        }
-
-        .premium-chip-trigger:active {
-            transform: scale(0.92);
-            border-color: var(--neon-cyan);
-        }
-        .premium-layout-board {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .board-flex-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-        }
-
-        .board-flex-row.dual-split {
-            grid-template-columns: 1fr 1fr;
-        }
-
-        .table-btn {
-            padding: 16px 0;
-            border-radius: 16px;
-            font-size: 14px;
-            font-weight: 800;
-            cursor: pointer;
-            border: none;
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            position: relative;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: transform 0.1s ease;
-        }
-
-        .table-btn:active {
-            transform: scale(0.96);
-        }
-        .btn-red {
-            background: linear-gradient(135deg, var(--neon-red), #ff6b81);
-            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.2);
-        }
-
-        .btn-zero {
-            background: linear-gradient(135deg, var(--neon-green), #2ce67e);
-            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.2);
-        }
-
-        .btn-black {
-            background: linear-gradient(135deg, var(--neon-black), #1e222b);
-            border: 1px solid #3e4453;
-        }
-
-        .btn-even {
-            background: linear-gradient(135deg, #007aff, #0040ff);
-        }
-
-        .btn-odd {
-            background: linear-gradient(135deg, #ffa502, #ff7f50);
-        }
-
-        .btn-range {
-            background: linear-gradient(135deg, #5352ed, #3742fa);
-        }
-
-        .btn-dozen {
-            background: linear-gradient(135deg, #7158e2, #533fa1);
-        }
-        .matrix-numbers-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
-            width: 100%;
-            display: none;
-        }
-
-        .num-btn {
-            color: #fff;
-            padding: 15px 0;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 800;
-            cursor: pointer;
-            border: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-            transition: transform 0.1s;
-        }
-
-        .num-btn:active {
-            transform: scale(0.9);
-        }
-
-        .num-btn.r-red {
-            background: linear-gradient(135deg, var(--neon-red), #cc2936);
-        }
-
-        .num-btn.r-black {
-            background: linear-gradient(135deg, var(--neon-black), #1a1e26);
-            border: 1px solid #323945;
-        }
-
-        .chip-badge {
-            font-size: 10px;
-            background: #ffffff;
-            color: #0b0d10;
-            border-radius: 6px;
-            padding: 2px 7px;
-            font-weight: 900;
-            margin-top: 3px;
-            border: 1px solid var(--neon-gold);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        }
-        .mode-toggle-btn {
-            background: linear-gradient(135deg, #007aff, #0056b3);
-            color: #fff;
-            border: none;
-            width: 100%;
-            padding: 15px;
-            border-radius: 16px;
-            font-size: 14px;
-            font-weight: 800;
-            cursor: pointer;
-            margin-top: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 14px rgba(0,122,255,0.3);
-        }
-
-        .mode-toggle-btn.numbers-active {
-            background: linear-gradient(135deg, #7158e2, #533fa1);
-            box-shadow: 0 4px 14px rgba(113,88,226,0.3);
-        }
-
-        .has-active-wager {
-            border: 2px solid var(--neon-gold) !important;
-            box-shadow: 0 0 16px rgba(255, 192, 72, 0.5) !important;
-        }
-
-        .provably-fair-zone {
-            width: 100%;
-            max-width: 360px;
-            margin: 12px auto;
-            padding: 0 6px;
-            font-size: 10px;
-            font-family: monospace;
-            color: #4b5563;
-            text-align: center;
-            word-break: break-all;
-            opacity: 0.5;
-        }
-
-        .pf-hash-inline {
-            display: inline;
-            color: #6b7280;
-        }
-
-        .chat-anchor {
-            position: fixed;
-            bottom: 16px;
-            left: 16px;
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            pointer-events: none;
-        }
-
-        .chat-trigger {
-            width: 48px;
-            height: 46px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, var(--neon-cyan), #00a8ff);
-            color: #000;
-            border: none;
-            font-size: 22px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 15px rgba(0,255,204,0.4);
-            pointer-events: auto;
-            transition: transform 0.1s;
-        }
-
-        .chat-trigger:active {
-            transform: scale(0.9);
-        }
-        .chat-preview {
-            background: rgba(15, 17, 26, 0.95);
-            border: 1px solid var(--border-neon);
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            max-width: 180px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #a5b4fc;
-            backdrop-filter: blur(8px);
-            pointer-events: auto;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }
-
-        .chat-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(4, 5, 7, 0.92);
-            z-index: 10000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-            backdrop-filter: blur(10px);
-        }
-
-        .chat-box {
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: 24px;
-            width: 100%;
-            max-width: 360px;
-            height: 400px;
-            display: flex;
-            flex-direction: column;
-            padding: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
-        }
-
-        .chat-logs {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 12px;
-            font-size: 12px;
             text-align: left;
-            padding-right: 4px;
+            padding-left: 2px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
-        .chat-input-zone {
-            display: flex;
-            gap: 6px;
-        }
-
-        .chat-input-zone input {
-            flex: 1;
-            background: #040508;
+        /* ИСТОРИЯ ИГР ИЗ СКРИНШОТА */
+        .history-card-scroll {
+            background: var(--bg-card);
             border: 1px solid var(--border-neon);
-            color: #fff;
+            border-radius: var(--radius-premium);
             padding: 12px;
-            border-radius: 12px;
-            outline: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            width: 100%;
+        }
+        .history-card-scroll::-webkit-scrollbar { display: none; }
+
+        .hist-circle {
+            min-width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 13px;
+            font-weight: 800;
+            color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .hist-circle.red { background: var(--color-red); }
+        .hist-circle.black { background: var(--color-black); border: 1px solid var(--border-neon); }
+        .hist-circle.green { background: var(--color-green); }
+
+        /* ВЕРХНИЙ ИГРОВОЙ ЭКРАН И ХОЛСТ КОЛЕСА */
+        .wheel-display-zone {
+            background: radial-gradient(circle at center, #1b223c 0%, var(--bg-main) 100%);
+            border: 1px solid var(--border-neon);
+            border-radius: var(--radius-premium);
+            padding: 16px 12px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+        }
+
+        /* БОНУСНЫЕ ИКСОТЫ НАД КОЛЕСОМ ИЗ СКРИНШОТА */
+        .wp-bonus-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            width: 100%;
+            justify-content: center;
+        }
+        .wp-bonus-box {
+            background: rgba(15, 26, 48, 0.8);
+            border: 1px solid var(--border-neon);
+            border-radius: 12px;
+            padding: 8px 12px;
+            text-align: center;
+            min-width: 80px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+        .wp-bonus-num { font-size: 18px; font-weight: 900; }
+        .wp-bonus-multiplier { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; margin-top: 4px; display: inline-block; text-transform: uppercase; }
+        .wp-m100 { background: rgba(99, 102, 241, 0.2); border: 1px solid var(--color-purple); color: #a5b4fc; }
+        .wp-m50 { background: rgba(37, 99, 235, 0.2); border: 1px solid var(--color-blue); color: #93c5fd; }
+
+        .wheel-canvas-container {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        #wheel-render-canvas {
+            width: 100%;
+            height: 100%;
         }
     </style>
-    <script src="https://telegram.org"></script>
+</head>
+    <style>
+        /* ПАНЕЛИ ИНФОРМАЦИИ О СТАВКАХ И БАЛАНСЕ */
+        .wp-info-plate {
+            background: var(--bg-card);
+            border: 1px solid var(--border-neon);
+            border-radius: var(--radius-premium);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 100%;
+        }
+
+        .wp-row-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* КНОПКИ КЛАВИАТУРЫ И ВВОДА СТАВКИ */
+        .wp-bet-widget {
+            display: flex;
+            background: #060813;
+            border: 1px solid var(--border-neon);
+            border-radius: 14px;
+            padding: 4px;
+            align-items: center;
+            width: 100%;
+        }
+
+        .wp-input-field {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            padding-left: 12px;
+            font-family: monospace;
+        }
+
+        .wp-util-btn {
+            background: var(--bg-inner);
+            border: 1px solid var(--border-neon);
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: 800;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-left: 4px;
+        }
+
+        .wp-chips-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            width: 100%;
+        }
+
+        .wp-chip-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-neon);
+            color: #ffffff;
+            padding: 13px 0;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        /* СТОЛ СТАВОК ИЗ СКРИНШОТА ОДИН В ОДИН */
+        .wp-table-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .wp-grid-3 { display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 8px; }
+        .wp-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .wp-grid-numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; }
+
+        .wp-bet-trigger-btn {
+            border-radius: 14px;
+            padding: 16px 6px;
+            font-weight: 800;
+            font-size: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .wp-badge-x {
+            position: absolute;
+            bottom: 4px;
+            right: 8px;
+            font-size: 9px;
+            color: rgba(255,255,255,0.5);
+            font-weight: 700;
+            background: rgba(0,0,0,0.2);
+            padding: 1px 4px;
+            border-radius: 4px;
+        }
+
+        /* Индикатор того, что на ячейку сделана ставка */
+        .wp-bet-trigger-btn.has-bets-placed::before {
+            content: "•";
+            color: var(--color-gold);
+            position: absolute;
+            top: 4px;
+            left: 8px;
+            font-size: 18px;
+        }
+
+        /* ИНДИВИДУАЛЬНЫЕ ЦВЕТА СТОЛА СТАВОК */
+        .wp-btn-red { background: var(--color-red); }
+        .wp-btn-black { background: var(--color-black); border: 1px solid var(--border-neon); }
+        .wp-btn-green { background: var(--color-green); }
+        .wp-btn-blue { background: var(--color-blue); }
+        .wp-btn-yellow { background: var(--color-gold); color: #2d1a00 !important; }
+        .wp-btn-purple { background: var(--color-purple); }
+        .wp-btn-neutral { background: #1b203a; border: 1px solid var(--border-neon); }
+
+        .wp-bet-active-glow {
+            box-shadow: inset 0 0 0 2px #ffffff, 0 0 16px rgba(255,255,255,0.5);
+        }
+
+        /* МОДАЛЬНОЕ ОКНО РЕЗУЛЬТАТОВ РАУНДА («РЕЗУЛЬТАТЫ ИГРЫ») */
+        .wp-modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wp-modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--border-neon);
+            border-radius: 24px;
+            padding: 28px;
+            width: 85%;
+            max-width: 340px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        }
+
+        .wp-modal-close-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+            color: #ffffff;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 15px;
+            margin-top: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+        }
+
+        .wp-crypto-footer {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-family: monospace;
+            text-align: center;
+            word-break: break-all;
+            line-height: 1.5;
+            margin-top: 14px;
+            padding: 8px;
+            background: #070913;
+            border-radius: 10px;
+            border: 1px solid rgba(41, 49, 92, 0.3);
+            width: 100%;
+        }
+
+        /* ПОП-АП С ТАЙМЕРОМ ОБРАТНОГО ОТСЧЕТА ИЗ СКРИНШОТА */
+        .wheel-center-popup {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: rgba(11, 14, 26, 0.95);
+            border: 2px solid var(--border-neon);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.7);
+            z-index: 5;
+            text-align: center;
+        }
+
+        .wp-pointer-top {
+            position: absolute;
+            top: -6px;
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 20px solid var(--color-gold);
+            z-index: 6;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+    </style>
 </head>
 <body>
+
     <div class="app-wrapper">
-        <header class="premium-header">
-            <div class="header-left-zone">
-                <span class="app-back-trigger" onclick="window.parent.postMessage('close_game', '*')">&#x2039;</span>
-                <h1 class="brand-headline">Wheel Plus</h1>
-            </div>
-            <div class="server-status-pill">
-                <span class="status-pulse-dot"></span>
-                <span>TG Cloud Sync</span>
-            </div>
-        </header>
-
-        <div class="history-carousel-container">
-            <div class="history-scroll-track" id="history-box"></div>
+        <!-- БЕГУЩАЯ ЛЕНТА РЕАЛЬНОЙ ИСТОРИИ ИГР -->
+        <div class="history-card-scroll" id="wp-history-line">
+            <!-- Сюда JS будет автоматически вставлять кружки выпавших чисел раундов -->
+            <div class="hist-circle black">33</div>
+            <div class="hist-circle red">9</div>
+            <div class="hist-circle red">19</div>
+            <div class="hist-circle red">16</div>
+            <div class="hist-circle black">20</div>
+            <div class="hist-circle black">2</div>
+            <div class="hist-circle black">28</div>
         </div>
-        <div id="fair-history-modal" class="neon-modal-overlay">
-            <div class="neon-modal-card">
-                <h3>VERIFICATION</h3>
-                <div class="fair-field-box">
-                    <span class="fair-meta-title">NUMBER</span>
-                    <div class="fair-meta-value" id="modal-fair-num">0</div>
+
+        <!-- ЗОНА РУЛЕТКИ: СЧАСТЛИВЫЕ ЧИСЛА И ХОЛСТ CANVAS -->
+        <div class="wheel-display-zone">
+            <!-- 3 РАНДОМНЫХ СЧАСТЛИВЫХ ЧИСЛА С МНОЖИТЕЛЯМИ -->
+            <div class="wp-bonus-row" id="wp-lucky-numbers-container">
+                <div class="wp-bonus-box">
+                    <div class="wp-bonus-num" style="color: var(--color-red);" id="lucky-num-1">25</div>
+                    <div class="wp-bonus-multiplier wp-m100" id="lucky-mult-1">100X</div>
                 </div>
-                <div class="fair-field-box">
-                    <span class="fair-meta-title">HASH</span>
-                    <div class="fair-meta-value" id="modal-fair-hash">-</div>
+                <div class="wp-bonus-box">
+                    <div class="wp-bonus-num" style="color: var(--color-red);" id="lucky-num-2">30</div>
+                    <div class="wp-bonus-multiplier wp-m100" id="lucky-mult-2">100X</div>
                 </div>
-                <div class="fair-field-box">
-                    <span class="fair-meta-title">SEED</span>
-                    <div class="fair-meta-value" id="modal-fair-salt">-</div>
+                <div class="wp-bonus-box">
+                    <div class="wp-bonus-num" style="color: #ffffff;" id="lucky-num-3">29</div>
+                    <div class="wp-bonus-multiplier wp-m50" id="lucky-mult-3">50X</div>
                 </div>
-                <button class="mode-toggle-btn" style="margin-top:14px; width:100%;" onclick="closeFairHistoryModal()">CLOSE</button>
+            </div>
+
+            <!-- ИНТЕРФЕЙС CANVAS: РУЛЕТКА И БЕГУЩИЙ ШАРИК -->
+            <div class="wheel-canvas-container">
+                <div class="wp-pointer-top"></div>
+                <canvas id="wheel-render-canvas" width="500" height="500"></canvas>
+                
+                <!-- ЦЕНТРАЛЬНОЕ ОКНО СОСТОЯНИЯ И ТАЙМЕРА -->
+                <div class="wheel-center-popup" id="wp-center-status-box">
+                    <div style="font-size: 32px;" id="wp-center-emoji">🤩</div>
+                    <div style="font-size: 11px; font-weight: 900; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;" id="wp-center-text">Сделай ставку!</div>
+                </div>
             </div>
         </div>
-        <div class="lightning-row-wrapper" id="lucky-cards-container">
-            <div class="lightning-lucky-card l-inactive" id="lc-0"><span class="lucky-card-num">—</span><span class="multiplier-pill">OFF</span></div>
-            <div class="lightning-lucky-card l-inactive" id="lc-1"><span class="lucky-card-num">—</span><span class="multiplier-pill">OFF</span></div>
-            <div class="lightning-lucky-card l-inactive" id="lc-2"><span class="lucky-card-num">—</span><span class="multiplier-pill">OFF</span></div>
-        </div>
-        <div class="roulette-viewport-widget">
-            <div id="wheel-msg" class="widget-central-status-label">LOADING...</div>
-            <div id="countdown-display" class="widget-countdown-clock">15s</div>
-            <div class="widget-mechanical-ring"><canvas id="wheel-canvas" width="300" height="300"></canvas></div>
-            <div id="win-display" class="widget-payout-box"></div>
-        </div>
-        <div class="live-bet-monitor-panel">
-            <div class="bet-monitor-string" id="active-bets-text">Вы еще не делали ставок</div>
-            <span class="bet-total-counter">TOTAL BET: <span id="total-bet-amount">0</span> W</span>
-        </div>
-
-        <div class="wallet-display-row">
-            <span>BALANCE</span>
-            <div class="wallet-neon-badge"><span id="bal">0</span> W</div>
-        </div>
-
-        <div class="bet-input-area bet-sizing-chassis">
-            <button class="size-math-trigger" onclick="modifyBet('multiply')">x2</button>
-            <input type="number" id="bet-value" value="50" min="5">
-            <button class="size-math-trigger" onclick="modifyBet('divide')">/2</button>
-        </div>
-        <div class="fast-chips-tray">
-            <button class="premium-chip-trigger" onclick="addChip(10)">+10</button>
-            <button class="premium-chip-trigger" onclick="addChip(100)">+100</button>
-            <button class="premium-chip-trigger" onclick="addChip(1000)">+1K</button>
-            <button class="premium-chip-trigger" onclick="addChip(25000)">+25K</button>
-        </div>
-
-        <div class="premium-layout-board" id="panel-basic">
-            <div class="board-flex-row">
-                <button class="table-btn btn-red" id="btn-red" onclick="placeTableBet('red', this)">Красное</button>
-                <button class="table-btn btn-zero" id="btn-zero" onclick="placeTableBet('zero', this)">0</button>
-                <button class="table-btn btn-black" id="btn-black" onclick="placeTableBet('black', this)">Черное</button>
+        <!-- ИНФОРМАЦИОННАЯ ПАНЕЛЬ СТАВОК И ТЕКУЩЕГО БАЛАНСА -->
+        <div class="wp-info-plate">
+            <div class="wp-row-between">
+                <span style="font-size: 13px; color: var(--text-muted); font-weight: 700;">Ваши ставки</span>
+                <span style="font-size: 15px; font-weight: 800; color: #ffffff;" id="wp-player-total-bet">0 W</span>
             </div>
-            <div class="board-flex-row dual-split">
-                <button class="table-btn btn-even" id="btn-even" onclick="placeTableBet('even', this)">Четное</button>
-                <button class="table-btn btn-odd" id="btn-odd" onclick="placeTableBet('odd', this)">Нечетное</button>
-            </div>
-            <div class="board-flex-row dual-split">
-                <button class="table-btn btn-range" id="btn-range1" onclick="placeTableBet('range1', this)">1 - 18</button>
-                <button class="table-btn btn-range" id="btn-range2" onclick="placeTableBet('range2', this)">19 - 36</button>
-            </div>
-            <div class="board-flex-row">
-                <button class="table-btn btn-dozen" id="btn-dozen1" onclick="placeTableBet('dozen1', this)">1 - 12</button>
-                <button class="table-btn btn-dozen" id="btn-dozen2" onclick="placeTableBet('dozen2', this)">13 - 24</button>
-                <button class="table-btn btn-dozen" id="btn-dozen3" onclick="placeTableBet('dozen3', this)">25 - 36</button>
+            <div class="wp-row-between" style="margin-top: 4px;">
+                <span style="font-size: 13px; color: var(--text-muted); font-weight: 700;">Ваш баланс</span>
+                <div style="font-size: 16px; font-weight: 800; color: var(--color-gold); font-family: monospace;">
+                    <span id="wp-balance-display">5000</span> <span style="color: var(--color-blue);">W</span>
+                </div>
             </div>
         </div>
-        <div class="matrix-numbers-grid" id="panel-numbers"></div>
 
-        <button id="toggle-mode-btn" class="mode-toggle-btn" onclick="switchTableMode()">🔄 Режим стола: Простые исходы</button>
+        <!-- УПРАВЛЕНИЕ РАЗМЕРОМ СТАВКИ -->
+        <div class="wp-bet-widget">
+            <span style="font-size: 11px; color: var(--text-muted); font-weight: 800; padding-left: 6px; text-transform: uppercase;">Ставка</span>
+            <input type="number" id="wp-bet-field" class="wp-input-field" value="100" min="1">
+            <button class="wp-util-btn" onclick="modifyBetSize('x2')">x2</button>
+            <button class="wp-util-btn" onclick="modifyBetSize('/2')">/2</button>
+        </div>
 
-        <div class="provably-fair-zone">SHA-256: <div class="pf-hash-inline" id="game-md5-hash">WAIT...</div></div>
+        <!-- ФИШКИ БЫСТРОГО ДОБАВЛЕНИЯ ИЗ СКРИНШОТА -->
+        <div class="wp-chips-grid">
+            <button class="wp-chip-btn" onclick="addChipValue(10)">+ 10</button>
+            <button class="wp-chip-btn" onclick="addChipValue(100)">+ 100</button>
+            <button class="wp-chip-btn" onclick="addChipValue(1000)">+ 1K</button>
+            <button class="wp-chip-btn" onclick="addChipValue(25000)">+ 25K</button>
+        </div>
+        <span class="section-title">Стол ставок</span>
+
+        <!-- СЕКТОР ОБЩИХ СТАВОК (ГЛАВНЫЙ СТОЛ) -->
+        <div class="wp-table-layout" id="wp-main-table-view">
+            <div class="wp-grid-3">
+                <button class="wp-bet-trigger-btn wp-btn-red" id="cell-red" onclick="placeBetOnCell('red')">Красное <span class="wp-badge-x">x2</span></button>
+                <button class="wp-bet-trigger-btn wp-btn-green" id="cell-zero" onclick="placeBetOnCell('zero')">0 <span class="wp-badge-x">x30</span></button>
+                <button class="wp-bet-trigger-btn wp-btn-black" id="cell-black" onclick="placeBetOnCell('black')">Черное <span class="wp-badge-x">x2</span></button>
+            </div>
+
+            <div class="wp-grid-2">
+                <button class="wp-bet-trigger-btn wp-btn-blue" id="cell-even" onclick="placeBetOnCell('even')">Четное <span class="wp-badge-x">x2</span></button>
+                <button class="wp-bet-trigger-btn wp-btn-yellow" id="cell-odd" onclick="placeBetOnCell('odd')">Нечетное <span class="wp-badge-x">x2</span></button>
+            </div>
+
+            <div class="wp-grid-2">
+                <button class="wp-bet-trigger-btn wp-btn-neutral" id="cell-low" onclick="placeBetOnCell('low')">1 - 18 <span class="wp-badge-x">x2</span></button>
+                <button class="wp-bet-trigger-btn wp-btn-neutral" id="cell-high" onclick="placeBetOnCell('high')">19 - 36 <span class="wp-badge-x">x2</span></button>
+            </div>
+
+            <div class="wp-grid-3" style="grid-template-columns: repeat(3, 1fr);">
+                <button class="wp-bet-trigger-btn wp-btn-purple" id="cell-doz1" onclick="placeBetOnCell('doz1')">1 - 12 <span class="wp-badge-x">x3</span></button>
+                <button class="wp-bet-trigger-btn wp-btn-purple" id="cell-doz2" onclick="placeBetOnCell('doz2')">13 - 24 <span class="wp-badge-x">x3</span></button>
+                <button class="wp-bet-trigger-btn wp-btn-purple" id="cell-doz3" onclick="placeBetOnCell('doz3')">25 - 36 <span class="wp-badge-x">x3</span></button>
+            </div>
+
+            <button class="wp-bet-trigger-btn" onclick="toggleKeyboardLayout('numbers')" style="background: #4f46e5; padding: 16px 0; font-size: 14px;">
+                🎯 Поставить на точное число (x30)
+            </button>
+        </div>
+        <!-- СКРЫТАЯ СЕТКА КЛАВИАТУРЫ 1-36 -->
+        <div class="wp-table-layout" id="wp-numbers-keyboard-view" style="display: none;">
+            <div class="wp-grid-numbers" id="wp-num-keys-generator-box">
+                <!-- Кнопки от 1 до 36 будут автоматически сгенерированы в JS с цветами -->
+            </div>
+            <button class="wp-bet-trigger-btn" onclick="toggleKeyboardLayout('main')" style="background: var(--color-red); padding: 14px 0; font-size: 14px; font-weight: 800; margin-top: 4px;">
+                ↩ Назад к общему столу
+            </button>
+        </div>
+
+        <!-- КРИПТОГРАФИЧЕСКИЙ КАЗИНО-ФУТЕР ДЛЯ ЧЕСТНОЙ ИГРЫ PROVABLY FAIR -->
+        <div class="wp-crypto-footer">
+            <div>Hash: <span id="wp-crypto-hash-sha256" style="color: var(--text-main);">Генерация раунда...</span></div>
+            <div id="wp-crypto-md5-string" style="margin-top: 4px; color: var(--color-gold); display: none;"></div>
+        </div>
+    </div> <!-- Конец app-wrapper -->
+
+    <!-- ВСПЛЫВАЮЩЕЕ ОКНО РЕЗУЛЬТАТОВ РАУНДА -->
+    <div class="wp-modal-overlay" id="wp-result-modal-popup">
+        <div class="wp-modal-content">
+            <div style="font-size: 13px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Результаты игры</div>
+            <div style="font-size: 54px; font-weight: 900; color: #ffffff; margin-top: 10px;" id="modal-winning-number">--</div>
+            <div id="modal-winning-multiplier-badge" style="display: inline-block; font-size: 12px; font-weight: 800; background: rgba(16, 185, 129, 0.2); border: 1px solid var(--color-green); color: #a7f3d0; padding: 4px 14px; border-radius: 20px; margin-top: 6px;">x30</div>
+            <div id="modal-player-win-status-text" style="font-size: 14px; font-weight: 700; margin-top: 16px; color: var(--text-main);">Вы ничего не выиграли</div>
+            <button class="wp-modal-close-btn" onclick="closeResultModalPopup()">Закрыть</button>
+        </div>
     </div>
-    <div class="chat-anchor">
-        <button class="chat-trigger" onclick="toggleChat(true)">💬</button>
-        <div class="chat-preview" id="chat-bubble-preview" onclick="toggleChat(true)">System: Live chat active!</div>
-    </div>
-
-    <div class="chat-modal" id="chat-modal">
-        <div class="chat-box">
-            <div style="display:flex; justify-content:space-between; margin-bottom:12px; font-size:14px; font-weight:bold;">
-                <span>LIVE CHAT</span>
-                <span style="cursor:pointer; color:var(--neon-red);" onclick="toggleChat(false)">✕</span>
-            </div>
-            <div class="chat-logs" id="chat-logs"></div>
-            <div class="chat-input-zone">
-                <input type="text" id="chat-msg-input" placeholder="Message...">
-                <button class="size-math-trigger" style="width:70px; background:var(--neon-cyan); color:#000;" onclick="sendPlayerChatMessage()">SEND</button>
-            </div>
-        </div>
-    </div>
-
     <script>
-        const tg = window.Telegram.WebApp;
-        
-        let currentBallRadiusEngine = 71;
-        let wheelAngle = 0;
-        let ballAngle = 0;
-        let balance = 0;
-        let activeBets = {};
-        let isSpinning = false;
-        let currentMode = "basic";
-        let serverRoundHistory = [];
-        let countdownTime = 15;
-        let currentRoundNonce = 1;
-        let gameStatus = "BETTING";
-        let currentServerSeed = "";
-        let currentServerHash = "";
-        let currentWinningNumber = 0;
-        let activeLuckyMultipliers = {};
-
-        function triggerTelegramHaptic(type) {
-            try {
-                if (tg.HapticFeedback) {
-                    if (type === 'click') tg.HapticFeedback.impactOccurred('medium');
-                    if (type === 'tick') tg.HapticFeedback.impactOccurred('light');
-                    if (type === 'win') tg.HapticFeedback.notificationOccurred('success');
-                    if (type === 'lose') tg.HapticFeedback.notificationOccurred('error');
-                }
-            } catch (e) {}
-        }
-        const orderStr = "0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26";
-        const redStr = "1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36";
-        
-        const rouletteWheelOrder = orderStr.split(',').map(Number);
-        const redNumbersArray = redStr.split(',').map(Number);
-        
-        const botNames = ["Max_WOG", "CasinoKing", "CryptoShark", "LuckyBoy", "Zeus_X"];
-        const botPhrases = ["Betting on RED!", "Zero soon", "What is your balance?", "Crazy multipliers today", "Good luck all!", "Just in time"];
-        let audioCtx = null;
-        function initAudioContext() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-
-        function triggerPremiumFx(t) {
-            try {
-                initAudioContext();
-                if (!audioCtx || audioCtx.state === 'suspended') return;
-                let now = audioCtx.currentTime;
-                if (t === 'tick') {
-                    let o = audioCtx.createOscillator(); let g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
-                    o.type = 'triangle'; o.frequency.setValueAtTime(580, now); o.frequency.exponentialRampToValueAtTime(80, now + 0.03);
-                    g.gain.setValueAtTime(0.2, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.03); o.start(now); o.stop(now + 0.03);
-                } else if (t === 'ball') {
-                    let o = audioCtx.createOscillator(); let g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
-                    o.type = 'sine'; o.frequency.setValueAtTime(320 + Math.random() * 100, now); g.gain.setValueAtTime(0.25, now);
-                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.05); o.start(now); o.stop(now + 0.05);
-                } else if (t === 'win') {
-                    [523.25, 659.25, 783.99].forEach((f, i) => {
-                        let o = audioCtx.createOscillator(); let g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
-                        o.type = 'sine'; o.frequency.setValueAtTime(f, now + i * 0.06); g.gain.setValueAtTime(0.15, now + i * 0.06);
-                        g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.4); o.start(now + i * 0.06); o.stop(now + i * 0.06 + 0.4);
+        // ИНИЦИАЛИЗАЦИЯ TELEGRAM WEBAPP SDK ДЛЯ ОБРАБОТКИ КНОПОК ТЕЛЕФОНА
+        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+        if (tg) {
+            try { 
+                tg.expand();
+                tg.ready();
+                if (tg.BackButton) {
+                    tg.BackButton.show();
+                    tg.BackButton.offClick();
+                    tg.BackButton.onClick(() => {
+                        location.href = "index.html";
                     });
-                } else if (t === 'lose') {
-                    let o = audioCtx.createOscillator(); let g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
-                    o.type = 'sawtooth'; o.frequency.setValueAtTime(200, now); o.frequency.linearRampToValueAtTime(100, now + 0.3);
-                    g.gain.setValueAtTime(0.15, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.3); o.start(now); o.stop(now + 0.3);
                 }
-            } catch (e) {}
+            } catch(e) { console.error("Ошибка Telegram SDK:", e); }
         }
-        function loadBalanceFromTelegramCloud() {
-            try {
-                tg.CloudStorage.getItem('wog_offline_balance', (error, value) => {
-                    if (!error && value) {
-                        balance = parseInt(value);
-                        if (isNaN(balance)) balance = 5000;
-                    } else {
-                        balance = parseInt(localStorage.getItem('wog_offline_balance')) || 5000;
-                    }
-                    localStorage.setItem('wog_offline_balance', balance);
-                    document.getElementById('bal').innerText = balance.toLocaleString();
+
+        // НАСТРОЙКИ СВЯЗИ С PYTHON-СЕРВЕРОМ RENDER
+        const SERVER_URL = "https://onrender.com";
+        const MY_ADMIN_ID = 6682822292;
+        
+        let userId = MY_ADMIN_ID;
+        if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            userId = tg.initDataUnsafe.user.id;
+        }
+
+        // ГЛОБАЛЬНЫЙ МАССИВ ЧИСЕЛ ЕВРОПЕЙСКОЙ РУЛЕТКИ В СТРОГОМ ПОРЯДКЕ КОЛЕСА
+        const WHEEL_NUMBERS = [
+            0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10,
+            5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
+        ];
+
+        // КАРТА ЦВЕТОВ ДЛЯ КАЖДОГО НОМЕРА НА РУЛЕТКЕ
+        const NUMBER_COLORS = {
+            0: "green",  1: "red",    2: "black",  3: "red",    4: "black",  5: "red",
+            6: "black",  7: "red",    8: "black",  9: "red",    10: "black", 11: "black",
+            12: "red",   13: "black", 14: "red",   15: "black", 16: "red",   17: "black",
+            18: "red",   19: "red",   20: "black", 21: "red",   22: "black", 23: "red",
+            24: "black", 25: "red",   26: "black", 27: "red",   28: "black", 29: "black",
+            30: "red",   31: "black", 32: "red",   33: "black", 34: "red",   35: "black",
+            36: "red"
+        };
+        const WHEEL_NUMBERS = [
+            0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10,
+            5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
+        ];
+
+        // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ СОСТОЯНИЯ ИГРОВОГО ДВИЖКА
+        let playerBalance = parseInt(localStorage.getItem('wog_secure_balance')) || 5000;
+        let activeBetAmount = 100;
+        let currentRoundBets = {}; 
+        let totalRoundBetSum = 0;
+        let isGameSessionActive = false; 
+        let countdownTimerInterval = null;
+        let secondsRemaining = 20;
+
+        // ПРЕДРАСЧИТАННЫЕ ДАННЫЕ ТЕКУЩЕГО РАУНДА (PROVABLY FAIR)
+        let roundSecretSalt = "";
+        let roundWinningNumber = 0;
+        let roundLuckyNumbersList = [];
+
+        // АВТОМАТИЧЕСКАЯ ГЕНЕРАЦИЯ КЛАВИАТУРЫ ТОЧНЫХ ЧИСЕЛ 1-36
+        function buildNumbersKeyboardLayout() {
+            const container = document.getElementById('wp-num-keys-generator-box');
+            container.innerHTML = "";
+            
+            // Генерируем клавишу для нуля
+            const zeroBtn = document.createElement('button');
+            zeroBtn.className = "wp-bet-trigger-btn wp-btn-green";
+            zeroBtn.id = "cell-num0";
+            zeroBtn.innerHTML = `0 <span class="wp-badge-x">x30</span>`;
+            zeroBtn.onclick = () => placeBetOnCell('num0');
+            container.appendChild(zeroBtn);
+
+            // Генерируем остальные 36 чисел
+            for (let i = 1; i <= 36; i++) {
+                const btn = document.createElement('button');
+                const btnColorClass = NUMBER_COLORS[i] === 'red' ? 'wp-btn-red' : 'wp-btn-black';
+                btn.className = `wp-bet-trigger-btn ${btnColorClass}`;
+                btn.id = `cell-num${i}`;
+                btn.innerHTML = `${i} <span class="wp-badge-x">x30</span>`;
+                btn.onclick = () => placeBetOnCell(`num${i}`);
+                container.appendChild(btn);
+            }
+        }
+        buildNumbersKeyboardLayout();
+        WHEEL_NUMBERS =;
+
+        // КРИПТОГРАФИЧЕСКИЙ МОДУЛЬ ЧЕСТНОЙ ИГРЫ (PROVABLY FAIR)
+        function generateSecureRoundData() {
+            // 1. Честно выбираем выигрышный сектор от 0 до 36
+            roundWinningNumber = Math.floor(Math.random() * 37);
+
+            // 2. Генерируем 3 уникальных счастливых числа
+            let availableNumbers = Array.from({length: 37}, (_, i) => i);
+            roundLuckyNumbersList = [];
+            
+            const multiplierOptions =;
+
+            for (let i = 0; i < 3; i++) {
+                let randomIndex = Math.floor(Math.random() * availableNumbers.length);
+                let selectedNum = availableNumbers.splice(randomIndex, 1)[0];
+                let selectedMult = multiplierOptions[Math.floor(Math.random() * multiplierOptions.length)];
+                
+                roundLuckyNumbersList.push({
+                    num: selectedNum,
+                    mult: selectedMult
                 });
-            } catch (e) {
-                balance = parseInt(localStorage.getItem('wog_offline_balance')) || 5000;
-                document.getElementById('bal').innerText = balance.toLocaleString();
-            }
-        }
-
-        async function sha256Hex(msg) {
-            const buf = new TextEncoder().encode(msg);
-            const hash = await crypto.subtle.digest('SHA-256', buf);
-            return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        function genRandomHex(l) {
-            let c = 'abcdef0123456789', r = '';
-            for(let i=0; i<l; i++) r += c[Math.floor(Math.random()*16)];
-            return r;
-        }
-        async function initOfflineRoundCrypto() {
-            currentServerSeed = genRandomHex(32);
-            currentServerHash = await sha256Hex(currentServerSeed);
-            let combo = `${currentServerSeed}-${currentRoundNonce}`;
-            let sig = await sha256Hex(combo);
-            let decimal = parseInt(sig.substring(0, 8), 16);
-            currentWinningNumber = rouletteWheelOrder[decimal % 37];
-            
-            activeLuckyMultipliers = {};
-            let multiPool =;
-            
-            while (Object.keys(activeLuckyMultipliers).length < 3) {
-                let randNum = rouletteWheelOrder[Math.floor(Math.random() * 37)];
-                if (randNum !== currentWinningNumber) {
-                    activeLuckyMultipliers[randNum] = multiPool[Math.floor(Math.random() * multiPool.length)];
-                }
-            }
-            
-            if (Math.random() < 0.25) {
-                activeLuckyMultipliers[currentWinningNumber] = multiPool[Math.floor(Math.random() * multiPool.length)];
             }
 
-            document.getElementById('game-md5-hash').innerText = currentServerHash;
-            renderLuckyCardsUI(true);
+            // 3. Создаем криптографическую соль (Salt) для защиты от взлома
+            roundSecretSalt = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+            // 4. Формируем проверочную строку раунда (в стиле MD5/String со скриншота)
+            let luckyString = roundLuckyNumbersList.map(item => `${item.num}:x${item.mult}`).join(',');
+            let rawRoundString = `${roundSecretSalt}|${roundWinningNumber}|lucky:[${luckyString}]`;
+
+            // 5. Вычисляем хэш SHA-256 для вывода игроку в футер
+            let calculatedSha256Hash = CryptoJS.SHA256(rawRoundString).toString();
+            
+            // Выводим хэш на экран (до начала ставок)
+            document.getElementById('wp-crypto-hash-sha256').innerText = calculatedSha256Hash;
+            
+            // Прячем старую строку проверки прошлых игр
+            let md5Block = document.getElementById('wp-crypto-md5-string');
+            md5Block.style.display = "none";
+            md5Block.innerText = `String verify: ${rawRoundString}`;
         }
-        function startOfflineGameLoop() {
-            gameStatus = "BETTING";
-            countdownTime = 15;
-            initOfflineRoundCrypto();
-            document.getElementById('wheel-msg').innerText = "Stakes open";
-            document.getElementById('countdown-display').style.display = 'block';
-            
-            let tInterval = setInterval(() => {
-                countdownTime--;
-                document.getElementById('countdown-display').innerText = countdownTime + "s";
+
+        // Рендерим плашки Lucky Numbers на экран
+        function updateLuckyNumbersUI() {
+            for (let i = 0; i < 3; i++) {
+                let data = roundLuckyNumbersList[i];
+                let numElement = document.getElementById(`lucky-num-${i+1}`);
+                let multElement = document.getElementById(`lucky-mult-${i+1}`);
                 
-                if (countdownTime <= 5 && countdownTime > 0) {
-                    triggerPremiumFx('tick');
-                    triggerTelegramHaptic('tick');
-                }
-                
-                if (countdownTime <= 0) {
-                    clearInterval(tInterval);
-                    executeOfflineWheelSpin();
-                }
-            }, 1000);
-        }
-        function executeOfflineWheelSpin() {
-            gameStatus = "SPINNING";
-            isSpinning = true;
-            document.getElementById('countdown-display').style.display = 'none';
-            document.getElementById('wheel-msg').innerText = "BALL SPINNING";
-            renderLuckyCardsUI(false);
-            
-            let winningIndex = rouletteWheelOrder.indexOf(currentWinningNumber);
-            let wSpeed = 0.14;
-            let bSpeed = -0.28;
-            currentBallRadiusEngine = 95;
-            
-            let sTime = Date.now();
-            let duration = 3800;
-            triggerPremiumFx('tick');
-            
-            let animInterval = setInterval(() => {
-                let elapsed = Date.now() - sTime;
-                if (Math.random() < 0.15) {
-                    triggerPremiumFx('ball');
-                    triggerTelegramHaptic('tick');
-                }
-                
-                if (elapsed >= duration) {
-                    clearInterval(animInterval);
-                    let sAngle = (2 * Math.PI) / 37;
-                    let baseAngle = (wheelAngle + (winningIndex * sAngle)) % (2 * Math.PI);
-                    let bStep = 0;
-                    currentBallRadiusEngine = 71;
-                    
-                    let bounceInterval = setInterval(() => {
-                        bStep++;
-                        triggerPremiumFx('ball');
-                        triggerTelegramHaptic('tick');
-                        if (bStep === 1) {
-                            ballAngle = baseAngle + (sAngle * (1.1 + Math.random() * 0.5));
-                        } else if (bStep === 2) {
-                            ballAngle = baseAngle - (sAngle * (0.3 + Math.random() * 0.4));
-                        } else {
-                            clearInterval(bounceInterval);
-                            ballAngle = baseAngle;
-                            calculateOfflinePayouts();
-                        }
-                    }, 120);
+                numElement.innerText = data.num;
+                multElement.innerText = `${data.mult}X`;
+
+                // Меняем цвет рамки в зависимости от крутизны множителя
+                let box = numElement.parentElement;
+                if (data.mult >= 300) {
+                    box.style.borderColor = "var(--color-gold)";
+                    multElement.className = "wp-bonus-multiplier wp-m100";
+                } else if (data.mult >= 100) {
+                    box.style.borderColor = "var(--color-purple)";
+                    multElement.className = "wp-bonus-multiplier wp-m100";
                 } else {
-                    let prog = elapsed / duration;
-                    wheelAngle += wSpeed * (1 - prog * 0.75);
-                    ballAngle += bSpeed * (1 - prog * 0.92);
-                    currentBallRadiusEngine = 95 - (prog * 24);
-                }
-            }, 25);
-        }
-        function calculateOfflinePayouts() {
-            gameStatus = "RESULTS";
-            isSpinning = false;
-            
-            let isRed = redNumbersArray.includes(currentWinningNumber);
-            let numColor = currentWinningNumber === 0 ? 'zero' : (isRed ? 'red' : 'black');
-            let isEven = currentWinningNumber !== 0 && currentWinningNumber % 2 === 0;
-            let totalWin = 0;
-
-            for (let sel in activeBets) {
-                let amt = activeBets[sel];
-                
-                if (sel === `num_${currentWinningNumber}`) {
-                    totalWin += amt * (activeLuckyMultipliers[currentWinningNumber] || 35);
-                } else if (sel === 'red' && numColor === 'red') {
-                    totalWin += amt * 2;
-                } else if (sel === 'black' && numColor === 'black') {
-                    totalWin += amt * 2;
-                } else if (sel === 'zero' && currentWinningNumber === 0) {
-                    totalWin += amt * 35;
-                }
-                else if (currentWinningNumber !== 0) {
-                    if (sel === 'even' && isEven) {
-                        totalWin += amt * 2;
-                    } else if (sel === 'odd' && !isEven) {
-                        totalWin += amt * 2;
-                    } else if (sel === 'range1' && currentWinningNumber >= 1 && currentWinningNumber <= 18) {
-                        totalWin += amt * 2;
-                    } else if (sel === 'range2' && currentWinningNumber >= 19 && currentWinningNumber <= 36) {
-                        totalWin += amt * 2;
-                    } else if (sel === 'dozen1' && currentWinningNumber >= 1 && currentWinningNumber <= 12) {
-                        totalWin += amt * 3;
-                    } else if (sel === 'dozen2' && currentWinningNumber >= 13 && currentWinningNumber <= 24) {
-                        totalWin += amt * 3;
-                    } else if (sel === 'dozen3' && currentWinningNumber >= 25 && currentWinningNumber <= 36) {
-                        totalWin += amt * 3;
-                    }
+                    box.style.borderColor = "var(--color-blue)";
+                    multElement.className = "wp-bonus-multiplier wp-m50";
                 }
             }
+        }
+        WHEEL_NUMBERS =;
 
-            balance += totalWin;
-            localStorage.setItem('wog_offline_balance', balance);
-            document.getElementById('bal').innerText = balance.toLocaleString();
-            try {
-                tg.CloudStorage.setItem('wog_offline_balance', balance.toString());
-            } catch (e) {}
+        const multiplierOptions =;
 
-            let colorTitle = numColor === 'red' ? "Красное" : (numColor === 'black' ? "Черное" : "Зеро");
-            document.getElementById('wheel-msg').innerHTML = "Выпало: <strong style='color:#ffca28;'>" + currentWinningNumber + " (" + colorTitle + ")</strong>";
+        // ФУНКЦИИ СИНХРОНИЗАЦИИ БАЛАНСА И ОБНОВЛЕНИЯ ЭКРАНА
+        function refreshUI() {
+            document.getElementById('wp-balance-display').innerText = playerBalance;
+            document.getElementById('wp-player-total-bet').innerText = `${totalRoundBetSum} W`;
+            localStorage.setItem('wog_secure_balance', playerBalance);
+        }
+
+        // РЕГУЛИРОВКА СТАВКИ КНОПКАМИ x2 И /2
+        function modifyBetSize(action) {
+            if (isGameSessionActive && secondsRemaining <= 0) return;
+            let field = document.getElementById('wp-bet-field');
+            let current = parseInt(field.value) || 100;
+
+            if (action === 'x2') current = Math.min(playerBalance, current * 2);
+            if (action === '/2') current = Math.max(10, Math.floor(current / 2));
+
+            field.value = current;
+            activeBetAmount = current;
+        }
+
+        // БЫСТРЫЕ ФИШКИ ДОБАВЛЕНИЯ СТАВКИ ИЗ СКРИНШОТА
+        function addChipValue(amount) {
+            if (isGameSessionActive && secondsRemaining <= 0) return;
+            let field = document.getElementById('wp-bet-field');
+            let current = parseInt(field.value) || 0;
             
-            let wDisp = document.getElementById('win-display');
-            if (totalWin > 0) {
-                wDisp.style.color = "#00e676";
-                wDisp.innerText = "ВЫИГРЫШ: +" + totalWin.toLocaleString() + " W!";
-                triggerPremiumFx('win');
-                triggerTelegramHaptic('win');
+            let targetAmount = current + amount;
+            if (targetAmount > playerBalance) targetAmount = playerBalance;
+            
+            field.value = targetAmount;
+            activeBetAmount = targetAmount;
+        }
+
+        // ПЕРЕКЛЮЧЕНИЕ ТАБЛИЦ СТАВОК (ОБЩИЙ СТОЛ / КЛАВИАТУРА ЧИСЕЛ)
+        function toggleKeyboardLayout(layoutName) {
+            const mainView = document.getElementById('wp-main-table-view');
+            const numKeysView = document.getElementById('wp-numbers-keyboard-view');
+            
+            if (layoutName === 'numbers') {
+                mainView.style.display = "none";
+                numKeysView.style.display = "grid";
             } else {
-                let hasBets = Object.keys(activeBets).length > 0;
-                wDisp.style.color = hasBets ? "#ff4757" : "#7f8c8d";
-                wDisp.innerText = hasBets ? "СТАВКА НЕ СЫГРАЛА" : "";
-                if (hasBets) {
-                    triggerPremiumFx('lose');
-                    triggerTelegramHaptic('lose');
-                }
+                mainView.style.display = "flex";
+                numKeysView.style.display = "none";
+            }
+        }
+        WHEEL_NUMBERS =;
+
+        const multiplierOptions =;
+
+        // МЕХАНИКА РАЗМЕЩЕНИЯ СТАВОК НА ИГРОВОМ СТОЛЕ С ТРИГГЕРОМ ТАЙМЕРА
+        function placeBetOnCell(cellId) {
+            // Если колесо уже крутится, новые ставки не принимаются
+            if (isGameSessionActive && secondsRemaining <= 0) return;
+
+            // Читаем текущее значение размера ставки из инпута
+            const inputField = document.getElementById('wp-bet-field');
+            activeBetAmount = parseInt(inputField.value) || 0;
+
+            if (activeBetAmount <= 0) {
+                alert("Введите корректную сумму ставки!");
+                return;
             }
 
-            serverRoundHistory.unshift({ num: currentWinningNumber, hash: currentServerHash, salt: currentServerSeed });
-            if (serverRoundHistory.length > 8) serverRoundHistory.pop();
-            renderHistoryRibbon();
-            setTimeout(() => {
-                activeBets = {};
-                document.querySelectorAll('.table-btn, .num-btn').forEach(b => {
-                    b.classList.remove('has-active-wager');
-                    let badge = b.querySelector('.chip-badge');
-                    if (badge) badge.remove();
-                });
-                document.getElementById('total-bet-amount').innerText = "0";
-                document.getElementById('active-bets-text').innerText = "Вы еще не делали ставок";
-                wDisp.innerText = "";
-                currentRoundNonce++;
-                startOfflineGameLoop();
-            }, 4000);
-        }
-
-        function formatShortAmount(n) {
-            if (n >= 1000) return (n / 1000).toFixed(0) + "K";
-            return n;
-        }
-
-        function placeTableBet(selection, el) {
-            if (gameStatus !== "BETTING" || isSpinning) return;
-            initAudioContext();
-            triggerTelegramHaptic('click');
-            
-            let amt = parseInt(document.getElementById('bet-value').value) || 0;
-            if (amt <= 0 || amt > balance) {
+            if (playerBalance < activeBetAmount) {
                 alert("Недостаточно монет на балансе!");
                 return;
             }
-            
-            balance -= amt;
-            localStorage.setItem('wog_offline_balance', balance);
-            document.getElementById('bal').innerText = balance.toLocaleString();
-            
-            activeBets[selection] = (activeBets[selection] || 0) + amt;
-            el.classList.add('has-active-wager');
-            
-            let b = el.querySelector('.chip-badge');
-            if (b) b.remove();
-            
-            el.innerHTML += "<span class='chip-badge'>" + formatShortAmount(activeBets[selection]) + "</span>";
-            updateBetsPanelText();
-            triggerPremiumFx('tick');
-        }
 
-        function placeExactNumberBet(num, el) {
-            placeTableBet("num_" + num, el);
-        }
-
-        function updateBetsPanelText() {
-            let total = 0;
-            let textArr = [];
-            for (let sel in activeBets) {
-                total += activeBets[sel];
-                textArr.push(sel + ": " + formatShortAmount(activeBets[sel]));
+            // Накапливаем ставку на выбранном исходе раунда
+            if (!currentRoundBets[cellId]) {
+                currentRoundBets[cellId] = 0;
             }
-            document.getElementById('total-bet-amount').innerText = total.toLocaleString();
-            document.getElementById('active-bets-text').innerText = textArr.length > 0 ? textArr.join(" | ") : "Вы еще не делали ставок";
+            currentRoundBets[cellId] += activeBetAmount;
+            
+            // Списываем монеты из баланса и обновляем общую сумму ставок раунда
+            playerBalance -= activeBetAmount;
+            totalRoundBetSum += activeBetAmount;
+            
+            // Включаем визуальную подсветку ячейки стола (добавляем белое свечение)
+            const targetBtn = document.getElementById(`cell-${cellId}`);
+            if (targetBtn) {
+                targetBtn.classList.add('wp-bet-active-glow');
+                targetBtn.classList.add('has-bets-placed');
+            }
+
+            refreshUI();
+
+            // ТРИГГЕР: Если это самая первая ставка, мгновенно запускаем отсчет раунда
+            if (!isGameSessionActive) {
+                startRoundCountdownTimer();
+            }
+
+            // Подаем нативную тактильную отдачу на телефон игрока
+            if (tg && typeof tg.HapticFeedback === 'object') {
+                tg.HapticFeedback.impactOccurred('light');
+            }
         }
-        function renderCanvasFrame() {
-            const canvas = document.getElementById('wheel-canvas');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const numSectors = 37;
-            const arcAngle = (2 * Math.PI) / numSectors;
-            const radius = canvas.width / 2;
-            
+        WHEEL_NUMBERS =;
+
+        const multiplierOptions =;
+
+        // ЛОГИКА ТАЙМЕРА ОБРАТНОГО ОТСЧЕТА РАУНДА (20 СЕКУНД)
+        function startRoundCountdownTimer() {
+            isGameSessionActive = true;
+            secondsRemaining = 20;
+
+            const emojiElement = document.getElementById('wp-center-emoji');
+            const textElement = document.getElementById('wp-center-text');
+
+            emojiElement.innerText = "⏳";
+            textElement.innerText = `${secondsRemaining} сек`;
+
+            countdownTimerInterval = setInterval(() => {
+                secondsRemaining--;
+                
+                if (secondsRemaining > 0) {
+                    textElement.innerText = `${secondsRemaining} сек`;
+                    // Легкая вибрация каждую секунду для динамики
+                    if (tg && typeof tg.HapticFeedback === 'object' && secondsRemaining <= 5) {
+                        tg.HapticFeedback.impactOccurred('light');
+                    }
+                } else {
+                    // Время вышло: останавливаем таймер, закрываем ставки
+                    clearInterval(countdownTimerInterval);
+                    emojiElement.innerText = "🌀";
+                    textElement.innerText = "Крутим!";
+                    
+                    // Блокируем ввод полей, чтобы игрок ничего не нажал во время анимации
+                    document.getElementById('wp-bet-field').disabled = true;
+
+                    // Запускаем физику вращения колеса и качения шарика
+                    initiateWheelSpinAnimation();
+                }
+            }, 1000);
+        }
+        WHEEL_NUMBERS =;
+
+        const multiplierOptions =;
+
+        // ГРАФИЧЕСКИЙ ДВИЖОК CANVAS: ОТРИСОВКА НЕОНОВОГО КОЛЕСА РУЛЕТКИ
+        const canvas = document.getElementById('wheel-render-canvas');
+        const ctx = canvas.getContext('2d');
+        let currentWheelRotationAngle = 0; // Текущий угол поворота самого колеса
+        let ballCurrentPhysicsAngle = 0;    // Текущий угол качения шарика
+
+        function drawPremiumRouletteWheel(wheelAngle, ballAngle, displayBall = false) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const outerRadius = canvas.width / 2 - 10;
+            const totalSectors = WHEEL_NUMBERS.length;
+            const arcLengthPerSector = (2 * Math.PI) / totalSectors;
+
             ctx.save();
-            ctx.translate(radius, radius);
+            ctx.translate(cx, cy);
             ctx.rotate(wheelAngle);
-            ctx.translate(-radius, -radius);
-            
-            for (let i = 0; i < numSectors; i++) {
-                let currentNum = rouletteWheelOrder[i];
-                let currentAngle = i * arcAngle - Math.PI / 2;
-                
-                if (currentNum === 0) ctx.fillStyle = '#2ecc71';
-                else if (redNumbersArray.includes(currentNum)) ctx.fillStyle = '#ff4757';
-                else ctx.fillStyle = '#2f3542';
-                
+
+            // 1. Рисуем чередующиеся цветные сектора с числами
+            for (let i = 0; i < totalSectors; i++) {
+                const currentSectorNumber = WHEEL_NUMBERS[i];
+                const startAngle = i * arcLengthPerSector - Math.PI / 2 - arcLengthPerSector / 2;
+                const endAngle = startAngle + arcLengthPerSector;
+
                 ctx.beginPath();
-                ctx.moveTo(radius, radius);
-                ctx.arc(radius, radius, radius - 10, currentAngle, currentAngle + arcAngle);
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, outerRadius, startAngle, endAngle);
+                ctx.closePath();
+
+                // Присваиваем цвет сектору
+                if (currentSectorNumber === 0) ctx.fillStyle = "#10b981"; // Зеленый Ноль
+                else if (NUMBER_COLORS[currentSectorNumber] === "red") ctx.fillStyle = "#e52e4d"; // Красный
+                else ctx.fillStyle = "#151a30"; // Темный черный сектор
+
                 ctx.fill();
-                ctx.lineWidth = 1;
-                ctx.strokeStyle = '#1e2530';
-                ctx.stroke();
                 
+                // Тонкая неоновая обводка каждого сектора
+                ctx.strokeStyle = "#29315c";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // 2. Отрисовываем цифры внутри секторов колеса
                 ctx.save();
-                ctx.fillStyle = '#ffffff';
-                ctx.translate(radius, radius);
-                ctx.rotate(currentAngle + arcAngle / 2);
-                ctx.font = 'bold 11px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(currentNum, radius - 22, 0);
+                ctx.rotate(startAngle + arcLengthPerSector / 2 + Math.PI / 2);
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 15px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(currentSectorNumber, 0, -outerRadius + 30);
                 ctx.restore();
             }
-            
+
+            // Рисуем внутреннее темное кольцо
             ctx.beginPath();
-            ctx.arc(radius, radius, radius - 44);
-            ctx.fillStyle = '#17212b';
+            ctx.arc(0, 0, outerRadius - 45, 0, 2 * Math.PI);
+            ctx.fillStyle = "#0c0f1d";
             ctx.fill();
-            ctx.lineWidth = 4;
-            ctx.strokeStyle = '#222a35';
+            ctx.strokeStyle = "#29315c";
+            ctx.lineWidth = 3;
             ctx.stroke();
             ctx.restore();
-            
-            ctx.save();
-            ctx.translate(radius, radius);
-            ctx.rotate(wheelAngle);
-            ctx.fillStyle = '#ffd700';
-            ctx.fillRect(-30, -3, 60, 6);
-            ctx.fillRect(-3, -30, 6, 60);
-            ctx.beginPath();
-            ctx.arc(0, 0, 6, 0, 2 * Math.PI);
-            ctx.fillStyle = '#fff';
-            ctx.fill();
-            ctx.restore();
-            
-            ctx.save();
-            ctx.translate(radius, radius);
-            ctx.rotate(ballAngle);
-            ctx.beginPath();
-            ctx.arc(currentBallRadiusEngine, 0, 7, 0, 2 * Math.PI);
-            ctx.fillStyle = '#ffffff';
-            ctx.fill();
-            ctx.restore();
         }
 
-        function continuousRenderAnimationLoop() {
-            if (gameStatus !== "SPINNING") {
-                wheelAngle += 0.001;
-                ballAngle -= 0.0005;
-                currentBallRadiusEngine = 71;
-            }
-            renderCanvasFrame();
-            requestAnimationFrame(continuousRenderAnimationLoop);
-        }
-        function getNumberColor(num) {
-            if (num === 0) return 'zero';
-            return redNumbersArray.includes(num) ? 'red' : 'black';
-        }
+        // Первичный рендеринг статичного колеса при загрузке страницы
+        drawPremiumRouletteWheel(0, 0, false);
+        generateSecureRoundData();
+        updateLuckyNumbersUI();
+        WHEEL_NUMBERS =;
 
-        function isNumberRed(num) {
-            return redNumbersArray.includes(num);
-        }
+        const multiplierOptions =;
 
-        function renderLuckyCardsUI(hide) {
-            let keys = Object.keys(activeLuckyMultipliers);
-            for (let i = 0; i < 3; i++) {
-                let card = document.getElementById('lc-' + i);
-                if (!card) continue;
-                if (hide) {
-                    card.classList.add('l-inactive');
-                    card.querySelector('.lucky-card-num').innerText = "—";
-                    card.querySelector('.multiplier-pill').innerText = "OFF";
-                    card.style.borderColor = "var(--border-neon)";
+        // ФИЗИЧЕСКИЙ ДВИЖОК: ЗАПУСК ВРАЩЕНИЯ И РАСЧЕТ ТРАЕКТОРИИ ШАРИКА
+        function initiateWheelSpinAnimation() {
+            // Подсвечиваем плашки Lucky Numbers, чтобы игрок вспомнил бонусные числа перед броском
+            updateLuckyNumbersUI();
+
+            const targetSectorIndex = WHEEL_NUMBERS.indexOf(roundWinningNumber);
+            const anglePerSector = (2 * Math.PI) / WHEEL_NUMBERS.length;
+
+            // Задаем случайное смещение для колеса, чтобы анимация была непредсказуемой
+            const finalWheelRotationAngle = (2 * Math.PI * 4) + (Math.random() * Math.PI * 2);
+
+            // МАТЕМАТИКА ШАРИКА ИЗ СКРИНШОТА: Шарик должен сделать ровно 5 кругов (10 * Math.PI)
+            // в противоположную сторону (знак минус) и упасть точно в ячейку выигравшего числа
+            const finalBallRotationAngle = -(2 * Math.PI * 5) - (targetSectorIndex * anglePerSector);
+
+            let currentAnimationFrameTime = 0;
+            const totalDurationFrames = 240; // Анимация длится ровно 4 секунды (60 кадров/сек * 4)
+
+            function processPhysicsFrame() {
+                currentAnimationFrameTime++;
+
+                if (currentAnimationFrameTime <= totalDurationFrames) {
+                    // Используем кубическое сглаживание (Cubic Bezier Ease-Out) для реалистичного трения и замедления
+                    const cubicProgress = 1 - Math.pow(1 - (currentAnimationFrameTime / totalDurationFrames), 3);
+
+                    // Рассчитываем текущие физические углы на основе прогресса замедления
+                    currentWheelRotationAngle = finalWheelRotationAngle * cubicProgress;
+                    ballCurrentPhysicsAngle = finalBallRotationAngle * cubicProgress;
+
+                    // Отрисовываем обновленные координаты колеса и шарика
+                    drawPremiumRouletteWheel(currentWheelRotationAngle, ballCurrentPhysicsAngle, true);
+
+                    // Рекурсивно вызываем следующий кадр анимации
+                    requestAnimationFrame(processPhysicsFrame);
                 } else {
-                    let num = keys[i];
-                    let mX = activeLuckyMultipliers[num];
-                    card.classList.remove('l-inactive');
-                    card.querySelector('.lucky-card-num').innerText = num;
-                    card.querySelector('.lucky-card-num').className = "lucky-card-num c-" + getNumberColor(parseInt(num));
-                    card.querySelector('.multiplier-pill').innerText = "x" + mX;
-                    card.style.borderColor = "var(--neon-gold)";
+                    // Анимация завершена: фиксируем финальный кадр и переходим к начислению монет
+                    currentWheelRotationAngle = finalWheelRotationAngle % (2 * Math.PI);
+                    ballCurrentPhysicsAngle = finalBallRotationAngle;
+                    
+                    drawPremiumRouletteWheel(currentWheelRotationAngle, ballCurrentPhysicsAngle, true);
+                    finalizeRoundResultsAndPayouts();
                 }
             }
-        }
 
-        function renderHistoryRibbon() {
-            let box = document.getElementById('history-box');
-            if (!box) return;
-            box.innerHTML = "";
-            serverRoundHistory.forEach((item, idx) => {
-                let c = getNumberColor(item.num);
-                box.innerHTML += `<div class="history-node n-${c}" onclick="openFairHistoryModal(${idx})">${item.num}</div>`;
+            // Запускаем цикл отрисовки
+            requestAnimationFrame(processPhysicsFrame);
+        }
+        WHEEL_NUMBERS =;
+
+        const multiplierOptions =;
+
+        // ОБНОВЛЕННАЯ ФУНКЦИЯ DRAW С ОТРЕНДЕРЕННЫМ БЕЛЫМ ШАРИКОМ
+        function drawPremiumRouletteWheel(wheelAngle, ballAngle, displayBall = false) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const outerRadius = canvas.width / 2 - 10;
+            const totalSectors = WHEEL_NUMBERS.length;
+            const arcLengthPerSector = (2 * Math.PI) / totalSectors;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(wheelAngle);
+
+            // 1. Рисуем чередующиеся цветные сектора с числами
+            for (let i = 0; i < totalSectors; i++) {
+                const currentSectorNumber = WHEEL_NUMBERS[i];
+                const startAngle = i * arcLengthPerSector - Math.PI / 2 - arcLengthPerSector / 2;
+                const endAngle = startAngle + arcLengthPerSector;
+
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.arc(0, 0, outerRadius, startAngle, endAngle);
+                ctx.closePath();
+
+                if (currentSectorNumber === 0) ctx.fillStyle = "#10b981"; 
+                else if (NUMBER_COLORS[currentSectorNumber] === "red") ctx.fillStyle = "#e52e4d"; 
+                else ctx.fillStyle = "#151a30"; 
+
+                ctx.fill();
+                
+                ctx.strokeStyle = "#29315c";
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.rotate(startAngle + arcLengthPerSector / 2 + Math.PI / 2);
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 15px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText(currentSectorNumber, 0, -outerRadius + 30);
+                ctx.restore();
+            }
+
+            // Рисуем внутреннее темное кольцо
+            ctx.beginPath();
+            ctx.arc(0, 0, outerRadius - 45, 0, 2 * Math.PI);
+            ctx.fillStyle = "#0c0f1d";
+            ctx.fill();
+            ctx.strokeStyle = "#29315c";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            ctx.restore();
+
+            // 2. ОТРИСОВКА ФИЗИКИ БЕГУЩЕГО БЕЛОГО ШАРИКА ИЗ СКРИНШОТА
+            if (displayBall) {
+                ctx.save();
+                ctx.translate(cx, cy);
+                // Шарик катится в противоположную сторону по внешнему ободу
+                ctx.rotate(ballAngle);
+
+                ctx.beginPath();
+                // Радиус орбиты шарика (накладывается четко на цветные ячейки секторов)
+                ctx.arc(0, -outerRadius + 22, 9, 0, 2 * Math.PI);
+                ctx.fillStyle = "#ffffff"; // Чистый белый глянцевый шарик
+                ctx.fill();
+                
+                // Добавляем шарику объемное неоновое свечение (3D Тень)
+                ctx.shadowColor = "#ffffff";
+                ctx.shadowBlur = 10;
+                ctx.restore();
+            }
+        }
+        WHEEL_NUMBERS =;
+
+        const multiplierOptions =;
+
+        // МАТЕМАТИЧЕСКИЙ КАЛЬКУЛЯТОР СТАВОК И НАЧИСЛЕНИЯ КОЭФФИЦИЕНТОВ
+        function finalizeRoundResultsAndPayouts() {
+            let totalAmountWonThisRound = 0;
+            const winningColor = NUMBER_COLORS[roundWinningNumber];
+
+            // 1. Проверяем, попало ли число в список Счастливых чисел текущего раунда
+            let luckyMultiplierBonus = 1;
+            let isLuckyHit = false;
+            
+            roundLuckyNumbersList.forEach(bonus => {
+                if (Number(bonus.num) === roundWinningNumber) {
+                    luckyMultiplierBonus = bonus.mult;
+                    isLuckyHit = true;
+                }
             });
-        }
 
-        function openFairHistoryModal(idx) {
-            let item = serverRoundHistory[idx];
-            if (!item) return;
-            document.getElementById('modal-fair-num').innerText = item.num;
-            document.getElementById('modal-fair-hash').innerText = item.hash;
-            document.getElementById('modal-fair-salt').innerText = item.salt;
-            document.getElementById('fair-history-modal').style.display = 'flex';
-        }
+            // 2. Цикл обхода и расчета всех сделанных ставок игрока
+            for (let cellId in currentRoundBets) {
+                let betValue = currentRoundBets[cellId];
+                if (betValue <= 0) continue;
 
-        function closeFairHistoryModal() {
-            document.getElementById('fair-history-modal').style.display = 'none';
-        }
+                // Ставка на Красное (x2)
+                if (cellId === 'red' && winningColor === 'red') {
+                    totalAmountWonThisRound += betValue * 2;
+                }
+                // Ставка на Черное (x2)
+                else if (cellId === 'black' && winningColor === 'black') {
+                    totalAmountWonThisRound += betValue * 2;
+                }
+                // Ставка на Ноль (x30)
+                else if (cellId === 'zero' && roundWinningNumber === 0) {
+                    totalAmountWonThisRound += betValue * 30;
+                }
+                // Ставка на Четное (x2)
+                else if (cellId === 'even' && roundWinningNumber !== 0 && roundWinningNumber % 2 === 0) {
+                    totalAmountWonThisRound += betValue * 2;
+                }
+                // Ставка на Нечетное (x2)
+                else if (cellId === 'odd' && roundWinningNumber % 2 !== 0) {
+                    totalAmountWonThisRound += betValue * 2;
+                }
+                // Ставка на Малые числа 1-18 (x2)
+                else if (cellId === 'low' && roundWinningNumber >= 1 && roundWinningNumber <= 18) {
+                    totalAmountWonThisRound += betValue * 2;
+                }
+                // Ставка на Большие числа 19-36 (x2)
+                else if (cellId === 'high' && roundWinningNumber >= 19 && roundWinningNumber <= 36) {
+                    totalAmountWonThisRound += betValue * 2;
+                }
+                // Первая Дюжина 1-12 (x3)
+                else if (cellId === 'doz1' && roundWinningNumber >= 1 && roundWinningNumber <= 12) {
+                    totalAmountWonThisRound += betValue * 3;
+                }
+                // Вторая Дюжина 13-24 (x3)
+                else if (cellId === 'doz2' && roundWinningNumber >= 13 && roundWinningNumber <= 24) {
+                    totalAmountWonThisRound += betValue * 3;
+                }
+                // Третья Дюжина 25-36 (x3)
+                else if (cellId === 'doz3' && roundWinningNumber >= 25 && roundWinningNumber <= 36) {
+                    totalAmountWonThisRound += betValue * 3;
+                }
+                // Проверка точных одиночных чисел рулетки (cellId вида 'num24')
+                else if (cellId.startsWith('num')) {
+                    let parsedTargetNumber = parseInt(cellId.replace('num', ''));
+                    if (parsedTargetNumber === roundWinningNumber) {
+                        // Если это точное число И оно стало Счастливым — применяем мега-множитель (до 500Х)!
+                        if (isLuckyHit) {
+                            totalAmountWonThisRound += betValue * luckyMultiplierBonus;
+                        } else {
+                            totalAmountWonThisRound += betValue * 30; // Обычная выплата за число x30
+                        }
+                    }
+                }
+            }
 
-        function switchTableMode() {
-            if (isSpinning) return;
-            let btn = document.getElementById('toggle-mode-btn');
-            let pBasic = document.getElementById('panel-basic');
-            let pNum = document.getElementById('panel-numbers');
-            if (currentMode === "basic") {
-                currentMode = "numbers";
-                btn.innerText = "🎯 Режим стола: Точные числа (x30+)";
-                btn.classList.add('numbers-active');
-                pBasic.style.display = 'none';
-                pNum.style.display = 'grid';
+            // Начисляем выигрыш на баланс игрока
+            playerBalance += totalAmountWonThisRound;
+
+            // Вызываем визуальный поп-ап результатов и раскрываем крипто-строку честности
+            displayRoundWinnerModalPopup(totalAmountWonThisRound, isLuckyHit, luckyMultiplierBonus);
+        }
+        WHEEL_NUMBERS =;
+
+        const multiplierOptions =;
+
+        // ВЫВОД МОДАЛЬНОГО ОКНА С РЕЗУЛЬТАТАМИ РАУНДА И ОБНОВЛЕНИЕ ЛЕНТЫ ИСТОРИИ ИГР
+        function displayRoundWinnerModalPopup(amountWon, isLuckyHit, luckyBonus) {
+            // Заполняем поп-ап выпавшим числом
+            document.getElementById('modal-winning-number').innerText = roundWinningNumber;
+            
+            // Красиво меняем цвет текста выпавшего числа в поп-апе
+            const numColor = NUMBER_COLORS[roundWinningNumber];
+            if (roundWinningNumber === 0) document.getElementById('modal-winning-number').style.color = "var(--color-green)";
+            else if (numColor === 'red') document.getElementById('modal-winning-number').style.color = "var(--color-red)";
+            else document.getElementById('modal-winning-number').style.color = "#ffffff";
+
+            // Рендерим плашку множителя (если число счастливое — пишем бонус, иначе пишем стандарт х30)
+            const badge = document.getElementById('modal-winning-multiplier-badge');
+            if (isLuckyHit) {
+                badge.innerText = `LUCKY BONUS x${luckyBonus}!`;
+                badge.style.background = "rgba(245, 158, 11, 0.2)";
+                badge.style.borderColor = "var(--color-gold)";
+                badge.style.color = "#fef08a";
             } else {
-                currentMode = "basic";
-                btn.innerText = "🔄 Режим стола: Простые исходы";
-                btn.classList.remove('numbers-active');
-                pBasic.style.display = 'flex';
-                pNum.style.display = 'none';
+                badge.innerText = `x30`;
+                badge.style.background = "rgba(16, 185, 129, 0.2)";
+                badge.style.borderColor = "var(--color-green)";
+                badge.style.color = "#a7f3d0";
+            }
+
+            // Текст статуса победы/проигрыша для игрока
+            const statusText = document.getElementById('modal-player-win-status-text');
+            if (amountWon > 0) {
+                statusText.innerHTML = `🎉 Поздравляем! Ваш выигрыш составил:<br><span style="color: var(--color-gold); font-size: 20px; font-weight: 900;">+ ${amountWon} W</span>`;
+                if (tg && typeof tg.HapticFeedback === 'object') tg.HapticFeedback.notificationOccurred('success');
+            } else {
+                statusText.innerText = "В этот раз не повезло. Сделайте новую ставку!";
+            }
+
+            // Раскрываем секретную строку MD5 / String проверки честности раунда в футере
+            document.getElementById('wp-crypto-md5-string').style.display = "block";
+
+            // Плавно показываем оверлей поп-апа результатов раунда на экране смартфона
+            document.getElementById('wp-result-modal-popup').style.display = "flex";
+
+            // ДОБАВЛЕНИЕ НОВОГО ЧИСЛА В НАЧАЛО БЕГУЩЕЙ ЛЕНТЫ ИСТОРИИ ИГР СВЕРХУ
+            const historyLine = document.getElementById('wp-history-line');
+            const newCircle = document.createElement('div');
+            newCircle.className = `hist-circle ${numColor}`;
+            newCircle.innerText = roundWinningNumber;
+            
+            // Вставляем самый свежий раунд на первое место слева
+            historyLine.insertBefore(newCircle, historyLine.firstChild);
+            
+            // Если лента разрослась слишком длинной (больше 10 раундов) — убираем самый старый кружок справа
+            if (historyLine.children.length > 10) {
+                historyLine.removeChild(historyLine.lastChild);
             }
         }
 
-        function generateNumbersGridButtons() {
-            let grid = document.getElementById('panel-numbers');
-            if (!grid) return;
-            grid.innerHTML = "";
-            for (let i = 1; i <= 36; i++) {
-                let colorClass = isNumberRed(i) ? "r-red" : "r-black";
-                grid.innerHTML += "<button class='num-btn " + colorClass + "' id='btn-num-" + i + "' onclick='placeExactNumberBet(" + i + ", this)'>" + i + "</button>";
-            }
+        // ЗАКРЫТИЕ ПОП-АПА, СБРОС ИГРОВОГО СТОЛА И ГЕНЕРАЦИЯ СЛЕДУЮЩЕГО ХЭША ЧЕСТНОСТИ
+        function closeResultModalPopup() {
+            document.getElementById('wp-result-modal-popup').style.display = "none";
+
+            // Сбрасываем и очищаем массивы ставок раунда
+            currentRoundBets = {};
+            totalRoundBetSum = 0;
+
+            // Снимаем белую подсветку и маркеры ставок со всех кнопок стола ставок
+            const allTriggerButtons = document.querySelectorAll('.wp-bet-trigger-btn');
+            allTriggerButtons.forEach(btn => {
+                btn.classList.remove('wp-bet-active-glow');
+                btn.classList.remove('has-bets-placed');
+            });
+
+            // Разблокируем ввод инпута ставки для нового раунда
+            document.getElementById('wp-bet-field').disabled = false;
+
+            // Возвращаем колесо рулетки в исходное нулевое положение на Canvas
+            drawPremiumRouletteWheel(0, 0, false);
+
+            // Переключаем игровую фазу: переводим автомат в режим ожидания ставки
+            isGameSessionActive = false;
+
+            // СВЕРХВАЖНО: До начала новых ставок генерируем новый хэш SHA-256 следующего раунда!
+            generateSecureRoundData();
+            updateLuckyNumbersUI();
+
+            // Синхронизируем и сохраняем новый баланс в памяти телефона
+            refreshUI();
         }
 
-        function modifyBet(type) {
-            let input = document.getElementById('bet-value');
-            let current = parseInt(input.value) || 0;
-            input.value = type === 'multiply' ? current * 2 : Math.max(5, Math.floor(current / 2));
-            triggerTelegramHaptic('click');
-        }
-
-        function addChip(amount) {
-            let input = document.getElementById('bet-value');
-            let current = parseInt(input.value) || 0;
-            input.value = current + amount;
-            triggerTelegramHaptic('click');
-        }
-
-        function toggleChat(show) {
-            document.getElementById('chat-modal').style.display = show ? 'flex' : 'none';
-            triggerTelegramHaptic('click');
-        }
-
-        function addLog(user, text, isPlayer) {
-            const logs = document.getElementById('chat-logs');
-            const el = document.createElement('div');
-            el.innerHTML = '<strong style="color:' + (isPlayer ? 'var(--neon-cyan)' : 'var(--neon-gold)') + '">' + user + ':</strong> ' + text;
-            logs.appendChild(el);
-            logs.scrollTop = logs.scrollHeight;
-            document.getElementById('chat-bubble-preview').innerText = user + ': ' + text;
-        }
-
-        function sendPlayerChatMessage() {
-            const input = document.getElementById('chat-msg-input');
-            let txt = input.value.trim();
-            if (!txt) return;
-            addLog("You", txt, true);
-            input.value = "";
-            triggerTelegramHaptic('click');
-        }
-
-        function spawnBotChat() {
-            if (Math.random() < 0.4 && gameStatus !== "SPINNING") {
-                let name = botNames[Math.floor(Math.random() * botNames.length)];
-                let phrase = botPhrases[Math.floor(Math.random() * botPhrases.length)];
-                addLog(name, phrase, false);
-            }
-            setTimeout(spawnBotChat, 4000 + Math.random() * 4000);
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            loadBalanceFromTelegramCloud();
-            generateNumbersGridButtons();
-            continuousRenderAnimationLoop();
-            startOfflineGameLoop();
-            setTimeout(spawnBotChat, 3000);
-        });
-
-        window.addEventListener('focus', () => {
-            loadBalanceFromTelegramCloud();
-        });
+        // Финальный стартовый рендеринг экрана при открытии игры
+        refreshUI();
     </script>
 </body>
 </html>
