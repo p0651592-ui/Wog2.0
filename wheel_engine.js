@@ -1,54 +1,168 @@
-// ГЛОБАЛЬНЫЙ ОБЪЕКТ ДЛЯ СВЯЗИ С TELEGRAM API
+// ИНИЦИАЛИЗАЦИЯ TELEGRAM WEBAPP API И НАСТРОЙКА ИНТЕРФЕЙСА
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 
-// НАСТРОЙКИ СВЯЗИ С СЕРВЕРОМ
 const SERVER_URL = "https://onrender.com";
 const MY_ADMIN_ID = 6682822292;
 let userId = MY_ADMIN_ID;
 let username = "Guest_Player";
 
-// ПОЛНЫЕ МАССИВЫ КОЛЕСА И МНОЖИТЕЛЕЙ (ЖЕСТКАЯ ФИКСАЦИЯ БЕЗ ПРОПУСКОВ)
+// ПОЛНЫЕ МАССИВЫ ЕВРОПЕЙСКОЙ РУЛЕТКИ И КОЭФФИЦИЕНТОВ
 const WHEEL_NUMBERS =;
 const multiplierOptions =;
 
+const NUMBER_COLORS = {
+    0: "green",  1: "red",    2: "black",  3: "red",    4: "black",  5: "red",
+    6: "black",  7: "red",    8: "black",  9: "red",    10: "black", 11: "black",
+    12: "red",   13: "black", 14: "red",   15: "black", 16: "red",   17: "black",
+    18: "red",   19: "red",   20: "black", 21: "red",   22: "black", 23: "red",
+    24: "black", 25: "red",   26: "black", 27: "red",   28: "black", 29: "black",
+    30: "red",   31: "black", 32: "red",   33: "black", 34: "red",   35: "black", 36: "red"
+};
+
 if (tg) {
     try {
-        // Инициализируем Mini App и разворачиваем на весь экран
         tg.ready();
         tg.expand();
-
-        // ВКЛЮЧАЕМ СИСТЕМНУЮ ЗАЩИТУ: Игрок не закроет игру случайным свайпом вниз во время ставки
-        if (typeof tg.enableClosingConfirmation === 'function') {
-            tg.enableClosingConfirmation();
-        }
-
-        // АВТОМАТИЧЕСКАЯ НАСТРОЙКА ЦВЕТОВОЙ ПАЛИТРЫ ПОД ТЕМУ ТЕЛЕГРАМА ИГРОКА
-        if (tg.themeParams) {
-            document.documentElement.style.setProperty('--bg-main', tg.themeParams.bg_color || '#0c0f1d');
-            document.documentElement.style.setProperty('--bg-card', tg.themeParams.secondary_bg_color || '#151a30');
-            document.documentElement.style.setProperty('--text-main', tg.themeParams.text_color || '#ffffff');
-            document.documentElement.style.setProperty('--text-muted', tg.themeParams.hint_color || '#64748b');
-        }
-
-        // СЧИТЫВАЕМ РЕАЛЬНЫЕ ДАННЫЕ АВТОРИЗАЦИИ ИЗ СДК ТЕЛЕГРАМА
+        // Блокируем закрытие Mini App случайным движением пальца вниз
+        if (typeof tg.enableClosingConfirmation === 'function') { tg.enableClosingConfirmation(); }
+        // Считываем никнейм и ID игрока
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             userId = tg.initDataUnsafe.user.id;
             username = tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name || "User";
         }
-
-        // НАСТРОЙКА НАТИВНОЙ КНОПКИ ТЕЛЕФОНА "НАЗАД"
+        // Интегрируем нативную кнопку Telegram "Назад"
         if (tg.BackButton) {
-            tg.BackButton.show();
-            tg.BackButton.offClick(); // Очищаем старые дубликаты кликов
-            tg.BackButton.onClick(() => {
-                location.href = "index.html"; // Мягкий возврат на главное меню лобби
-            });
+            tg.BackButton.show(); tg.BackButton.offClick();
+            tg.BackButton.onClick(() => { location.href = "index.html"; });
         }
-    } catch (error) {
-        console.error("Ошибка активации Telegram WebApp API:", error);
+    } catch (e) { console.error("Ошибка Telegram API:", e); }
+}
+
+let playerBalance = parseInt(localStorage.getItem('wog_secure_balance')) || 5000;
+let activeBetAmount = 100;
+let currentRoundBets = {}; 
+let totalRoundBetSum = 0;
+let isGameSessionActive = false; 
+let countdownTimerInterval = null;
+let secondsRemaining = 20;
+let roundSecretSalt = "";
+let roundWinningNumber = 0;
+let roundLuckyNumbersList = [];
+function buildNumbersKeyboardLayout() {
+    const container = document.getElementById('wp-num-keys-generator-box');
+    if (!container) return;
+    container.innerHTML = "";
+    const zeroBtn = document.createElement('button');
+    zeroBtn.className = "wp-bet-trigger-btn wp-btn-green";
+    zeroBtn.id = "cell-num0";
+    zeroBtn.innerHTML = `0 <span class="wp-badge-x">x30</span>`;
+    zeroBtn.onclick = () => placeBetOnCell('num0');
+    container.appendChild(zeroBtn);
+    for (let i = 1; i <= 36; i++) {
+        const btn = document.createElement('button');
+        const btnColorClass = NUMBER_COLORS[i] === 'red' ? 'wp-btn-red' : 'wp-btn-black';
+        btn.className = `wp-bet-trigger-btn ${btnColorClass}`;
+        btn.id = `cell-num${i}`;
+        btn.innerHTML = `${i} <span class="wp-badge-x">x30</span>`;
+        btn.onclick = () => placeBetOnCell(`num${i}`);
+        container.appendChild(btn);
     }
 }
 buildNumbersKeyboardLayout();
+
+async function refreshUI() {
+    const balDisplay = document.getElementById('wp-balance-display');
+    const betDisplay = document.getElementById('wp-player-total-bet');
+    if (balDisplay) balDisplay.innerText = playerBalance;
+    if (betDisplay) betDisplay.innerText = `${totalRoundBetSum} W`;
+    localStorage.setItem('wog_secure_balance', playerBalance);
+    try {
+        const response = await fetch(`${SERVER_URL}/api/user/sync`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: userId, username: username, local_balance: playerBalance })
+        });
+        if (response.ok) {
+            const serverData = await response.json();
+            if (serverData && typeof serverData.balance !== 'undefined') {
+                playerBalance = serverData.balance;
+                if (balDisplay) balDisplay.innerText = playerBalance;
+                localStorage.setItem('wog_secure_balance', playerBalance);
+            }
+        }
+    } catch (e) { console.warn("Сервер спит, локальный режим активен"); }
+}
+
+async function placeBetOnCell(cellId) {
+    if (isGameSessionActive && secondsRemaining <= 0) return;
+    const inputField = document.getElementById('wp-bet-field');
+    if (!inputField) return;
+    activeBetAmount = parseInt(inputField.value) || 0;
+    if (activeBetAmount <= 0 || playerBalance < activeBetAmount) return;
+    if (!currentRoundBets[cellId]) { currentRoundBets[cellId] = 0; }
+    currentRoundBets[cellId] += activeBetAmount;
+    playerBalance -= activeBetAmount; totalRoundBetSum += activeBetAmount;
+    const targetBtn = document.getElementById(`cell-${cellId}`);
+    if (targetBtn) { targetBtn.classList.add('wp-bet-active-glow'); targetBtn.classList.add('has-bets-placed'); }
+    refreshUI();
+    try {
+        fetch(`${SERVER_URL}/api/wheel/bet`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: userId, bet_cell: cellId, amount: activeBetAmount })
+        }).catch(() => {});
+    } catch (e) {}
+    if (!isGameSessionActive) { startRoundCountdownTimer(); }
+    if (tg && typeof tg.HapticFeedback === 'object') { tg.HapticFeedback.impactOccurred('light'); }
+}
+function modifyBetSize(action) {
+    if (isGameSessionActive && secondsRemaining <= 0) return;
+    let field = document.getElementById('wp-bet-field');
+    if (!field) return;
+    let current = parseInt(field.value) || 100;
+    if (action === 'x2') current = Math.min(playerBalance, current * 2);
+    if (action === '/2') current = Math.max(10, Math.floor(current / 2));
+    field.value = current; activeBetAmount = current;
+}
+
+function addChipValue(amount) {
+    if (isGameSessionActive && secondsRemaining <= 0) return;
+    let field = document.getElementById('wp-bet-field');
+    if (!field) return;
+    let current = parseInt(field.value) || 0;
+    let targetAmount = current + amount;
+    if (targetAmount > playerBalance) targetAmount = playerBalance;
+    field.value = targetAmount; activeBetAmount = targetAmount;
+}
+
+function toggleKeyboardLayout(layoutName) {
+    const mainView = document.getElementById('wp-main-table-view');
+    const numKeysView = document.getElementById('wp-numbers-keyboard-view');
+    if (!mainView || !numKeysView) return;
+    if (layoutName === 'numbers') { mainView.style.display = "none"; numKeysView.style.display = "grid"; }
+    else { mainView.style.display = "flex"; numKeysView.style.display = "none"; }
+}
+
+function startRoundCountdownTimer() {
+    isGameSessionActive = true; secondsRemaining = 20;
+    const emojiElement = document.getElementById('wp-center-emoji');
+    const textElement = document.getElementById('wp-center-text');
+    if (emojiElement) emojiElement.innerText = "⏳";
+    if (textElement) textElement.innerText = `${secondsRemaining} сек`;
+    countdownTimerInterval = setInterval(() => {
+        secondsRemaining--;
+        if (secondsRemaining > 0) {
+            if (textElement) textElement.innerText = `${secondsRemaining} сек`;
+        } else {
+            clearInterval(countdownTimerInterval);
+            if (emojiElement) emojiElement.innerText = "🌀";
+            if (textElement) textElement.innerText = "Крутим!";
+            const field = document.getElementById('wp-bet-field');
+            if (field) field.disabled = true;
+            initiateWheelSpinAnimation();
+        }
+    }, 1000);
+}
 
 function generateSecureRoundData() {
     roundWinningNumber = Math.floor(Math.random() * 37);
@@ -56,7 +170,7 @@ function generateSecureRoundData() {
     roundLuckyNumbersList = [];
     for (let i = 0; i < 3; i++) {
         let randomIndex = Math.floor(Math.random() * availableNumbers.length);
-        let selectedNum = availableNumbers.splice(randomIndex, 1)[0];
+        let selectedNum = availableNumbers.splice(randomIndex, 1);
         let selectedMult = multiplierOptions[Math.floor(Math.random() * multiplierOptions.length)];
         roundLuckyNumbersList.push({ num: selectedNum, mult: selectedMult });
     }
@@ -87,78 +201,6 @@ function updateLuckyNumbersUI() {
         }
     }
 }
-function refreshUI() {
-    const balDisplay = document.getElementById('wp-balance-display');
-    const betDisplay = document.getElementById('wp-player-total-bet');
-    if (balDisplay) balDisplay.innerText = playerBalance;
-    if (betDisplay) betDisplay.innerText = `${totalRoundBetSum} W`;
-    localStorage.setItem('wog_secure_balance', playerBalance);
-}
-
-function modifyBetSize(action) {
-    if (isGameSessionActive && secondsRemaining <= 0) return;
-    let field = document.getElementById('wp-bet-field');
-    if (!field) return;
-    let current = parseInt(field.value) || 100;
-    if (action === 'x2') current = Math.min(playerBalance, current * 2);
-    if (action === '/2') current = Math.max(10, Math.floor(current / 2));
-    field.value = current; activeBetAmount = current;
-}
-
-function addChipValue(amount) {
-    if (isGameSessionActive && secondsRemaining <= 0) return;
-    let field = document.getElementById('wp-bet-field');
-    if (!field) return;
-    let current = parseInt(field.value) || 0;
-    let targetAmount = current + amount;
-    if (targetAmount > playerBalance) targetAmount = playerBalance;
-    field.value = targetAmount; activeBetAmount = targetAmount;
-}
-
-function toggleKeyboardLayout(layoutName) {
-    const mainView = document.getElementById('wp-main-table-view');
-    const numKeysView = document.getElementById('wp-numbers-keyboard-view');
-    if (!mainView || !numKeysView) return;
-    if (layoutName === 'numbers') { mainView.style.display = "none"; numKeysView.style.display = "grid"; }
-    else { mainView.style.display = "flex"; numKeysView.style.display = "none"; }
-}
-
-function placeBetOnCell(cellId) {
-    if (isGameSessionActive && secondsRemaining <= 0) return;
-    const inputField = document.getElementById('wp-bet-field');
-    if (!inputField) return;
-    activeBetAmount = parseInt(inputField.value) || 0;
-    if (activeBetAmount <= 0 || playerBalance < activeBetAmount) return;
-    if (!currentRoundBets[cellId]) { currentRoundBets[cellId] = 0; }
-    currentRoundBets[cellId] += activeBetAmount;
-    playerBalance -= activeBetAmount; totalRoundBetSum += activeBetAmount;
-    const targetBtn = document.getElementById(`cell-${cellId}`);
-    if (targetBtn) { targetBtn.classList.add('wp-bet-active-glow'); targetBtn.classList.add('has-bets-placed'); }
-    refreshUI();
-    if (!isGameSessionActive) { startRoundCountdownTimer(); }
-    if (tg && typeof tg.HapticFeedback === 'object') { tg.HapticFeedback.impactOccurred('light'); }
-}
-function startRoundCountdownTimer() {
-    isGameSessionActive = true; secondsRemaining = 20;
-    const emojiElement = document.getElementById('wp-center-emoji');
-    const textElement = document.getElementById('wp-center-text');
-    if (emojiElement) emojiElement.innerText = "⏳";
-    if (textElement) textElement.innerText = `${secondsRemaining} сек`;
-    countdownTimerInterval = setInterval(() => {
-        secondsRemaining--;
-        if (secondsRemaining > 0) {
-            if (textElement) textElement.innerText = `${secondsRemaining} сек`;
-        } else {
-            clearInterval(countdownTimerInterval);
-            if (emojiElement) emojiElement.innerText = "🌀";
-            if (textElement) textElement.innerText = "Крутим!";
-            const field = document.getElementById('wp-bet-field');
-            if (field) field.disabled = true;
-            initiateWheelSpinAnimation();
-        }
-    }, 1000);
-}
-
 const canvas = document.getElementById('wheel-render-canvas');
 const ctx = canvas ? canvas.getContext('2d') : null;
 let currentWheelRotationAngle = 0; let ballCurrentPhysicsAngle = 0;
@@ -187,7 +229,7 @@ function drawPremiumRouletteWheel(wheelAngle, ballAngle, displayBall = false) {
     ctx.beginPath(); ctx.arc(0, 0, outerRadius - 45, 0, 2 * Math.PI); ctx.fillStyle = "#0c0f1d";
     ctx.fill(); ctx.strokeStyle = "#29315c"; ctx.lineWidth = 3; ctx.stroke(); ctx.restore();
 }
-// ОТРИСОВКА ФИЗИКИ БЕГУЩЕГО БЕЛОГО ШАРИКА И АНИМАЦИЯ ВРАЩЕНИЯКОЛЕСА
+
 function updateWheelViewWithBall(wheelAngle, ballAngle) {
     drawPremiumRouletteWheel(wheelAngle, ballAngle, true);
     if (!canvas || !ctx) return;
@@ -195,8 +237,7 @@ function updateWheelViewWithBall(wheelAngle, ballAngle) {
     const outerRadius = canvas.width / 2 - 10;
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(ballAngle);
     ctx.beginPath(); ctx.arc(0, -outerRadius + 22, 9, 0, 2 * Math.PI);
-    ctx.fillStyle = "#ffffff"; ctx.fill(); ctx.shadowColor = "#ffffff";
-    ctx.shadowBlur = 10; ctx.restore();
+    ctx.fillStyle = "#ffffff"; ctx.fill(); ctx.shadowColor = "#ffffff"; ctx.shadowBlur = 10; ctx.restore();
 }
 
 function initiateWheelSpinAnimation() {
@@ -205,7 +246,6 @@ function initiateWheelSpinAnimation() {
     const finalWheelRotationAngle = (2 * Math.PI * 4) + (Math.random() * Math.PI * 2);
     const finalBallRotationAngle = -(2 * Math.PI * 5) - (targetSectorIndex * anglePerSector);
     let currentAnimationFrameTime = 0; const totalDurationFrames = 240;
-    
     function processPhysicsFrame() {
         currentAnimationFrameTime++;
         if (currentAnimationFrameTime <= totalDurationFrames) {
@@ -215,8 +255,7 @@ function initiateWheelSpinAnimation() {
             updateWheelViewWithBall(currentWheelRotationAngle, ballCurrentPhysicsAngle);
             requestAnimationFrame(processPhysicsFrame);
         } else {
-            currentWheelRotationAngle = finalWheelRotationAngle % (2 * Math.PI);
-            ballCurrentPhysicsAngle = finalBallRotationAngle;
+            currentWheelRotationAngle = finalWheelRotationAngle % (2 * Math.PI); ballCurrentPhysicsAngle = finalBallRotationAngle;
             updateWheelViewWithBall(currentWheelRotationAngle, ballCurrentPhysicsAngle);
             finalizeRoundResultsAndPayouts();
         }
@@ -248,6 +287,7 @@ function finalizeRoundResultsAndPayouts() {
     playerBalance += totalAmountWonThisRound;
     displayRoundWinnerModalPopup(totalAmountWonThisRound, isLuckyHit, luckyMultiplierBonus);
 }
+
 function displayRoundWinnerModalPopup(amountWon, isLuckyHit, luckyBonus) {
     const modalNum = document.getElementById('modal-winning-number');
     if (modalNum) {
@@ -287,7 +327,6 @@ function closeResultModalPopup() {
     generateSecureRoundData(); updateLuckyNumbersUI(); refreshUI();
 }
 
-// ПЕРВИЧНЫЙ ЗАПУСК СИСТЕМЫ И ИНИЦИАЛИЗАЦИЯ ИНТЕРФЕЙСА ПРИ ОТКРЫТИИ СТРАНИЦЫ
 drawPremiumRouletteWheel(0, 0, false);
 generateSecureRoundData();
 updateLuckyNumbersUI();
