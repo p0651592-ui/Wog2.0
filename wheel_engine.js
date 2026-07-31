@@ -1,7 +1,7 @@
 // ИНИЦИАЛИЗАЦИЯ TELEGRAM WEBAPP API И НАСТРОЙКА ИНТЕРФЕЙСА
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 
-const SERVER_URL = "https://onrender.com";
+const SERVER_URL = "https://wog-becend2.onrender.com/";
 const MY_ADMIN_ID = 6682822292;
 let userId = MY_ADMIN_ID;
 let username = "Guest_Player";
