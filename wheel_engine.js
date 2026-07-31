@@ -172,25 +172,38 @@ function startRoundCountdownTimer() {
     }, 1000);
 }
 
-function generateSecureRoundData() {
+async function generateSecureRoundData() {
     roundWinningNumber = Math.floor(Math.random() * 37);
     let availableNumbers = Array.from({length: 37}, (_, i) => i);
     roundLuckyNumbersList = [];
     for (let i = 0; i < 3; i++) {
         let randomIndex = Math.floor(Math.random() * availableNumbers.length);
         let selectedNum = availableNumbers.splice(randomIndex, 1);
-        let selectedMult = multiplierOptions[Math.floor(Math.random() * multiplierOptions.length)];
+        let selectedMult = MULTIPLIER_OPTIONS[Math.floor(Math.random() * MULTIPLIER_OPTIONS.length)];
         roundLuckyNumbersList.push({ num: selectedNum, mult: selectedMult });
     }
     roundSecretSalt = Math.random().toString(36).substring(2, 15);
     let luckyString = roundLuckyNumbersList.map(item => `${item.num}:x${item.mult}`).join(',');
     let rawRoundString = `${roundSecretSalt}|${roundWinningNumber}|lucky:[${luckyString}]`;
-    let calculatedSha256Hash = CryptoJS.SHA256(rawRoundString).toString();
-    const hashEl = document.getElementById('wp-crypto-hash-sha256');
-    if (hashEl) hashEl.innerText = calculatedSha256Hash;
+
+    try {
+        // Используем встроенное в браузер аппаратное шифрование SHA-256
+        const encoder = new TextEncoder();
+        const data = encoder.encode(rawRoundString);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const calculatedSha256Hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+        const hashEl = document.getElementById('wp-crypto-hash-sha256');
+        if (hashEl) hashEl.innerText = calculatedSha256Hash;
+    } catch (e) {
+        console.error("Крипто-ошибка:", e);
+    }
+
     let md5Block = document.getElementById('wp-crypto-md5-string');
     if (md5Block) { md5Block.style.display = "none"; md5Block.innerText = `String verify: ${rawRoundString}`; }
 }
+
 
 function updateLuckyNumbersUI() {
     for (let i = 0; i < 3; i++) {
