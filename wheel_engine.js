@@ -1,14 +1,22 @@
-// ИНИЦИАЛИЗАЦИЯ TELEGRAM WEBAPP API И НАСТРОЙКА ИНТЕРФЕЙСА
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+if (tg) {
+    try { 
+        tg.expand(); tg.ready();
+        if (tg.BackButton) {
+            tg.BackButton.show(); tg.BackButton.offClick();
+            tg.BackButton.onClick(() => { location.href = "index.html"; });
+        }
+    } catch(e) { console.error(e); }
+}
 
-const SERVER_URL = "https://wog-becend2.onrender.com/";
+const SERVER_URL = "https://wog-becend2.onrender.com";
 const MY_ADMIN_ID = 6682822292;
 let userId = MY_ADMIN_ID;
-let username = "Guest_Player";
+if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) { userId = tg.initDataUnsafe.user.id; }
 
-// ПОЛНЫЕ МАССИВЫ ЕВРОПЕЙСКОЙ РУЛЕТКИ И КОЭФФИЦИЕНТОВ
-const WHEEL_NUMBERS =;
-const multiplierOptions =;
+// ПОЛНЫЕ МАССИВЫ РУЛЕТОЧНОГО КРУГА И БОНУСНЫХ МНОЖИТЕЛЕЙ
+const WHEEL_NUMBERS = [0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26];
+const MULTIPLIER_OPTIONS = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500];
 
 const NUMBER_COLORS = {
     0: "green",  1: "red",    2: "black",  3: "red",    4: "black",  5: "red",
