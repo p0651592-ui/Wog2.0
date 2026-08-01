@@ -46,7 +46,7 @@ if (tg) {
     } catch (e) { console.error("Ошибка Telegram API:", e); }
 }
 
-let playerBalance = parseInt(localStorage.getItem('wog_secure_balance')) || 5000;
+let playerBalance = parseInt(localStorage.getItem('wog_secure_balance')) || 5000000000;
 let activeBetAmount = 100;
 let currentRoundBets = {}; 
 let totalRoundBetSum = 0;
