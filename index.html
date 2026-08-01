@@ -578,7 +578,7 @@
         const tgUser = tg && tg.initDataUnsafe ? tg.initDataUnsafe.user : null;
 
         // МОСТ 1: Мгновенное чтение баланса из памяти телефона при старте
-        let playerBalance = parseInt(localStorage.getItem('wog_secure_balance')) || 5000;
+        let playerBalance = parseInt(localStorage.getItem('wog_secure_balance')) || 500000000;
         let userId = MY_ADMIN_ID; 
         let userFirstName = "Основатель (WOG)";
         let userUsername = "FounderAdmin";
