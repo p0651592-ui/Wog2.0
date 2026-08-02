@@ -226,13 +226,103 @@ function displayRoundWinnerModalPopup(amountWon, isLuckyHit, luckyBonus) {
     // ... [Логика отображения окна и обновления истории]
 }
 
-// МЯГКИЙ СБРОС СТОЛА
-function closeResultModalPopup() {
-    // ... [Логика сброса ставок и UI]
+// ВЫВОД ОКНА РЕЗУЛЬТАТОВ РАУНДА И ОБНОВЛЕНИЕ ЛЕНТЫ ИСТОРИИ ИГР
+function displayRoundWinnerModalPopup(amountWon, isLuckyHit, luckyBonus) {
+    const modalNum = document.getElementById('modal-winning-number');
+    if (modalNum) {
+        modalNum.innerText = roundWinningNumber;
+        const numColor = NUMBER_COLORS[roundWinningNumber];
+        if (roundWinningNumber === 0) {
+            modalNum.style.color = "var(--color-green)";
+        } else if (numColor === 'red') {
+            modalNum.style.color = "var(--color-red)";
+        } else {
+            modalNum.style.color = "#ffffff";
+        }
+    }
+
+    const badge = document.getElementById('modal-winning-multiplier-badge');
+    if (badge) {
+        if (isLuckyHit) {
+            badge.innerText = `LUCKY BONUS x${luckyBonus}!`;
+            badge.style.background = "rgba(245, 158, 11, 0.2)";
+            badge.style.borderColor = "var(--color-gold)";
+            badge.style.color = "#fef08a";
+        } else {
+            badge.innerText = `x30`;
+            badge.style.background = "rgba(16, 185, 129, 0.2)";
+            badge.style.borderColor = "var(--color-green)";
+            badge.style.color = "#a7f3d0";
+        }
+    }
+
+    const statusText = document.getElementById('modal-player-win-status-text');
+    if (statusText) {
+        if (amountWon > 0) {
+            statusText.innerHTML = `🎉 Выиграли:<br><span style="color: var(--color-gold); font-size: 20px; font-weight: 900;">+ ${amountWon} W</span>`;
+            if (tg && typeof tg.HapticFeedback === 'object') {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+        } else {
+            statusText.innerText = "В этот раз не повезло.";
+        }
+    }
+
+    const modalPopup = document.getElementById('wp-result-modal-popup');
+    if (modalPopup) {
+        modalPopup.style.display = "flex";
+    }
+
+    const historyLine = document.getElementById('wp-history-line');
+    if (historyLine) {
+        const numColor = NUMBER_COLORS[roundWinningNumber];
+        const newCircle = document.createElement('div');
+        newCircle.className = `hist-circle ${numColor}`;
+        newCircle.innerText = roundWinningNumber;
+        historyLine.insertBefore(newCircle, historyLine.firstChild);
+        if (historyLine.children.length > 10) {
+            historyLine.removeChild(historyLine.lastChild);
+        }
+    }
 }
 
-// ИНИЦИАЛИЗАЦИЯ И ЗАПУСК
-async function initGameEngineOnLoad() {
-    // ... [Инициализация игры]
+// МЯГКИЙ СБРОС ИГРОВОГО ПОЛЯ БЕЗ ЗАТИРАНИЯ ПРЕВЫДУЩИХ СЧАСТЛИВЫХ ЧИСЕЛ
+function closeResultModalPopup() {
+    const modalPopup = document.getElementById('wp-result-modal-popup');
+    if (modalPopup) {
+        modalPopup.style.display = "none";
+    }
+    
+    currentRoundBets = {};
+    totalRoundBetSum = 0;
+    
+    document.querySelectorAll('.wp-bet-trigger-btn').forEach(btn => {
+        btn.classList.remove('wp-bet-active-glow');
+        btn.classList.remove('has-bets-placed');
+    });
+    
+    const field = document.getElementById('wp-bet-field');
+    if (field) {
+        field.disabled = false;
+    }
+    
+    drawPremiumRouletteWheel(0, 0, false);
+    isGameSessionActive = false;
+    refreshUI();
 }
+
+// ПЕРВИЧНЫЙ ОДНОКРАТНЫЙ ЗАПУСК ДВИЖКА ПРИ ЗАГРУЗКЕ СТРАНИЦЫ В ТГ
+async function initGameEngineOnLoad() {
+    drawPremiumRouletteWheel(0, 0, false);
+    await generateSecureRoundData();
+    updateLuckyNumbersUI();
+    
+    if (!localStorage.getItem('wog_secure_balance')) {
+        localStorage.setItem('wog_secure_balance', 100000);
+    }
+    playerBalance = parseInt(localStorage.getItem('wog_secure_balance'));
+    refreshUI();
+}
+
+// АВТОМАТИЧЕСКИЙ СТАРТ СИСТЕМЫ
 initGameEngineOnLoad();
