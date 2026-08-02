@@ -152,25 +152,134 @@ function toggleKeyboardLayout(layoutName) {
 }
 
 function startRoundCountdownTimer() {
-    isGameSessionActive = true; secondsRemaining = 20;
+    isGameSessionActive = true; 
+    secondsRemaining = 20;
+    
     const emojiElement = document.getElementById('wp-center-emoji');
     const textElement = document.getElementById('wp-center-text');
+    
     if (emojiElement) emojiElement.innerText = "⏳";
     if (textElement) textElement.innerText = `${secondsRemaining} сек`;
+    
     countdownTimerInterval = setInterval(() => {
         secondsRemaining--;
         if (secondsRemaining > 0) {
             if (textElement) textElement.innerText = `${secondsRemaining} сек`;
         } else {
             clearInterval(countdownTimerInterval);
-            if (emojiElement) emojiElement.innerText = "🌀";
-            if (textElement) textElement.innerText = "Крутим!";
+            if (emojiElement) emojiElement.innerText = "🎰";
+            if (textElement) textElement.innerText = "БОНУСЫ!";
+            
             const field = document.getElementById('wp-bet-field');
             if (field) field.disabled = true;
-            initiateWheelSpinAnimation();
+            
+            // Вместо мгновенного старта колеса запускаем крутилку слотов!
+            animateLuckyNumbersSlots();
         }
     }, 1000);
 }
+
+function animateLuckyNumbersSlots() {
+    let currentFrame = 0;
+    const maxAnimationFrames = 90; // Слоты бешено крутятся ровно 1.5 секунды (60fps * 1.5)
+    
+    const num1 = document.getElementById('lucky-num-1');
+    const num2 = document.getElementById('lucky-num-2');
+    const num3 = document.getElementById('lucky-num-3');
+    
+    const mult1 = document.getElementById('lucky-mult-1');
+    const mult2 = document.getElementById('lucky-mult-2');
+    const mult3 = document.getElementById('lucky-mult-3');
+
+    function updateSlotsPhysics() {
+        currentFrame++;
+        
+        // Ряд 1: Крутится до 30 кадра
+        if (currentFrame < 30) {
+            if (num1) num1.innerText = Math.floor(Math.random() * 37);
+            if (mult1) mult1.innerText = `${MULTIPLIER_OPTIONS[Math.floor(Math.random() * MULTIPLIER_OPTIONS.length)]}X`;
+        } else if (currentFrame === 30) {
+            // Фиксируем реальное первое счастливое число раунда
+            fixSingleLuckySlotUI(0);
+        }
+        
+        // Ряд 2: Крутится до 60 кадра
+        if (currentFrame < 60) {
+            if (num2) num2.innerText = Math.floor(Math.random() * 37);
+            if (mult2) mult2.innerText = `${MULTIPLIER_OPTIONS[Math.floor(Math.random() * MULTIPLIER_OPTIONS.length)]}X`;
+        } else if (currentFrame === 60) {
+            // Фиксируем реальное второе счастливое число раунда
+            fixSingleLuckySlotUI(1);
+        }
+        
+        // Ряд 3: Крутится до 90 кадра
+        if (currentFrame < 85) {
+            if (num3) num3.innerText = Math.floor(Math.random() * 37);
+            if (mult3) mult3.innerText = `${MULTIPLIER_OPTIONS[Math.floor(Math.random() * MULTIPLIER_OPTIONS.length)]}X`;
+        } else if (currentFrame === 85) {
+            // Фиксируем реальное третье счастливое число раунда
+            fixSingleLuckySlotUI(2);
+        }
+
+        if (currentFrame <= maxAnimationFrames) {
+            requestAnimationFrame(updateSlotsPhysics);
+        } else {
+            // Когда все 3 слота остановились — с задержкой плавно запускаем колесо рулетки!
+            const textElement = document.getElementById('wp-center-text');
+            const emojiElement = document.getElementById('wp-center-emoji');
+            if (emojiElement) emojiElement.innerText = "🌀";
+            if (textElement) textElement.innerText = "Крутим!";
+            
+            setTimeout(() => {
+                initiateWheelSpinAnimation();
+            }, 400);
+        }
+    }
+    
+    requestAnimationFrame(updateSlotsPhysics);
+}
+// ФУНКЦИЯ ФИКСАЦИИ И КРАСИВОЙ НЕОНОВОЙ ПОДСВЕТКИ ВЫПАВШЕГО СЛОТА
+function fixSingleLuckySlotUI(slotIndex) {
+    const data = roundLuckyNumbersList[slotIndex];
+    if (!data) return;
+
+    const numElement = document.getElementById(`lucky-num-${slotIndex + 1}`);
+    const multElement = document.getElementById(`lucky-mult-${slotIndex + 1}`);
+
+    if (numElement && multElement) {
+        // Жестко фиксируем реальный результат раунда из базы данных
+        numElement.innerText = data.num;
+        multElement.innerText = `${data.mult}X`;
+
+        const box = numElement.parentElement;
+        if (box) {
+            // Эффект вспышки при фиксации числа (ударный масштаб)
+            box.style.transform = "scale(1.15)";
+            setTimeout(() => { box.style.transform = "scale(1)"; }, 150);
+
+            // Красим рамки и плашки в неоновые цвета по весу икса
+            if (data.mult >= 300) {
+                box.style.borderColor = "var(--color-gold)";
+                box.style.boxShadow = "0 0 15px rgba(245, 158, 11, 0.4)";
+                multElement.className = "wp-bonus-multiplier wp-m100";
+            } else if (data.mult >= 100) {
+                box.style.borderColor = "var(--color-purple)";
+                box.style.boxShadow = "0 0 15px rgba(99, 102, 241, 0.4)";
+                multElement.className = "wp-bonus-multiplier wp-m100";
+            } else {
+                box.style.borderColor = "var(--color-blue)";
+                box.style.boxShadow = "0 0 15px rgba(37, 99, 235, 0.4)";
+                multElement.className = "wp-bonus-multiplier wp-m50";
+            }
+        }
+    }
+
+    // Триггерим легкую вибрацию на телефоне в момент фиксации каждого барабана
+    if (tg && typeof tg.HapticFeedback === 'object') {
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+}
+
 
 async function generateSecureRoundData() {
     roundWinningNumber = Math.floor(Math.random() * 37);
