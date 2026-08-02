@@ -511,32 +511,30 @@ function displayRoundWinnerModalPopup(amountWon, isLuckyHit, luckyBonus) {
 }
 
 function closeResultModalPopup() {
-    const modalPopup = document.getElementById('wp-result-modal-popup'); 
-    if (modalPopup) modalPopup.style.display = "none";
-    
-    // Очищаем локальные массивы ставок текущего раунда
-    currentRoundBets = {}; 
-    totalRoundBetSum = 0;
-    
-    // Снимаем неоновую подсветку со всех кнопок стола ставок
-    document.querySelectorAll('.wp-bet-trigger-btn').forEach(btn => { 
-        btn.classList.remove('wp-bet-active-glow'); 
-        btn.classList.remove('has-bets-placed'); 
-    });
-    
-    // Разблокируем поле ввода размера ставки для нового раунда
-    const field = document.getElementById('wp-bet-field'); 
-    if (field) field.disabled = false;
-    
-    // Возвращаем колесо рулетки в исходную позицию 0 градусов
-    drawPremiumRouletteWheel(0, 0, false); 
-    isGameSessionActive = false;
-    
-    // СВЕРХВАЖНО: Мы БОЛЬШЕ НЕ ВЫЗЫВАЕМ тут generateSecureRoundData() и updateLuckyNumbersUI()!
-    // Благодаря этому старые выпавшие счастливые числа остаются гореть на экране во время сбора новых ставок.
-    
+    const modalPopup = document.getElementById('wp-result-modal-popup'); if (modalPopup) modalPopup.style.display = "none";
+    currentRoundBets = {}; totalRoundBetSum = 0;
+    document.querySelectorAll('.wp-bet-trigger-btn').forEach(btn => { btn.classList.remove('wp-bet-active-glow'); btn.classList.remove('has-bets-placed'); });
+    const field = document.getElementById('wp-bet-field'); if (field) field.disabled = false;
+    drawPremiumRouletteWheel(0, 0, false); isGameSessionActive = false;
+    // Оставляем числа гореть на экране, но НЕ вызываем генерацию заново, пока идет сбор ставок!
     refreshUI();
 }
+
+// ПЕРВИЧНЫЙ ОДНОКРАТНЫЙ ЗАПУСК СИСТЕМЫ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ
+function initGameEngineOnLoad() {
+    drawPremiumRouletteWheel(0, 0, false);
+    // Генерируем стартовые числа, чтобы массивы были заполнены и JS не падал в ошибку
+    generateSecureRoundData();
+    updateLuckyNumbersUI();
+    // Синхронизируем баланс с index.html
+    if (!localStorage.getItem('wog_secure_balance')) { localStorage.setItem('wog_secure_balance', 100000); }
+    playerBalance = parseInt(localStorage.getItem('wog_secure_balance'));
+    refreshUI();
+}
+
+// Вызываем стартовую инициализацию аппарата
+initGameEngineOnLoad();
+
 
 
 drawPremiumRouletteWheel(0, 0, false);
