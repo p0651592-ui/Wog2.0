@@ -393,11 +393,44 @@ function updateWheelViewWithBall(wheelAngle, ballAngle) {
     // ... (код рендеринга шарика)
 }
 
-// Запуск симуляции вращения (4 круга колесо, 5 кругов шарик, Cubic Ease-Out)
 function initiateWheelSpinAnimation() {
-    // ... (логика расчета углов поворота)
-    // ... (Cubic Ease-Out анимация)
+    WogLogger.info(`Запуск анимации спина. Целевое число: ${roundWinningNumber}`);
+    
+    // Индекс выигрышного числа и углы поворота
+    const targetSectorIndex = WHEEL_NUMBERS.indexOf(roundWinningNumber);
+    const anglePerSector = (2 * Math.PI) / WHEEL_NUMBERS.length;
+    
+    // Колесо: 4 оборота + случайный угол
+    const finalWheelRotationAngle = (2 * Math.PI * 4) + (Math.random() * Math.PI * 2);
+    const wheelRemainderAngle = finalWheelRotationAngle % (2 * Math.PI);
+    
+    // Шарик: 5 оборотов (в противоход) + подстройка под финальный угол колеса
+    const finalBallRotationAngle = -(2 * Math.PI * 5) - (targetSectorIndex * anglePerSector) + wheelRemainderAngle;
+    
+    let currentAnimationFrameTime = 0;
+    const totalDurationFrames = 240; // 4 секунды при 60fps
+    
+    function processPhysicsFrame() {
+        currentAnimationFrameTime++;
+        
+        if (currentAnimationFrameTime <= totalDurationFrames) {
+            // Cubic Ease-Out для торможения
+            const progress = 1 - Math.pow(1 - (currentAnimationFrameTime / totalDurationFrames), 3);
+            currentWheelRotationAngle = finalWheelRotationAngle * progress;
+            ballCurrentPhysicsAngle = finalBallRotationAngle * progress;
+            
+            updateWheelViewWithBall(currentWheelRotationAngle, ballCurrentPhysicsAngle);
+            requestAnimationFrame(processPhysicsFrame);
+        } else {
+            // Фиксация в целевом секторе
+            updateWheelViewWithBall(wheelRemainderAngle, finalBallRotationAngle);
+            WogLogger.info(`Шарик зафиксирован в секторе ${roundWinningNumber}.`);
+            finalizeRoundResultsAndPayouts();
+        }
+    }
+    requestAnimationFrame(processPhysicsFrame);
 }
+
 
 // Калькулятор выигрышей, проверка ставок и Lucky Numbers
 function finalizeRoundResultsAndPayouts() {
