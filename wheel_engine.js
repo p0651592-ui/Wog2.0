@@ -364,30 +364,39 @@ function updateWheelViewWithBall(wheelAngle, ballAngle) {
 function initiateWheelSpinAnimation() {
     const targetSectorIndex = WHEEL_NUMBERS.indexOf(roundWinningNumber); 
     const anglePerSector = (2 * Math.PI) / WHEEL_NUMBERS.length;
+    
+    // Колесо делает 4 полных круга + случайное смещение
     const finalWheelRotationAngle = (2 * Math.PI * 4) + (Math.random() * Math.PI * 2);
     const wheelRemainderAngle = finalWheelRotationAngle % (2 * Math.PI);
+    
+    // Шарик летит в ПРОТИВОХОД (минус): делает 5 кругов и падает в нужный карман с учетом сдвига колеса
     const finalBallRotationAngle = -(2 * Math.PI * 5) - (targetSectorIndex * anglePerSector) + wheelRemainderAngle;
     
     let currentAnimationFrameTime = 0; 
-    const totalDurationFrames = 240;
+    const totalDurationFrames = 240; // 4 секунды при 60 FPS
     
     function processPhysicsFrame() {
         currentAnimationFrameTime++;
         if (currentAnimationFrameTime <= totalDurationFrames) {
+            // Cubic Ease-Out плавное торможение
             const cubicProgress = 1 - Math.pow(1 - (currentAnimationFrameTime / totalDurationFrames), 3);
             currentWheelRotationAngle = finalWheelRotationAngle * cubicProgress; 
             ballCurrentPhysicsAngle = finalBallRotationAngle * cubicProgress;
+            
             updateWheelViewWithBall(currentWheelRotationAngle, ballCurrentPhysicsAngle);
             requestAnimationFrame(processPhysicsFrame);
         } else {
-            currentWheelRotationAngle = finalWheelRotationAngle % (2 * Math.PI); 
+            // Мертвая фиксация в целевом секторе
+            currentWheelRotationAngle = wheelRemainderAngle; 
             ballCurrentPhysicsAngle = finalBallRotationAngle;
+            
             updateWheelViewWithBall(currentWheelRotationAngle, ballCurrentPhysicsAngle); 
             finalizeRoundResultsAndPayouts();
         }
     }
     requestAnimationFrame(processPhysicsFrame);
 }
+
 function finalizeRoundResultsAndPayouts() {
     let totalAmountWonThisRound = 0; 
     const winningColor = NUMBER_COLORS[roundWinningNumber];
