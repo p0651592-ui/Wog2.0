@@ -1,51 +1,86 @@
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 
 if (tg) {
-    try { 
-        tg.expand(); 
+    try {
+        tg.expand();
         tg.ready();
         if (tg.BackButton) {
-            tg.BackButton.show(); 
+            tg.BackButton.show();
             tg.BackButton.offClick();
-            tg.BackButton.onClick(() => { location.href = "index.html"; });
+            tg.BackButton.onClick(() => {
+                location.href = "index.html";
+            });
         }
         if (typeof tg.enableClosingConfirmation === 'function') {
             tg.enableClosingConfirmation();
         }
-    } catch(e) { 
-        console.error("Telegram SDK Init Error:", e); 
+    } catch (e) {
+        console.error("Telegram SDK Init Error:", e);
     }
 }
+
 const SERVER_URL = "https://onrender.com";
 const MY_ADMIN_ID = 6682822292;
 let userId = MY_ADMIN_ID;
 let username = "Guest_Player";
 
-if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) { 
-    userId = tg.initDataUnsafe.user.id; 
+if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+    userId = tg.initDataUnsafe.user.id;
     username = tg.initDataUnsafe.user.username || tg.initDataUnsafe.user.first_name || "User";
 }
-// ПОЛНЫЕ МАССИВЫ РУЛЕТОЧНОГО КРУГА И БОНУСНЫХ МНОЖИТЕЛЕЙ (БЕЗ СОКРАЩЕНИЙ)
-const WHEEL_NUMBERS = [/*...*/]; // Полный массив в [1.1]
-const MULTIPLIER_OPTIONS = [/*...*/]; // Полный массив в [1.1]
 
-const NUMBER_COLORS = { 0: "green", 1: "red", 2: "black", ... }; // Полная раскладка в [1.1]
+const WHEEL_NUMBERS = [
+    0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10,
+    5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
+];
 
-// СОСТОЯНИЯ ТЕКУЩЕЙ СЕССИИ ИГРЫ
+const MULTIPLIER_OPTIONS = [
+    50, 50, 50, 50, 50, 100, 100, 100, 100, 150, 150, 150, 200, 200, 250, 300, 500
+];
+
+const NUMBER_COLORS = {
+    0: "green",  1: "red",    2: "black",  3: "red",    4: "black",  5: "red",
+    6: "black",  7: "red",    8: "black",  9: "red",    10: "black", 11: "black",
+    12: "red",   13: "black", 14: "red",   15: "black", 16: "red",   17: "black",
+    18: "red",   19: "red",   20: "black", 21: "red",   22: "black", 23: "red",
+    24: "black", 25: "red",   26: "black", 27: "red",   28: "black", 29: "black",
+    30: "red",   31: "black", 32: "red",   33: "black", 34: "red",   35: "black", 36: "red"
+};
+
 let playerBalance = parseInt(localStorage.getItem('wog_secure_balance')) || 100000;
 let activeBetAmount = 100;
-// ... (остальные переменные состояния)
+let currentRoundBets = {};
+let totalRoundBetSum = 0;
+let isGameSessionActive = false;
+let countdownTimerInterval = null;
+let secondsRemaining = 20;
+let roundSecretSalt = "";
+let roundWinningNumber = 0;
 let roundLuckyNumbersList = [];
-
-// АВТОМАТИЧЕСКАЯ ГЕНЕРАЦИЯ КНОПОК ТОЧНЫХ ЧИСЕЛ 0-36
 function buildNumbersKeyboardLayout() {
     const container = document.getElementById('wp-num-keys-generator-box');
     if (!container) return;
     container.innerHTML = "";
-    // Логика создания кнопок (полный код в [1.1])
+    
+    const zeroBtn = document.createElement('button');
+    zeroBtn.className = "wp-bet-trigger-btn wp-btn-green";
+    zeroBtn.id = "cell-num0";
+    zeroBtn.innerHTML = `0 <span class="wp-badge-x">x30</span>`;
+    zeroBtn.onclick = () => placeBetOnCell('num0');
+    container.appendChild(zeroBtn);
+    
+    for (let i = 1; i <= 36; i++) {
+        const btn = document.createElement('button');
+        const btnColorClass = NUMBER_COLORS[i] === 'red' ? 'wp-btn-red' : 'wp-btn-black';
+        btn.className = `wp-bet-trigger-btn ${btnColorClass}`;
+        btn.id = `cell-num${i}`;
+        btn.innerHTML = `${i} <span class="wp-badge-x">x30</span>`;
+        btn.onclick = () => placeBetOnCell(`num${i}`);
+        container.appendChild(btn);
+    }
 }
 buildNumbersKeyboardLayout();
-// ОБНОВЛЕНИЕ БАЛАНСОВ И ДАННЫХ СТАВКИ НА ЭКРАНЕ ИГРОКА
+
 function refreshUI() {
     const balDisplay = document.getElementById('wp-balance-display');
     const betDisplay = document.getElementById('wp-player-total-bet');
@@ -56,7 +91,6 @@ function refreshUI() {
     localStorage.setItem('wog_secure_balance', playerBalance);
 }
 
-// РЕГУЛИРОВКА СТАВКИ КНОПКАМИ УДВОЕНИЯ И ДЕЛЕНИЯ ПОПОЛАМ
 function modifyBetSize(action) {
     if (isGameSessionActive && secondsRemaining <= 0) return;
     
@@ -64,14 +98,16 @@ function modifyBetSize(action) {
     if (!field) return;
     
     let current = parseInt(field.value) || 100;
-    if (action === 'x2') current = Math.min(playerBalance, current * 2);
-    if (action === '/2') current = Math.max(10, Math.floor(current / 2));
+    if (action === 'x2') {
+        current = Math.min(playerBalance, current * 2);
+    }
+    if (action === '/2') {
+        current = Math.max(10, Math.floor(current / 2));
+    }
     
     field.value = current;
     activeBetAmount = current;
 }
-
-// ДОБАВЛЕНИЕ МОНЕТ С ПАНЕЛИ БЫСТРЫХ ФИШЕК КАЗИНО (+10, +100, +1K, +25K)
 function addChipValue(amount) {
     if (isGameSessionActive && secondsRemaining <= 0) return;
     
@@ -80,13 +116,14 @@ function addChipValue(amount) {
     
     let current = parseInt(field.value) || 0;
     let targetAmount = current + amount;
-    if (targetAmount > playerBalance) targetAmount = playerBalance;
+    if (targetAmount > playerBalance) {
+        targetAmount = playerBalance;
+    }
     
     field.value = targetAmount;
     activeBetAmount = targetAmount;
 }
 
-// ПЕРЕКЛЮЧАТЕЛЬ СЛОЕВ СТОЛА СТАВОК (ОБЩЕЕ ПОЛЕ / СЕТКА 1-36)
 function toggleKeyboardLayout(layoutName) {
     const mainView = document.getElementById('wp-main-table-view');
     const numKeysView = document.getElementById('wp-numbers-keyboard-view');
@@ -100,133 +137,365 @@ function toggleKeyboardLayout(layoutName) {
         numKeysView.style.display = "none";
     }
 }
-// ЯДРО РАЗМЕЩЕНИЯ СТАВКИ НА ИНТЕРФЕКТИВНОМ СТОЛЕ
+
 function placeBetOnCell(cellId) {
     if (isGameSessionActive && secondsRemaining <= 0) return;
-    // ... [логика обработки ставки] ...
-    if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    
+    const inputField = document.getElementById('wp-bet-field');
+    if (!inputField) return;
+    activeBetAmount = parseInt(inputField.value) || 0;
+    
+    if (activeBetAmount <= 0 || playerBalance < activeBetAmount) return;
+    
+    if (!currentRoundBets[cellId]) { 
+        currentRoundBets[cellId] = 0; 
+    }
+    currentRoundBets[cellId] += activeBetAmount;
+    
+    playerBalance -= activeBetAmount; 
+    totalRoundBetSum += activeBetAmount;
+    
+    const targetBtn = document.getElementById(`cell-${cellId}`);
+    if (targetBtn) { 
+        targetBtn.classList.add('wp-bet-active-glow'); 
+        targetBtn.classList.add('has-bets-placed'); 
+    }
+    
+    refreshUI();
+    
+    if (!isGameSessionActive) { 
+        startRoundCountdownTimer(); 
+    }
+    if (tg && typeof tg.HapticFeedback === 'object') { 
+        tg.HapticFeedback.impactOccurred('light'); 
+    }
 }
-
-// РАБОТА 20-СЕКУНДНОГО ТАЙМЕРА ОБРАТНОГО ОТСЧЕТА РАУНДА
 function startRoundCountdownTimer() {
     isGameSessionActive = true; 
     secondsRemaining = 20;
-    // ... [логика таймера] ...
+    
+    const emojiElement = document.getElementById('wp-center-emoji');
+    const textElement = document.getElementById('wp-center-text');
+    
+    if (emojiElement) emojiElement.innerText = "⏳";
+    if (textElement) textElement.innerText = `${secondsRemaining} сек`;
+    
     countdownTimerInterval = setInterval(async () => {
         secondsRemaining--;
-        if (secondsRemaining <= 0) {
+        if (secondsRemaining > 0) {
+            if (textElement) textElement.innerText = `${secondsRemaining} сек`;
+        } else {
             clearInterval(countdownTimerInterval);
-            await generateSecureRoundData(); // [1.1]
-            animateLuckyNumbersSlots(); // [1.1]
+            
+            await generateSecureRoundData();
+            
+            if (emojiElement) emojiElement.innerText = "🎰";
+            if (textElement) textElement.innerText = "БОНУСЫ!";
+            
+            const field = document.getElementById('wp-bet-field');
+            if (field) field.disabled = true;
+            
+            animateLuckyNumbersSlots();
         }
     }, 1000);
 }
-// КРИПТОГРАФИЧЕСКИЙ МОДУЛЬ PROVABLY FAIR НА ЦИФРОВОМ ЯДРЕ СМАРТФОНА
 async function generateSecureRoundData() {
-    // ... [Генерация случайных чисел и SHA-256 хеша] ...
+    roundWinningNumber = Math.floor(Math.random() * 37);
+    let availableNumbers = Array.from({length: 37}, (_, i) => i);
+    roundLuckyNumbersList = [];
+    
+    for (let i = 0; i < 3; i++) {
+        let randomIndex = Math.floor(Math.random() * availableNumbers.length);
+        let selectedNum = availableNumbers.splice(randomIndex, 1)[0];
+        let selectedMult = MULTIPLIER_OPTIONS[Math.floor(Math.random() * MULTIPLIER_OPTIONS.length)];
+        roundLuckyNumbersList.push({ num: selectedNum, mult: selectedMult });
+    }
+    
+    roundSecretSalt = Math.random().toString(36).substring(2, 15);
+    let luckyString = roundLuckyNumbersList.map(item => `${item.num}:x${item.mult}`).join(',');
+    let rawRoundString = `${roundSecretSalt}|${roundWinningNumber}|lucky:[${luckyString}]`;
+    
+    try {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(rawRoundString);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const calculatedSha256Hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        const hashEl = document.getElementById('wp-crypto-hash-sha256');
+        if (hashEl) hashEl.innerText = calculatedSha256Hash;
+        
+        let md5Block = document.getElementById('wp-crypto-md5-string');
+        if (md5Block) {
+            md5Block.style.display = "none";
+            md5Block.innerText = `String verify: ${rawRoundString}`;
+        }
+    } catch (e) {
+        console.error("Web Crypto API SHA-256 Error:", e);
+    }
 }
-
-// УЛУЧШЕННАЯ АНИМАЦИЯ БЕГУЩИХ БАРАБАНОВ С КИБЕРПАНК-РАЗМЫТИЕМ (MOTION BLUR)
 function animateLuckyNumbersSlots() {
-    // ... [Анимация слотов с motion blur и фиксацией] ...
+    let currentFrame = 0;
+    const maxAnimationFrames = 90;
+    
+    const num1 = document.getElementById('lucky-num-1');
+    const num2 = document.getElementById('lucky-num-2');
+    const num3 = document.getElementById('lucky-num-3');
+    
+    const mult1 = document.getElementById('lucky-mult-1');
+    const mult2 = document.getElementById('lucky-mult-2');
+    const mult3 = document.getElementById('lucky-mult-3');
+
+    if (num1) num1.style.filter = "blur(3px)";
+    if (num2) num2.style.filter = "blur(3px)";
+    if (num3) num3.style.filter = "blur(3px)";
+
+    function updateSlotsPhysics() {
+        currentFrame++;
+        
+        if (currentFrame < 30) {
+            if (num1) num1.innerText = Math.floor(Math.random() * 37);
+            if (mult1) mult1.innerText = `${MULTIPLIER_OPTIONS[Math.floor(Math.random() * MULTIPLIER_OPTIONS.length)]}X`;
+        } else if (currentFrame === 30) {
+            if (num1) num1.style.filter = "none";
+            fixSingleLuckySlotUI(0);
+        }
+        
+        if (currentFrame < 60) {
+            if (num2) num2.innerText = Math.floor(Math.random() * 37);
+            if (mult2) mult2.innerText = `${MULTIPLIER_OPTIONS[Math.floor(Math.random() * MULTIPLIER_OPTIONS.length)]}X`;
+        } else if (currentFrame === 60) {
+            if (num2) num2.style.filter = "none";
+            fixSingleLuckySlotUI(1);
+        }
+        
+        if (currentFrame < 85) {
+            if (num3) num3.innerText = Math.floor(Math.random() * 37);
+            if (mult3) mult3.innerText = `${MULTIPLIER_OPTIONS[Math.floor(Math.random() * MULTIPLIER_OPTIONS.length)]}X`;
+        } else if (currentFrame === 85) {
+            if (num3) num3.style.filter = "none";
+            fixSingleLuckySlotUI(2);
+        }
+
+        if (currentFrame <= maxAnimationFrames) {
+            requestAnimationFrame(updateSlotsPhysics);
+        } else {
+            const textElement = document.getElementById('wp-center-text');
+            const emojiElement = document.getElementById('wp-center-emoji');
+            if (emojiElement) emojiElement.innerText = "🌀";
+            if (textElement) textElement.innerText = "Крутим!";
+            
+            setTimeout(() => {
+                initiateWheelSpinAnimation();
+            }, 600);
+        }
+    }
+    requestAnimationFrame(updateSlotsPhysics);
 }
-// Функция фиксации слота с визуальными эффектами
 function fixSingleLuckySlotUI(slotIndex) {
     const data = roundLuckyNumbersList[slotIndex];
     if (!data) return;
-    
-    // ... [логика обновления DOM, анимации scale и смены стилей borderColor/boxShadow]
-    
-    // Haptic feedback
-    if (typeof tg !== 'undefined' && tg.HapticFeedback) {
+
+    const numElement = document.getElementById(`lucky-num-${slotIndex + 1}`);
+    const multElement = document.getElementById(`lucky-mult-${slotIndex + 1}`);
+
+    if (numElement && multElement) {
+        numElement.innerText = data.num;
+        multElement.innerText = `${data.mult}X`;
+
+        const box = numElement.parentElement;
+        if (box) {
+            box.style.transform = "scale(1.15)";
+            setTimeout(() => { box.style.transform = "scale(1)"; }, 150);
+
+            if (data.mult >= 300) {
+                box.style.borderColor = "var(--color-gold)";
+                box.style.boxShadow = "0 0 15px rgba(245, 158, 11, 0.4)";
+                multElement.className = "wp-bonus-multiplier wp-m100";
+            } else if (data.mult >= 100) {
+                box.style.borderColor = "var(--color-purple)";
+                box.style.boxShadow = "0 0 15px rgba(99, 102, 241, 0.4)";
+                multElement.className = "wp-bonus-multiplier wp-m100";
+            } else {
+                box.style.borderColor = "var(--color-blue)";
+                box.style.boxShadow = "0 0 15px rgba(37, 99, 235, 0.4)";
+                multElement.className = "wp-bonus-multiplier wp-m50";
+            }
+        }
+    }
+
+    if (tg && typeof tg.HapticFeedback === 'object') {
         tg.HapticFeedback.impactOccurred('medium');
     }
 }
 
-// Инициализация Canvas
+function updateLuckyNumbersUI() {
+    for (let i = 0; i < 3; i++) {
+        let data = roundLuckyNumbersList[i];
+        if (!data) continue;
+        let numElement = document.getElementById(`lucky-num-${i+1}`);
+        let multElement = document.getElementById(`lucky-mult-${i+1}`);
+        if (numElement && multElement) {
+            numElement.innerText = data.num;
+            multElement.innerText = `${data.mult}X`;
+            let box = numElement.parentElement;
+            if (box) {
+                if (data.mult >= 300) {
+                    box.style.borderColor = "var(--color-gold)";
+                    multElement.className = "wp-bonus-multiplier wp-m100";
+                } else if (data.mult >= 100) {
+                    box.style.borderColor = "var(--color-purple)";
+                    multElement.className = "wp-bonus-multiplier wp-m100";
+                } else {
+                    box.style.borderColor = "var(--color-blue)";
+                    multElement.className = "wp-bonus-multiplier wp-m50";
+                }
+            }
+        }
+    }
+}
+
 const canvas = document.getElementById('wheel-render-canvas');
 const ctx = canvas ? canvas.getContext('2d') : null;
-// ... [переменные углов]
-// ВЫСОКОТОЧНАЯ ТРИГОНОМЕТРИЧЕСКАЯ ОТРИСОВКА СЕКТОРОВ РУЛЕТКИ
+let currentWheelRotationAngle = 0;
+let ballCurrentPhysicsAngle = 0;
 function drawPremiumRouletteWheel(wheelAngle, ballAngle, displayBall = false) {
     if (!canvas || !ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const cx = canvas.width / 2, cy = canvas.height / 2;
-    const outerRadius = canvas.width / 2 - 10, totalSectors = WHEEL_NUMBERS.length;
-    const arcLengthPerSector = (2 * Math.PI) / totalSectors;
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(wheelAngle);
     
-    // Цикл отрисовки секторов, цветов и цифр [1.1]
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const outerRadius = canvas.width / 2 - 10;
+    const totalSectors = WHEEL_NUMBERS.length;
+    const arcLengthPerSector = (2 * Math.PI) / totalSectors;
+    
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(wheelAngle);
+    
     for (let i = 0; i < totalSectors; i++) {
-        const num = WHEEL_NUMBERS[i], start = i * arcLengthPerSector - Math.PI / 2 - arcLengthPerSector / 2;
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, outerRadius, start, start + arcLengthPerSector); ctx.closePath();
-        ctx.fillStyle = num === 0 ? "#10b981" : (NUMBER_COLORS[num] === "red" ? "#e52e4d" : "#151a30");
-        ctx.fill(); ctx.strokeStyle = "#29315c"; ctx.stroke();
+        const currentSectorNumber = WHEEL_NUMBERS[i];
+        const startAngle = i * arcLengthPerSector - Math.PI / 2 - arcLengthPerSector / 2;
+        const endAngle = startAngle + arcLengthPerSector;
         
-        ctx.save(); ctx.rotate(start + arcLengthPerSector / 2 + Math.PI / 2);
-        ctx.fillStyle = "#ffffff"; ctx.font = "bold 15px sans-serif";
-        ctx.fillText(num, 0, -outerRadius + 30); ctx.restore();
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, outerRadius, startAngle, endAngle);
+        ctx.closePath();
+        
+        if (currentSectorNumber === 0) {
+            ctx.fillStyle = "#10b981";
+        } else if (NUMBER_COLORS[currentSectorNumber] === "red") {
+            ctx.fillStyle = "#e52e4d";
+        } else {
+            ctx.fillStyle = "#151a30";
+        }
+        
+        ctx.fill();
+        ctx.strokeStyle = "#29315c";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        
+        ctx.save();
+        ctx.rotate(startAngle + arcLengthPerSector / 2 + Math.PI / 2);
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "bold 15px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(currentSectorNumber, 0, -outerRadius + 30);
+        ctx.restore();
     }
-    // Внутренний обод
-    ctx.beginPath(); ctx.arc(0, 0, outerRadius - 45, 0, 2 * Math.PI);
-    ctx.fillStyle = "#0c0f1d"; ctx.fill(); ctx.stroke(); ctx.restore();
+    
+    ctx.beginPath();
+    ctx.arc(0, 0, outerRadius - 45, 0, 2 * Math.PI);
+    ctx.fillStyle = "#0c0f1d";
+    ctx.fill();
+    ctx.strokeStyle = "#29315c";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.restore();
 }
-// ОТРИСОВКА БЕЛОГО ШАРИКА И ЗАПУСК ФИЗИКИ (5 КРУГОВ, CUBIC EASE-OUT)
 function updateWheelViewWithBall(wheelAngle, ballAngle) {
     drawPremiumRouletteWheel(wheelAngle, ballAngle, true);
     if (!canvas || !ctx) return;
-    const cx = canvas.width / 2, cy = canvas.height / 2, radius = canvas.width / 2 - 10;
-    ctx.save(); ctx.translate(cx, cy); ctx.rotate(ballAngle);
-    ctx.beginPath(); ctx.arc(0, -radius + 22, 9, 0, 2 * Math.PI);
-    ctx.fillStyle = "#ffffff"; ctx.fill();
-    ctx.shadowColor = "#ffffff"; ctx.shadowBlur = 10; ctx.restore();
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const outerRadius = canvas.width / 2 - 10;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(ballAngle);
+    ctx.beginPath();
+    ctx.arc(0, -outerRadius + 22, 9, 0, 2 * Math.PI);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+    ctx.shadowColor = "#ffffff";
+    ctx.shadowBlur = 10;
+    ctx.restore();
 }
 
 function initiateWheelSpinAnimation() {
-    const targetIdx = WHEEL_NUMBERS.indexOf(roundWinningNumber);
-    const finalWheel = (2 * Math.PI * 4) + (Math.random() * Math.PI * 2);
-    const finalBall = -(2 * Math.PI * 5) - (targetIdx * (2 * Math.PI / WHEEL_NUMBERS.length));
-    let frame = 0, duration = 240;
-
-    function animate() {
-        frame++;
-        if (frame <= duration) {
-            const progress = 1 - Math.pow(1 - (frame / duration), 3);
-            updateWheelViewWithBall(finalWheel * progress, finalBall * progress);
-            requestAnimationFrame(animate);
+    const targetSectorIndex = WHEEL_NUMBERS.indexOf(roundWinningNumber);
+    const anglePerSector = (2 * Math.PI) / WHEEL_NUMBERS.length;
+    const finalWheelRotationAngle = (2 * Math.PI * 4) + (Math.random() * Math.PI * 2);
+    const finalBallRotationAngle = -(2 * Math.PI * 5) - (targetSectorIndex * anglePerSector);
+    let currentAnimationFrameTime = 0;
+    const totalDurationFrames = 240;
+    
+    function processPhysicsFrame() {
+        currentAnimationFrameTime++;
+        if (currentAnimationFrameTime <= totalDurationFrames) {
+            const cubicProgress = 1 - Math.pow(1 - (currentAnimationFrameTime / totalDurationFrames), 3);
+            currentWheelRotationAngle = finalWheelRotationAngle * cubicProgress;
+            ballCurrentPhysicsAngle = finalBallRotationAngle * cubicProgress;
+            updateWheelViewWithBall(currentWheelRotationAngle, ballCurrentPhysicsAngle);
+            requestAnimationFrame(processPhysicsFrame);
         } else {
-            updateWheelViewWithBall(finalWheel % (2 * Math.PI), finalBall);
+            currentWheelRotationAngle = finalWheelRotationAngle % (2 * Math.PI);
+            ballCurrentPhysicsAngle = finalBallRotationAngle;
+            updateWheelViewWithBall(currentWheelRotationAngle, ballCurrentPhysicsAngle);
             finalizeRoundResultsAndPayouts();
         }
     }
-    requestAnimationFrame(animate);
+    requestAnimationFrame(processPhysicsFrame);
 }
 
-// КАЛЬКУЛЯТОР ВЫИГРЫШЕЙ И LUCKY BONUS
 function finalizeRoundResultsAndPayouts() {
-    let won = 0, color = NUMBER_COLORS[roundWinningNumber];
-    let mult = 1, isLucky = false;
-    roundLuckyNumbersList.forEach(b => { if (Number(b.num) === roundWinningNumber) { mult = b.mult; isLucky = true; } });
-
-    for (let bet in currentRoundBets) {
-        let val = currentRoundBets[bet]; if (val <= 0) continue;
-        if ((bet === 'red' && color === 'red') || (bet === 'black' && color === 'black') || 
-            (bet === 'even' && roundWinningNumber !== 0 && roundWinningNumber % 2 === 0) ||
-            (bet === 'odd' && roundWinningNumber % 2 !== 0) || (bet === 'low' && roundWinningNumber <= 18) ||
-            (bet === 'high' && roundWinningNumber >= 19)) won += val * 2;
-        else if (bet === 'zero' && roundWinningNumber === 0) won += val * 30;
-        else if (bet.startsWith('num') && parseInt(bet.replace('num', '')) === roundWinningNumber) 
-            won += val * (isLucky ? mult : 30);
+    let totalAmountWonThisRound = 0;
+    const winningColor = NUMBER_COLORS[roundWinningNumber];
+    let luckyMultiplierBonus = 1;
+    let isLuckyHit = false;
+    
+    roundLuckyNumbersList.forEach(bonus => {
+        if (Number(bonus.num) === roundWinningNumber) {
+            luckyMultiplierBonus = bonus.mult;
+            isLuckyHit = true;
+        }
+    });
+    
+    for (let cellId in currentRoundBets) {
+        let betValue = currentRoundBets[cellId];
+        if (betValue <= 0) continue;
+        
+        if (cellId === 'red' && winningColor === 'red') totalAmountWonThisRound += betValue * 2;
+        else if (cellId === 'black' && winningColor === 'black') totalAmountWonThisRound += betValue * 2;
+        else if (cellId === 'zero' && roundWinningNumber === 0) totalAmountWonThisRound += betValue * 30;
+        else if (cellId === 'even' && roundWinningNumber !== 0 && roundWinningNumber % 2 === 0) totalAmountWonThisRound += betValue * 2;
+        else if (cellId === 'odd' && roundWinningNumber % 2 !== 0) totalAmountWonThisRound += betValue * 2;
+        else if (cellId === 'low' && roundWinningNumber >= 1 && roundWinningNumber <= 18) totalAmountWonThisRound += betValue * 2;
+        else if (cellId === 'high' && roundWinningNumber >= 19 && roundWinningNumber <= 36) totalAmountWonThisRound += betValue * 2;
+        else if (cellId === 'doz1' && roundWinningNumber >= 1 && roundWinningNumber <= 12) totalAmountWonThisRound += betValue * 3;
+        else if (cellId === 'doz2' && roundWinningNumber >= 13 && roundWinningNumber <= 24) totalAmountWonThisRound += betValue * 3;
+        else if (cellId === 'doz3' && roundWinningNumber >= 25 && roundWinningNumber <= 36) totalAmountWonThisRound += betValue * 3;
+        else if (cellId.startsWith('num')) {
+            let parsed = parseInt(cellId.replace('num', ''));
+            if (parsed === roundWinningNumber) {
+                if (isLuckyHit) totalAmountWonThisRound += betValue * luckyMultiplierBonus;
+                else totalAmountWonThisRound += betValue * 30;
+            }
+        }
     }
-    playerBalance += won;
-    displayRoundWinnerModalPopup(won, isLucky, mult);
+    playerBalance += totalAmountWonThisRound;
+    displayRoundWinnerModalPopup(totalAmountWonThisRound, isLuckyHit, luckyMultiplierBonus);
 }
-// ВЫВОД МОДАЛЬНОГО ОКНА С РЕЗУЛЬТАТАМИ И ОБНОВЛЕНИЕ ЛЕНТЫ ИСТОРИИ
-function displayRoundWinnerModalPopup(amountWon, isLuckyHit, luckyBonus) {
-    // ... [Логика отображения окна и обновления истории]
-}
-
-// ВЫВОД ОКНА РЕЗУЛЬТАТОВ РАУНДА И ОБНОВЛЕНИЕ ЛЕНТЫ ИСТОРИИ ИГР
 function displayRoundWinnerModalPopup(amountWon, isLuckyHit, luckyBonus) {
     const modalNum = document.getElementById('modal-winning-number');
     if (modalNum) {
@@ -286,7 +555,6 @@ function displayRoundWinnerModalPopup(amountWon, isLuckyHit, luckyBonus) {
     }
 }
 
-// МЯГКИЙ СБРОС ИГРОВОГО ПОЛЯ БЕЗ ЗАТИРАНИЯ ПРЕВЫДУЩИХ СЧАСТЛИВЫХ ЧИСЕЛ
 function closeResultModalPopup() {
     const modalPopup = document.getElementById('wp-result-modal-popup');
     if (modalPopup) {
@@ -311,7 +579,6 @@ function closeResultModalPopup() {
     refreshUI();
 }
 
-// ПЕРВИЧНЫЙ ОДНОКРАТНЫЙ ЗАПУСК ДВИЖКА ПРИ ЗАГРУЗКЕ СТРАНИЦЫ В ТГ
 async function initGameEngineOnLoad() {
     drawPremiumRouletteWheel(0, 0, false);
     await generateSecureRoundData();
@@ -324,5 +591,4 @@ async function initGameEngineOnLoad() {
     refreshUI();
 }
 
-// АВТОМАТИЧЕСКИЙ СТАРТ СИСТЕМЫ
 initGameEngineOnLoad();
