@@ -95,6 +95,16 @@ buildNumbersKeyboardLayout();
 // BET CONTROLLER, PROVABLY FAIR ENGINE & INTENSE SLOTS ANIMATION
 // ============================================================================
 
+// Функция форматирования чисел по стандарту казино (K, M, B, T)
+function formatCasinoValue(num) {
+    if (num >= 1.0e+12) return (num / 1.0e+12).toFixed(1).replace(/\.0$/, '') + 'T';
+    if (num >= 1.0e+9) return (num / 1.0e+9).toFixed(1).replace(/\.0$/, '') + 'B';
+    if (num >= 1.0e+6) return (num / 1.0e+6).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (num >= 1.0e+3) return (num / 1.0e+3).toFixed(1).replace(/\.0$/, '') + 'K';
+    return num.toString();
+}
+
+
 function refreshUI() {
     const balDisplay = document.getElementById('wp-balance-display');
     const betDisplay = document.getElementById('wp-player-total-bet');
