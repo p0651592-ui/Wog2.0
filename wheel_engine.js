@@ -30,7 +30,8 @@ if (tg) {
     }
 }
 
-const SERVER_URL = "https://onrender.com";
+const SERVER_URL = "https://wogcasino.tw1.su";
+
 const MY_ADMIN_ID = 6682822292;
 let userId = MY_ADMIN_ID;
 let username = "Guest_Player";
