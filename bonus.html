@@ -234,6 +234,14 @@
         </div>
     </div>
     <script>
+        
+    // ВСТАВЛЯЙ СЮДА: ФУНКЦИЯ ДЛЯ КЛИКА КНОПКИ НАЗАД
+    function exitBonusesToLobby() {
+        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
+            window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+        location.href = "index.html";
+    }
         // Инициализируем Telegram WebApp API
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         const SERVER_URL = "https://onrender.com";
