@@ -787,6 +787,34 @@
     } else {
         console.log("Приложение запущено вне Telegram, ID недоступен.");
     }
+        // Функция запроса баланса кошелька с бэкенда
+function loadUserWallet() {
+    if (!initData) return;
+
+    // Отправляем initData на бэкенд (main.py)
+    fetch('https://xn-----6kccecqcgc8cuoeh1nvd.com', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ init_data: initData })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Ищем вашу строку баланса со звездами и обновляем значение
+            const starsValue = document.querySelector('.stars-value-row');
+            if (starsValue) {
+                starsValue.innerHTML = `⭐ ${data.balance}`;
+            }
+        }
+    })
+    .catch(err => console.error("Ошибка сети с бэкендом:", err));
+}
+
+// Запускаем при открытии лаунчера
+loadUserWallet();
+
 </script>
 
 </body>
