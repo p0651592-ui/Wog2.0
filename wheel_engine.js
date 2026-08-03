@@ -100,8 +100,20 @@ function refreshUI() {
     const betDisplay = document.getElementById('wp-player-total-bet');
     if (balDisplay) balDisplay.innerText = playerBalance;
     if (betDisplay) betDisplay.innerText = `${totalRoundBetSum} W`;
-    localStorage.setItem('wog_secure_balance', playerBalance);
+    
+    // Сохраняем локально, но в персональную ячейку конкретного Telegram ID
+    localStorage.setItem(`wog_balance_${userId}`, playerBalance);
+    
+    // Синхронизируем с Python-сервером
+    fetch(`${SERVER_URL}/update-balance`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, amount: playerBalance })
+    })
+    .then(res => res.json())
+    .catch(err => console.log("Сервер занят, баланс сохранен локально"));
 }
+
 
 function modifyBetSize(action) {
     if (isGameSessionActive && secondsRemaining <= 0) return;
