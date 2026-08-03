@@ -1,5 +1,6 @@
 import os
 import random
+import requests
 from typing import Optional
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -23,6 +24,27 @@ db = {
 }
 
 OWNER_ID = 6682822292  # Ваш ID Администратора
+
+# --- МОДЕЛИ ДАННЫХ ДЛЯ ВЕБХУКА GITHUB ---
+class GitHubAuthor(BaseModel):
+    name: str
+
+class GitHubCommit(BaseModel):
+    id: str
+    message: str
+    author: GitHubAuthor
+
+class GitHubRepository(BaseModel):
+    full_name: str
+
+class GitHubPusher(BaseModel):
+    name: str
+
+class GitHubPushPayload(BaseModel):
+    ref: str
+    pusher: GitHubPusher
+    repository: GitHubRepository
+    commits: list[GitHubCommit] = []
 
 # --- МОДЕЛИ ДАННЫХ ДЛЯ ЗАПРОСОВ (PYDANTIC) ---
 class UserLogin(BaseModel):
@@ -220,3 +242,45 @@ async def list_promos(data: dict):
 @app.get("/")
 async def root():
     return {"status": "WOG Casino Core Python FastAPI Engine Active", "users_count": len(db["users"])}
+# --- ЭНДПОИНТ 7: ПРИЕМ ВЕБХУКОВ ИЗ GITHUB И ОТПРАВКА В TELEGRAM ---
+TELEGRAM_TOKEN = "ВАШ_ТОКЕН_БОТА"
+CHAT_ID = "ID_ВАШЕГО_КАНАЛА"  # Например, "-100XXXXXXXXXX"
+
+@app.post("/github-webhook")
+async def handle_github_webhook(payload: GitHubPushPayload):
+    try:
+        branch = payload.ref.split("/")[-1]
+        repo_name = payload.repository.full_name
+        pusher_name = payload.pusher.name
+        
+        commit_text = ""
+        for commit in payload.commits:
+            short_sha = commit.id[:7]
+            clean_message = commit.message.replace("<", "&lt;").replace(">", "&gt;")
+            commit_text += f"\n• [<code>{short_sha}</code>] {clean_message} — <i>{commit.author.name}</i>"
+        
+        message = (
+            f"🚀 <b>Новый пуш в репозиторий!</b>\n\n"
+            f"📦 <b>Репозиторий:</b> <code>{repo_name}</code>\n"
+            f"🌿 <b>Ветка:</b> <code>{branch}</code>\n"
+            f"👤 <b>Автор:</b> {pusher_name}\n"
+            f"💬 <b>Коммиты:</b>{commit_text}"
+        )
+        
+        tg_url = f"https://telegram.org{TELEGRAM_TOKEN}/sendMessage"
+        tg_payload = {
+            "chat_id": CHAT_ID,
+            "text": message,
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True
+        }
+        
+        response = requests.post(tg_url, json=tg_payload, timeout=10)
+        
+        if response.status_code != 200:
+            raise HTTPException(status_code=502, detail="Failed to send message to Telegram")
+            
+        return {"status": "success"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
