@@ -487,6 +487,29 @@ function finalizeRoundResultsAndPayouts() {
     displayRoundWinnerModalPopup(totalAmountWonThisRound, isLuckyHit, luckyMultiplierBonus);
 }
 
+    // [НАЧАЛО ИСПРАВЛЕНИЯ] — Вставить перед displayRoundWinnerModalPopup
+    playerBalance += totalAmountWonThisRound;
+
+    // Безопасно отправляем выигрыш на ваш бэкенд
+    if (totalAmountWonThisRound > 0 && window.Telegram && window.Telegram.WebApp) {
+        fetch('https://xn----7sbfkf5bif1g.com', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                init_data: window.Telegram.WebApp.initData, // Передаем зашифрованную строку авторизации
+                amount_won: totalAmountWonThisRound        // Начисляем реальный выигрыш
+            })
+        })
+        .then(res => res.json())
+        .then(data => WogLogger.info("Выигрыш синхронизирован с сервером"))
+        .catch(err => WogLogger.error("Ошибка синхронизации выигрыша:", err));
+    }
+    // [КОНЕЦ ИСПРАВЛЕНИЯ]
+
+    displayRoundWinnerModalPopup(totalAmountWonThisRound, isLuckyHit, luckyMultiplierBonus);
+}
+
+
 function displayRoundWinnerModalPopup(amountWon, isLuckyHit, luckyBonus) {
     const modalNum = document.getElementById('modal-winning-number');
     if (modalNum) {
