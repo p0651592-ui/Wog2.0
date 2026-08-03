@@ -243,8 +243,8 @@ async def list_promos(data: dict):
 async def root():
     return {"status": "WOG Casino Core Python FastAPI Engine Active", "users_count": len(db["users"])}
 # --- ЭНДПОИНТ 7: ПРИЕМ ВЕБХУКОВ ИЗ GITHUB И ОТПРАВКА В TELEGRAM ---
-TELEGRAM_TOKEN = "ВАШ_ТОКЕН_БОТА"
-CHAT_ID = "ID_ВАШЕГО_КАНАЛА"  # Например, "-100XXXXXXXXXX"
+TELEGRAM_TOKEN = "8804973603:AAHqWkyFQv8qW2ZZUHn7RSqVddqVCN6_vXs"
+CHAT_ID = "-1004438070296"  # Например, "-100XXXXXXXXXX"
 
 @app.post("/github-webhook")
 async def handle_github_webhook(payload: GitHubPushPayload):
