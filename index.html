@@ -759,5 +759,35 @@
             }
         }
     </script>
+    <script>
+    // Инициализируем Telegram WebApp
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand(); // Раскрываем приложение на весь экран
+
+    // Получаем данные безопасного входа
+    const initData = tg.initData; // Строка для отправки на бэкенд
+    const user = tg.initDataUnsafe?.user;
+
+    // Автоматическое заполнение профиля на экране при входе
+    if (user) {
+        // Записываем ID (это и есть ключ для кошелька)
+        console.log("Telegram ID пользователя:", user.id);
+        
+        // Пример динамического изменения аватарки в вашем .avatar-box
+        const avatarBox = document.querySelector('.avatar-box');
+        if (avatarBox) {
+            if (user.photo_url) {
+                avatarBox.innerHTML = `<img src="${user.photo_url}" class="avatar-img" alt="Avatar">`;
+            } else {
+                // Если фото нет, ставим первую букву имени
+                avatarBox.innerText = user.first_name.charAt(0).toUpperCase();
+            }
+        }
+    } else {
+        console.log("Приложение запущено вне Telegram, ID недоступен.");
+    }
+</script>
+
 </body>
 </html>
