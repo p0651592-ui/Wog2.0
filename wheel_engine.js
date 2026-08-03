@@ -536,10 +536,16 @@ async function initGameEngineOnLoad() {
     await generateSecureRoundData(); 
     updateLuckyNumbersUI();
     
-    if (!localStorage.getItem('wog_secure_balance')) { 
+    // ПРОВЕРКА НА КОРРЕКТНОСТЬ БАЛАНСА
+    let storedBalance = localStorage.getItem('wog_secure_balance');
+    
+    // Если баланса нет, если он равен 0, если он сломался (NaN), принудительно выдаем 100k
+    if (!storedBalance || isNaN(parseInt(storedBalance)) || parseInt(storedBalance) <= 0) { 
         localStorage.setItem('wog_secure_balance', 100000); 
     }
+    
     playerBalance = parseInt(localStorage.getItem('wog_secure_balance')); 
     refreshUI();
 }
+
 initGameEngineOnLoad();
