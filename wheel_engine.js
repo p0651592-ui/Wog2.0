@@ -503,6 +503,33 @@ function closeResultModalPopup() {
     isGameSessionActive = false; 
     refreshUI();
 }
+// Функция безопасного и мгновенного выхода из рулетки в главное меню лобби
+function exitRouletteToLobby() {
+    if (typeof tg !== 'undefined' && tg) {
+        try {
+            // Включаем легкую вибрацию при клике на выход
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+        } catch (e) {
+            console.error("Haptic error:", e);
+        }
+    }
+
+    // Защита: если колесо уже бешено крутится, не даем игроку выйти, чтобы не завис баланс
+    if (isGameSessionActive && secondsRemaining <= 0) {
+        if (tg && typeof tg.showAlert === 'function') {
+            tg.showAlert("⚠️ Нельзя выйти во время вращения колеса! Дождитесь распределения выигрыша раунда.");
+            return;
+        }
+    }
+
+    // Полностью очищаем интервал таймера, чтобы он не тикал в фоновом режиме и не жрал батарею
+    if (countdownTimerInterval) {
+        clearInterval(countdownTimerInterval);
+    }
+
+    // Мгновенное перенаправление на главную страницу приложения
+    location.href = "index.html";
+}
 
 async function initGameEngineOnLoad() {
     drawPremiumRouletteWheel(0, 0, false); 
