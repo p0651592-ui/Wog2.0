@@ -5,166 +5,685 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>WOG Wheel Plus Premium</title>
     <script src="https://telegram.org"></script>
-    <script src="https://cloudflare.com"></script>
     <style>
         :root {
-            --bg-main: #0c0f1d; --bg-card: #151a30; --bg-inner: #1d233d; --border-neon: #29315c;
-            --color-red: #e52e4d; --color-black: #1e2336; --color-green: #10b981; --color-blue: #2563eb;
-            --color-gold: #f59e0b; --color-purple: #6366f1; --text-main: #ffffff; --text-muted: #64748b;
+            --bg-main: #0c0f1d;
+            --bg-card: #151a30;
+            --bg-inner: #1d233d;
+            --border-neon: #29315c;
+            --color-red: #e52e4d;
+            --color-black: #1e2336;
+            --color-green: #10b981;
+            --color-blue: #2563eb;
+            --color-gold: #f59e0b;
+            --color-purple: #6366f1;
+            --text-main: #ffffff;
+            --text-muted: #64748b;
             --radius-premium: 16px;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
-        body { background-color: var(--bg-main); color: var(--text-main); padding: 14px; padding-top: calc(env(safe-area-inset-top) + 10px); padding-bottom: calc(env(safe-area-inset-bottom) + 180px); overflow-x: hidden; user-select: none; -webkit-user-select: none; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .app-wrapper { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 14px; }
-        .section-title { font-size: 13px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
-        .history-card-scroll { background: var(--bg-card); border: 1px solid var(--border-neon); border-radius: var(--radius-premium); padding: 12px; display: flex; align-items: center; gap: 8px; overflow-x: auto; width: 100%; }
-        .history-card-scroll::-webkit-scrollbar { display: none; }
-        .hist-circle { min-width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #ffffff; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-        .hist-circle.red { background: var(--color-red); }
-        .hist-circle.black { background: var(--color-black); border: 1px solid var(--border-neon); }
-        .hist-circle.green { background: var(--color-green); }
-        .wheel-display-zone { background: radial-gradient(circle at center, #1b223c 0%, var(--bg-main) 100%); border: 1px solid var(--border-neon); border-radius: var(--radius-premium); padding: 16px 12px; position: relative; display: flex; flex-direction: column; align-items: center; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.5); width: 100%; }
-        .wp-bonus-row { display: flex; gap: 10px; margin-bottom: 12px; width: 100%; justify-content: center; flex-direction: row !important; }
-        .wp-bonus-box { background: rgba(15, 26, 48, 0.8); border: 1px solid var(--border-neon); border-radius: 12px; padding: 8px 12px; text-align: center; min-width: 80px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); display: block !important; }
-        .wp-bonus-num { font-size: 18px; font-weight: 900; }
-        .wp-bonus-multiplier { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; margin-top: 4px; display: inline-block; text-transform: uppercase; }
-        .wp-m100 { background: rgba(99, 102, 241, 0.2); border: 1px solid var(--color-purple); color: #a5b4fc; }
-        .wp-m50 { background: rgba(37, 99, 235, 0.2); border: 1px solid var(--color-blue); color: #93c5fd; }
-        .wheel-canvas-container { position: relative; width: 260px; height: 260px; display: flex; justify-content: center; align-items: center; margin: 10px 0; }
-        #wheel-render-canvas { width: 100% !important; height: 100% !important; display: block; }
-        .wheel-center-popup { position: absolute; width: 120px; height: 120px; background: rgba(11, 14, 26, 0.95); border: 2px solid var(--border-neon); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 25px rgba(0,0,0,0.7); z-index: 5; text-align: center; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .wp-pointer-top { position: absolute; top: -6px; width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 20px solid var(--color-gold); z-index: 6; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); left: calc(50% - 12px); }
-        .wp-info-plate { background: var(--bg-card); border: 1px solid var(--border-neon); border-radius: var(--radius-premium); padding: 14px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 100%; }
-        .wp-row-between { display: flex; justify-content: space-between; align-items: center; }
-        .wp-bet-widget { display: flex; background: #060813; border: 1px solid var(--border-neon); border-radius: 14px; padding: 4px; align-items: center; width: 100%; }
-        .wp-input-field { flex: 1; background: transparent; border: none; outline: none; color: #ffffff; font-size: 16px; font-weight: 700; padding-left: 12px; font-family: monospace; }
-        .wp-util-btn { background: var(--bg-inner); border: 1px solid var(--border-neon); color: var(--text-main); font-size: 12px; font-weight: 800; padding: 10px 16px; border-radius: 10px; cursor: pointer; margin-left: 4px; }
-        .wp-chips-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
-        .wp-chip-btn { background: var(--bg-card); border: 1px solid var(--border-neon); color: #ffffff; padding: 13px 0; font-size: 14px; font-weight: 700; border-radius: 12px; cursor: pointer; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
-        .wp-table-layout { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-        .wp-grid-3 { display: grid; grid-template-columns: 2fr 1fr 2fr; gap: 8px; }
-        .wp-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .wp-grid-numbers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; }
-        .wp-bet-trigger-btn { border-radius: 14px; padding: 16px 6px; font-weight: 800; font-size: 14px; display: flex; justify-content: center; align-items: center; position: relative; border: none; color: #ffffff; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .wp-badge-x { position: absolute; bottom: 4px; right: 8px; font-size: 9px; color: rgba(255,255,255,0.5); font-weight: 700; background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 4px; }
-        .wp-bet-trigger-btn.has-bets-placed::before { content: "•"; color: var(--color-gold); position: absolute; top: 4px; left: 8px; font-size: 18px; }
-        .wp-btn-red { background: var(--color-red); }
-        .wp-btn-black { background: var(--color-black); border: 1px solid var(--border-neon); }
-        .wp-btn-green { background: var(--color-green); }
-        .wp-btn-blue { background: var(--color-blue); }
-        .wp-btn-yellow { background: var(--color-gold); color: #2d1a00 !important; }
-        .wp-btn-purple { background: var(--color-purple); }
-        .wp-btn-neutral { background: #1b203a; border: 1px solid var(--border-neon); }
-        .wp-bet-active-glow { box-shadow: inset 0 0 0 2px #ffffff, 0 0 16px rgba(255,255,255,0.5); }
-        .wp-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 99999; display: none; align-items: center; justify-content: center; }
-        .wp-modal-content { background: var(--bg-card); border: 2px solid var(--border-neon); border-radius: 24px; padding: 28px; width: 85%; max-width: 340px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
-        .wp-modal-close-btn { width: 100%; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none; color: #ffffff; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 15px; margin-top: 20px; cursor: pointer; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); }
-        .wp-crypto-footer { font-size: 10px; color: var(--text-muted); font-family: monospace; text-align: center; word-break: break-all; line-height: 1.5; margin-top: 14px; padding: 8px; background: #070913; border-radius: 10px; border: 1px solid rgba(41, 49, 92, 0.3); width: 100%; }
+        /* Базовый сброс и параметры body для корректного отображения в Telegram */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
 
-        
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            padding: 14px;
+            padding-top: calc(env(safe-area-inset-top) + 48px); /* Защита от шапки Telegram */
+            padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Обертка для контента с ограничением ширины */
+        .app-wrapper {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 2px;
+            margin-top: 4px;
+        }
+        /* НАВИГАЦИОННАЯ КНОПКА ВОЗВРАТА В ЛОББИ */
+        .wp-back-navigation-container {
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: -2px;
+        }
+
+        .wp-back-lobby-btn {
+            background: rgba(229, 46, 77, 0.12);
+            color: var(--color-red);
+            border: 1px solid rgba(229, 46, 77, 0.35);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 10px rgba(229, 46, 77, 0.05);
+        }
+
+        .wp-back-lobby-btn:active {
+            background: var(--color-red);
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(229, 46, 77, 0.4);
+            transform: scale(0.96);
+        }
+
+        /* ЛЕНТА ИСТОРИИ ИГР (ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ) */
+        .history-card-scroll {
+            background: var(--bg-card);
+            border: 1px solid var(--border-neon);
+            border-radius: var(--radius-premium);
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow-x: auto;
+            width: 100%;
+            white-space: nowrap;
+        }
+
+        .history-card-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hist-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hist-circle.red { background-color: var(--color-red); }
+        .hist-circle.black { background-color: var(--color-black); }
+        .hist-circle.green { background-color: var(--color-green); }
+
+        /* ЗОНА ПРЕМИАЛЬНЫХ СЛОТОВ LUCKY NUMBERS */
+        .wp-lucky-slots-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+
+        .wp-slot-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-neon);
+            border-radius: var(--radius-premium);
+            padding: 12px 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            min-height: 80px;
+        }
+
+        .wp-bonus-number {
+            font-size: 26px;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .wp-bonus-multiplier {
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .wp-m50 { background: rgba(37, 99, 235, 0.15); color: #93c5fd; }
+        .wp-m100 { background: rgba(99, 102, 241, 0.15); color: #c7d2fe; }
+        .wp-m300 { background: rgba(245, 158, 11, 0.15); color: #fef08a; }
+        /* ГРАФИЧЕСКАЯ ЗОНА РУЛЕТОЧНОГО КОЛЕСА CANVAS */
+        .wheel-display-zone {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-neon);
+            border-radius: var(--radius-premium);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.5);
+        }
+
+        .wheel-canvas-container {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            max-width: 340px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #wheel-render-canvas {
+            width: 100% !important;
+            height: 100% !important;
+            display: block;
+        }
+
+        /* УКАЗАТЕЛЬ СЕКТОРА (ТРЕУГОЛЬНИК НАД КОЛЕСОМ) */
+        .wheel-top-pin-pointer {
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 18px solid var(--color-gold);
+            z-index: 10;
+            filter: drop-shadow(0 2px 5px rgba(245, 158, 11, 0.5));
+        }
+
+        /* ЭЛЕКТРОННОЕ ТАБЛО В ЦЕНТРЕ РУЛЕТКИ */
+        .wheel-center-digital-scoreboard {
+            position: absolute;
+            width: 44%;
+            height: 44%;
+            background: #090c15;
+            border: 2px solid var(--border-neon);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(99, 102, 241, 0.1);
+            padding: 8px;
+            text-align: center;
+        }
+
+        #wp-center-emoji {
+            font-size: 26px;
+            margin-bottom: 2px;
+            line-height: 1;
+        }
+
+        #wp-center-text {
+            font-size: 11px;
+            font-weight: 900;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.2;
+        }
+        /* ПАНЕЛЬ ОТОБРАЖЕНИЯ БАЛАНСОВ И ТЕКУЩИХ СТАВОК */
+        .wp-stats-dashboard-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-neon);
+            border-radius: var(--radius-premium);
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .wp-dashboard-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .wp-dashboard-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .wp-dashboard-value {
+            font-size: 16px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        #wp-balance-display {
+            color: var(--color-gold);
+            font-size: 18px;
+        }
+
+        /* БЛОК УПРАВЛЕНИЯ РАЗМЕРОМ МОНЕТ И ВВОДА СТАВКИ */
+        .wp-bet-input-control-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-neon);
+            border-radius: var(--radius-premium);
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .wp-input-wrapper {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .wp-input-prefix-label {
+            position: absolute;
+            left: 14px;
+            font-size: 11px;
+            font-weight: 900;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+        }
+
+        #wp-bet-field {
+            width: 100%;
+            background: var(--bg-inner);
+            border: 1px solid var(--border-neon);
+            border-radius: 12px;
+            padding: 12px 12px 12px 64px;
+            font-size: 16px;
+            font-weight: 800;
+            color: #ffffff;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        #wp-bet-field:focus {
+            border-color: var(--color-purple);
+        }
+
+        /* КНОПКИ БЫСТРОГО УДВОЕНИЯ И ДЕЛЕНИЯ */
+        .wp-math-action-btn {
+            background: var(--bg-inner);
+            border: 1px solid var(--border-neon);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 800;
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .wp-math-action-btn:active {
+            background: var(--border-neon);
+            transform: scale(0.95);
+        }
+        /* ГОРИЗОНТАЛЬНАЯ ПАНЕЛЬ ИГРОВЫХ ФИШЕК КАЗИНО */
+        .wp-quick-chips-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            width: 100%;
+        }
+
+        .wp-casino-chip-btn {
+            background: var(--bg-inner);
+            border: 1px solid var(--border-neon);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 800;
+            padding: 12px 4px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+        }
+
+        .wp-casino-chip-btn:active {
+            background: var(--color-blue);
+            border-color: #60a5fa;
+            transform: scale(0.95);
+        }
+
+        /* ОБЩИЙ ИНТЕРАКТИВНЫЙ СТОЛ СТАВОК (ОСНОВНОЙ СЛОЙ) */
+        .wp-main-betting-table-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .wp-table-row-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .wp-table-row-triple {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        /* БАЗОВЫЕ СТИЛИ КНОПОК НА СТОЛЕ */
+        .wp-bet-trigger-btn {
+            border: 1px solid var(--border-neon);
+            border-radius: var(--radius-premium);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 800;
+            padding: 16px 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+            position: relative;
+            overflow: hidden;
+            min-height: 56px;
+        }
+
+        .wp-btn-red { background-color: var(--color-red); border-color: rgba(255,255,255,0.1); }
+        .wp-btn-black { background-color: var(--color-black); border-color: rgba(255,255,255,0.05); }
+        .wp-btn-green { background-color: var(--color-green); border-color: rgba(255,255,255,0.1); }
+        .wp-btn-dark-navy { background-color: var(--bg-card); }
+
+        /* Маленький бейдж "х2" или "х30" на кнопках стола */
+        .wp-badge-x {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+        /* СКРЫТАЯ СЕТКА ТОЧНЫХ НОМЕРОВ 0-36 */
+        #wp-numbers-keyboard-view {
+            display: none;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-neon);
+            border-radius: var(--radius-premium);
+            padding: 12px;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+
+        #wp-numbers-keyboard-view::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        #wp-numbers-keyboard-view::-webkit-scrollbar-thumb {
+            background: var(--border-neon);
+            border-radius: 4px;
+        }
+
+        #wp-numbers-keyboard-view #cell-num0 {
+            grid-column: span 3;
+            padding: 14px;
+        }
+
+        /* НЕОНОВОЕ СВЕЧЕНИЕ АКТИВНЫХ СТАВОК */
+        .wp-bet-active-glow {
+            border-color: #60a5fa !important;
+            box-shadow: 0 0 14px rgba(59, 130, 246, 0.5);
+            animation: wpBetPulse 1.5s infinite alternate;
+        }
+
+        @keyframes wpBetPulse {
+            0% { box-shadow: 0 0 8px rgba(59, 130, 246, 0.4); }
+            100% { box-shadow: 0 0 18px rgba(59, 130, 246, 0.7); }
+        }
+
+        /* СТИЛИ ПРЕМИАЛЬНОГО МОДАЛЬНОГО ОКНА ПОБЕДЫ */
+        .wp-modal-overlay-blur {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(6, 8, 16, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+
+        .wp-modal-window-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-neon);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 380px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+            animation: wpModalSlideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes wpModalSlideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        /* ВНУТРЕННИЕ ЭЛЕМЕНТЫ ОКНА РЕЗУЛЬТАТОВ РАУНДА */
+        #modal-winning-number {
+            font-size: 72px;
+            font-weight: 900;
+            line-height: 1;
+            margin: 12px 0;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        #modal-winning-multiplier-badge {
+            font-size: 13px;
+            font-weight: 800;
+            padding: 4px 14px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        #modal-player-win-status-text {
+            font-size: 15px;
+            color: var(--text-main);
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .wp-modal-confirm-btn {
+            width: 100%;
+            background: var(--bg-inner);
+            border: 1px solid var(--border-neon);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 800;
+            padding: 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .wp-modal-confirm-btn:active {
+            background: var(--color-green);
+            border-color: #4ade80;
+            transform: scale(0.97);
+        }
+
+        /* КРИПТОГРАФИЧЕСКИЙ ФУТЕР PROVABLY FAIR */
+        .wp-crypto-fairness-footer {
+            margin-top: 6px;
+            padding: 10px;
+            text-align: center;
+            font-size: 10px;
+            color: var(--text-muted);
+            border-top: 1px solid rgba(41, 49, 92, 0.3);
+            width: 100%;
+            word-break: break-all;
+        }
+    </style>
+</head>
 <body>
 
 <div class="app-wrapper">
 
-    <!-- КНОПКА НАЗАД В МЕНЮ -->
-    <div class="wp-row-between" style="padding: 2px 4px; width: 100%;">
+    <!-- НАВИГАЦИОННЫЙ СЛОЙ: КНОПКА БЕЗОПАСНОГО ВЫХОДА В ГЛАВНОЕ ЛОББИ -->
+    <div class="wp-back-navigation-container">
         <button onclick="exitRouletteToLobby()" class="wp-back-lobby-btn">
             🚪 Выйти в меню
         </button>
     </div>
 
-    <!-- ЛЕНТА ИСТОРИИ -->
-    <div class="history-card-scroll" id="wp-history-line">
-        <div class="hist-circle black">33</div>
-        <div class="hist-circle red">9</div>
-        <div class="hist-circle red">19</div>
-        <div class="hist-circle red">16</div>
-        <div class="hist-circle black">20</div>
-        <div class="hist-circle black">2</div>
-        <div class="hist-circle black">28</div>
+    <!-- ЛЕНТА ИСТОРИИ ИГРЫ -->
+    <div class="history-card-scroll" id="wp-history-line"></div>
+
+    <!-- ЗОНА ПРЕМИАЛЬНЫХ СЛОТОВ LUCKY NUMBERS -->
+    <div class="section-title">Lucky Numbers</div>
+    <div class="wp-lucky-slots-row">
+        <div class="wp-slot-box"><div class="wp-bonus-number" id="lucky-num-1">-</div><div class="wp-bonus-multiplier wp-m50" id="lucky-mult-1">0X</div></div>
+        <div class="wp-slot-box"><div class="wp-bonus-number" id="lucky-num-2">-</div><div class="wp-bonus-multiplier wp-m100" id="lucky-mult-2">0X</div></div>
+        <div class="wp-slot-box"><div class="wp-bonus-number" id="lucky-num-3">-</div><div class="wp-bonus-multiplier wp-m300" id="lucky-mult-3">0X</div></div>
     </div>
-
-
-< div class=" history-card-scroll" id=" wp-history-line">
-< div class=" hist-circle black"> 33</ div>< div class=" hist-circle red"> 9</ div>
-        <div class="history-card-scroll" id="wp-history-line">
-            <div class="hist-circle black">33</div><div class="hist-circle red">9</div><div class="hist-circle red">19</div><div class="hist-circle red">16</div><div class="hist-circle black">20</div><div class="hist-circle black">2</div><div class="hist-circle black">28</div>
-        </div>
-        <div class="wheel-display-zone">
-            <div class="wp-bonus-row" id="wp-lucky-numbers-container">
-                <div class="wp-bonus-box"><div class="wp-bonus-num" style="color: var(--color-red);" id="lucky-num-1">--</div><div class="wp-bonus-multiplier wp-m100" id="lucky-mult-1">0x</div></div>
-                <div class="wp-bonus-box"><div class="wp-bonus-num" style="color: #ffffff;" id="lucky-num-2">--</div><div class="wp-bonus-multiplier wp-m100" id="lucky-mult-2">0x</div></div>
-                <div class="wp-bonus-box"><div class="wp-bonus-num" style="color: var(--text-muted);" id="lucky-num-3">--</div><div class="wp-bonus-multiplier wp-m50" id="lucky-mult-3">0x</div></div>
+    <!-- ГРАФИЧЕСКИЙ РЕНДЕРИНГ КОЛЕСА РУЛЕТКИ С ЦЕНТРАЛЬНЫМ ТАБЛО -->
+    <div class="wheel-display-zone">
+        <div class="wheel-canvas-container">
+            <div class="wheel-top-pin-pointer"></div>
+            <div class="wheel-center-digital-scoreboard">
+                <div id="wp-center-emoji">🎰</div>
+                <div id="wp-center-text">Сделай ставку!</div>
             </div>
-            <div class="wheel-canvas-container">
-                <div class="wp-pointer-top"></div>
-                <canvas id="wheel-render-canvas" width="500" height="500"></canvas>
-                <div class="wheel-center-popup" id="wp-center-status-box">
-                    <div style="font-size: 32px;" id="wp-center-emoji">😎</div>
-                    <div style="font-size: 11px; font-weight: 900; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;" id="wp-center-text">Сделай ставку!</div>
-                </div>
-            </div>
-        </div>
-        <div class="wp-info-plate">
-            <div class="wp-row-between"><span>Ваши ставки</span><span id="wp-player-total-bet">0 W</span></div>
-            <div class="wp-row-between" style="margin-top: 4px;"><span>Ваш баланс</span><div style="color: var(--color-gold); font-family: monospace;"><span id="wp-balance-display">5000</span> <span>W</span></div></div>
-        </div>
-
-        <div class="wp-bet-widget">
-            <span style="font-size: 11px; color: var(--text-muted); font-weight: 800; padding-left: 6px; text-transform: uppercase;">Ставка</span>
-            <input type="number" id="wp-bet-field" class="wp-input-field" value="100" min="1">
-            <button class="wp-util-btn" onclick="modifyBetSize('x2')">x2</button>
-            <button class="wp-util-btn" onclick="modifyBetSize('/2')">/2</button>
-        </div>
-
-        <div class="wp-chips-grid">
-            <button class="wp-chip-btn" onclick="addChipValue(10)">+ 10</button><button class="wp-chip-btn" onclick="addChipValue(100)">+ 100</button><button class="wp-chip-btn" onclick="addChipValue(1000)">+ 1K</button><button class="wp-chip-btn" onclick="addChipValue(25000)">+ 25K</button>
-        </div>
-
-        <span class="section-title">Стол ставок</span>
-        <div class="wp-table-layout" id="wp-main-table-view">
-            <div class="wp-grid-3">
-                <button class="wp-bet-trigger-btn wp-btn-red" id="cell-red" onclick="placeBetOnCell('red')">Красное <span class="wp-badge-x">x2</span></button>
-                <button class="wp-bet-trigger-btn wp-btn-green" id="cell-zero" onclick="placeBetOnCell('zero')">0 <span class="wp-badge-x">x30</span></button>
-                <button class="wp-bet-trigger-btn wp-btn-black" id="cell-black" onclick="placeBetOnCell('black')">Черное <span class="wp-badge-x">x2</span></button>
-            </div>
-            <div class="wp-grid-2">
-                <button class="wp-bet-trigger-btn wp-btn-blue" id="cell-even" onclick="placeBetOnCell('even')">Четное <span class="wp-badge-x">x2</span></button>
-                <button class="wp-bet-trigger-btn wp-btn-yellow" id="cell-odd" onclick="placeBetOnCell('odd')">Нечетное <span class="wp-badge-x">x2</span></button>
-            </div>
-            <div class="wp-grid-2">
-                <button class="wp-bet-trigger-btn wp-btn-neutral" id="cell-low" onclick="placeBetOnCell('low')">1 - 18 <span class="wp-badge-x">x2</span></button>
-                <button class="wp-bet-trigger-btn wp-btn-neutral" id="cell-high" onclick="placeBetOnCell('high')">19 - 36 <span class="wp-badge-x">x2</span></button>
-            </div>
-            <div class="wp-grid-3" style="grid-template-columns: repeat(3, 1fr);">
-                <button class="wp-bet-trigger-btn wp-btn-purple" id="cell-doz1" onclick="placeBetOnCell('doz1')">1 - 12 <span class="wp-badge-x">x3</span></button>
-                <button class="wp-bet-trigger-btn wp-btn-purple" id="cell-doz2" onclick="placeBetOnCell('doz2')">13 - 24 <span class="wp-badge-x">x3</span></button>
-                <button class="wp-bet-trigger-btn wp-btn-purple" id="cell-doz3" onclick="placeBetOnCell('doz3')">25 - 36 <span class="wp-badge-x">x3</span></button>
-            </div>
-            <button class="wp-bet-trigger-btn" onclick="toggleKeyboardLayout('numbers')" style="background: #4f46e5; padding: 16px 0; font-size: 14px;">🎯 Поставить на точное число (x30)</button>
-        </div>
-
-        <div class="wp-table-layout" id="wp-numbers-keyboard-view" style="display: none;">
-            <div class="wp-grid-numbers" id="wp-num-keys-generator-box"></div>
-            <button class="wp-bet-trigger-btn" onclick="toggleKeyboardLayout('main')" style="background: var(--color-red); padding: 14px 0; font-size: 14px; font-weight: 800; margin-top: 4px;">↩ Назад к общему столу</button>
-        </div>
-
-        <div class="wp-crypto-footer">
-            <div>Hash: <span id="wp-crypto-hash-sha256" style="color: var(--text-main);">Генерация раунда...</span></div>
-            <div id="wp-crypto-md5-string" style="margin-top: 4px; color: var(--color-gold); display: none;"></div>
+            <canvas id="wheel-render-canvas" width="600" height="600"></canvas>
         </div>
     </div>
 
-    <div class="wp-modal-overlay" id="wp-result-modal-popup">
-        <div class="wp-modal-content">
-            <div style="font-size: 13px; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Результаты игры</div>
-            <div style="font-size: 54px; font-weight: 900; color: #ffffff; margin-top: 10px;" id="modal-winning-number">--</div>
-            <div id="modal-winning-multiplier-badge" style="display: inline-block; font-size: 12px; font-weight: 800; background: rgba(16, 185, 129, 0.2); border: 1px solid var(--color-green); color: #a7f3d0; padding: 4px 14px; border-radius: 20px; margin-top: 6px;">x30</div>
-            <div id="modal-player-win-status-text" style="font-size: 14px; font-weight: 700; margin-top: 16px; color: var(--text-main);">Вы ничего не выиграли</div>
-            <button class="wp-modal-close-btn" onclick="closeResultModalPopup()">Закрыть</button>
+    <!-- ИНФОРМАЦИОННАЯ ПАНЕЛЬ ИГРОКА (БАЛАНСЫ И СТАВКИ) -->
+    <div class="wp-stats-dashboard-card">
+        <div class="wp-dashboard-row">
+            <span class="wp-dashboard-label">Ваши ставки:</span>
+            <span class="wp-dashboard-value" id="wp-player-total-bet">0 W</span>
+        </div>
+        <div class="wp-dashboard-row">
+            <span class="wp-dashboard-label">Ваш баланс:</span>
+            <span class="wp-dashboard-value" id="wp-balance-display">100000 W</span>
         </div>
     </div>
 
-    <script src="wheel_engine.js"></script>
+    <!-- БЛОК ВВОДА РАЗМЕРА МОНЕТ И МАТЕМАТИЧЕСКИЙ КОНТРОЛЬ -->
+    <div class="wp-bet-input-control-box">
+        <div class="wp-input-wrapper">
+            <span class="wp-input-prefix-label">Ставка</span>
+            <input type="number" id="wp-bet-field" value="100" min="10" step="10">
+        </div>
+        <button onclick="modifyBetSize('x2')" class="wp-math-action-btn">x2</button>
+        <button onclick="modifyBetSize('/2')" class="wp-math-action-btn">/2</button>
+    </div>
+
+    <!-- ГОРИЗОНТАЛЬНАЯ ПАНЕЛЬ БЫСТРЫХ СИСТЕМНЫХ ФИШЕК КАЗИНО -->
+    <div class="wp-quick-chips-grid">
+        <button onclick="addChipValue(10)" class="wp-casino-chip-btn">+ 10</button>
+        <button onclick="addChipValue(100)" class="wp-casino-chip-btn">+ 100</button>
+        <button onclick="addChipValue(1000)" class="wp-casino-chip-btn">+ 1K</button>
+        <button onclick="addChipValue(25000)" class="wp-casino-chip-btn">+ 25K</button>
+    </div>
+    <!-- ИГРОВОЙ СТОЛ СТАВОК И ПЕРЕКЛЮЧАТЕЛИ СЛОЕВ -->
+    <div class="section-title">Стол ставок</div>
+    
+    <!-- ОСНОВНОЙ СЛОЙ: КНОПКИ ОБЩИХ ИСХОДОВ -->
+    <div class="wp-main-betting-table-layout" id="wp-main-table-view">
+        <div class="wp-table-row-split">
+            <button onclick="placeBetOnCell('red')" class="wp-bet-trigger-btn wp-btn-red" id="cell-red">Красное <span class="wp-badge-x">x2</span></button>
+            <button onclick="placeBetOnCell('black')" class="wp-bet-trigger-btn wp-btn-black" id="cell-black">Черное <span class="wp-badge-x">x2</span></button>
+        </div>
+        <div class="wp-table-row-split">
+            <button onclick="placeBetOnCell('even')" class="wp-bet-trigger-btn wp-btn-dark-navy" id="cell-even">Четное <span class="wp-badge-x">x2</span></button>
+            <button onclick="placeBetOnCell('odd')" class="wp-bet-trigger-btn wp-btn-dark-navy" id="cell-odd">Нечетное <span class="wp-badge-x">x2</span></button>
+        </div>
+        <div class="wp-table-row-split">
+            <button onclick="placeBetOnCell('low')" class="wp-bet-trigger-btn wp-btn-dark-navy" id="cell-low">1-18 <span class="wp-badge-x">x2</span></button>
+            <button onclick="placeBetOnCell('high')" class="wp-bet-trigger-btn wp-btn-dark-navy" id="cell-high">19-36 <span class="wp-badge-x">x2</span></button>
+        </div>
+        <div class="wp-table-row-triple">
+            <button onclick="placeBetOnCell('doz1')" class="wp-bet-trigger-btn wp-btn-dark-navy" id="cell-doz1">1st 12 <span class="wp-badge-x">x3</span></button>
+            <button onclick="placeBetOnCell('doz2')" class="wp-bet-trigger-btn wp-btn-dark-navy" id="cell-doz2">2nd 12 <span class="wp-badge-x">x3</span></button>
+            <button onclick="placeBetOnCell('doz3')" class="wp-bet-trigger-btn wp-btn-dark-navy" id="cell-doz3">3rd 12 <span class="wp-badge-x">x3</span></button>
+        </div>
+        <button onclick="placeBetOnCell('zero')" class="wp-bet-trigger-btn wp-btn-green" id="cell-zero">Зеро (0) <span class="wp-badge-x">x30</span></button>
+        <button onclick="toggleKeyboardLayout('numbers')" class="wp-bet-trigger-btn wp-btn-dark-navy" style="border-color: var(--color-purple); color: #c7d2fe;">🔢 Точные числа (0-36)</button>
+    </div>
+
+    <!-- СКРЫТЫЙ СЛОЙ: СЕТКА ТОЧНЫХ НОМЕРОВ 0-36 (ГЕНЕРИРУЕТСЯ ИЗ JS) -->
+    <div id="wp-numbers-keyboard-view">
+        <button onclick="toggleKeyboardLayout('main')" class="wp-bet-trigger-btn wp-btn-dark-navy" style="grid-column: span 3; border-color: var(--color-red); color: #fecaca; margin-bottom: 4px;">⬅️ Вернуться назад</button>
+        <div id="wp-num-keys-generator-box" style="display: contents;"></div>
+    </div>
+
+    <!-- КРИПТОГРАФИЧЕСКИЙ ФУТЕР CHECKSUM -->
+    <div class="wp-crypto-fairness-footer">
+        Provably Fair SHA-256:<br>
+        <span id="wp-crypto-hash-sha256" style="font-family: monospace; color: #a7f3d0; user-select: text; -webkit-user-select: text;">Ожидание ставок...</span>
+        <div id="wp-crypto-md5-string" style="display: none;"></div>
+    </div>
+
+</div> <!-- Конец .app-wrapper -->
+
+<!-- ПРЕМИАЛЬНОЕ ОКНО РЕЗУЛЬТАТОВ РАУНДА -->
+<div class="wp-modal-overlay-blur" id="wp-result-modal-popup">
+    <div class="wp-modal-window-card">
+        <div class="section-title" style="margin: 0;">Выпавшее число</div>
+        <div id="modal-winning-number">0</div>
+        <div id="modal-winning-multiplier-badge">x30</div>
+        <div id="modal-player-win-status-text">В этот раз не повезло.</div>
+        <button onclick="closeResultModalPopup()" class="wp-modal-confirm-btn">Забрать результат</button>
+    </div>
+</div>
+
+<!-- ПОДКЛЮЧЕНИЕ СИНХРОНИЗИРОВАННОГО ИГРОВОГО ДВИЖКА -->
+<script src="wheel_engine.js"></script>
+
 </body>
 </html>
