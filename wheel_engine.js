@@ -160,19 +160,47 @@ function toggleKeyboardLayout(layoutName) {
 
 function placeBetOnCell(cellId) {
     if (isGameSessionActive && secondsRemaining <= 0) return;
+    
     const inputField = document.getElementById('wp-bet-field');
     if (!inputField) return;
     activeBetAmount = parseInt(inputField.value) || 0;
+    
     if (activeBetAmount <= 0 || playerBalance < activeBetAmount) return;
-    if (!currentRoundBets[cellId]) { currentRoundBets[cellId] = 0; }
+    
+    if (!currentRoundBets[cellId]) { 
+        currentRoundBets[cellId] = 0; 
+    }
     currentRoundBets[cellId] += activeBetAmount;
-    playerBalance -= activeBetAmount; totalRoundBetSum += activeBetAmount;
+    
+    playerBalance -= activeBetAmount; 
+    totalRoundBetSum += activeBetAmount;
+    
     const targetBtn = document.getElementById(`cell-${cellId}`);
-    if (targetBtn) { targetBtn.classList.add('wp-bet-active-glow'); targetBtn.classList.add('has-bets-placed'); }
+    if (targetBtn) { 
+        targetBtn.classList.add('wp-bet-active-glow'); 
+        targetBtn.classList.add('has-bets-placed'); 
+        
+        // Ищем или создаем фишку внутри кнопки для отображения суммы ставки
+        let chipBadge = targetBtn.querySelector('.wp-live-chip-badge');
+        if (!chipBadge) {
+            chipBadge = document.createElement('div');
+            chipBadge.className = 'wp-live-chip-badge';
+            targetBtn.appendChild(chipBadge);
+        }
+        // Записываем отформатированное значение ставки (например, 25K)
+        chipBadge.innerText = formatCasinoValue(currentRoundBets[cellId]);
+    }
+    
     refreshUI();
-    if (!isGameSessionActive) { startRoundCountdownTimer(); }
-    if (tg && typeof tg.HapticFeedback === 'object') { tg.HapticFeedback.impactOccurred('light'); }
+    
+    if (!isGameSessionActive) { 
+        startRoundCountdownTimer(); 
+    }
+    if (tg && typeof tg.HapticFeedback === 'object') { 
+        tg.HapticFeedback.impactOccurred('light'); 
+    }
 }
+
 
 function startRoundCountdownTimer() {
     isGameSessionActive = true; secondsRemaining = 20;
@@ -525,6 +553,17 @@ function closeResultModalPopup() {
     isGameSessionActive = false; 
     refreshUI();
 }
+
+// [Внутрь функции closeResultModalPopup найди этот блок и замени]
+document.querySelectorAll('.wp-bet-trigger-btn').forEach(btn => { 
+    btn.classList.remove('wp-bet-active-glow'); 
+    btn.classList.remove('has-bets-placed'); 
+    // Удаляем старые фишки с кнопок перед новым раундом
+    const oldChip = btn.querySelector('.wp-live-chip-badge');
+    if (oldChip) oldChip.remove();
+});
+
+
 // Функция безопасного и мгновенного выхода из рулетки в главное меню лобби
 function exitRouletteToLobby() {
     if (typeof tg !== 'undefined' && tg) {
