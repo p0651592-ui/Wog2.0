@@ -57,7 +57,7 @@ const NUMBER_COLORS = {
     30: "red",   31: "black", 32: "red",   33: "black", 34: "red",   35: "black", 36: "red"
 };
 
-let playerBalance = parseInt(localStorage.getItem('wog_secure_balance')) || 100000;
+let playerBalance = 0; // Баланс изначально равен 0, пока не загрузится с сервера
 let activeBetAmount = 100;
 let currentRoundBets = {};
 let totalRoundBetSum = 0;
@@ -109,21 +109,35 @@ function formatCasinoValue(num) {
 function refreshUI() {
     const balDisplay = document.getElementById('wp-balance-display');
     const betDisplay = document.getElementById('wp-player-total-bet');
+    
     if (balDisplay) balDisplay.innerText = playerBalance;
     if (betDisplay) betDisplay.innerText = `${totalRoundBetSum} W`;
-    
-    // Сохраняем локально, но в персональную ячейку конкретного Telegram ID
-    localStorage.setItem(`wog_balance_${userId}`, playerBalance);
-    
-    // Синхронизируем с Python-сервером
-    fetch(`${SERVER_URL}/update-balance`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: userId, amount: playerBalance })
-    })
-    .then(res => res.json())
-    .catch(err => console.log("Сервер занят, баланс сохранен локально"));
+
+    // Больше никакого localStorage.setItem! 
+    // Запросы отправляются только на ваш защищенный домен.
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
+        fetch('https://xn----7sbfkf5bif1g.com', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                init_data: window.Telegram.WebApp.initData
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            // Если сервер вернул актуальный баланс из БД, обновляем его на экране
+            if (data && data.balance !== undefined) {
+                // Если мы не в процессе игры, синхронизируем значение
+                if (!isGameSessionActive) {
+                    playerBalance = data.balance;
+                    if (balDisplay) balDisplay.innerText = playerBalance;
+                }
+            }
+        })
+        .catch(err => WogLogger.error("Ошибка синхронизации баланса с сервером:", err));
+    }
 }
+
 
 
 function modifyBetSize(action) {
@@ -617,20 +631,43 @@ function exitRouletteToLobby() {
 }
 
 async function initGameEngineOnLoad() {
-    drawPremiumRouletteWheel(0, 0, false); 
-    await generateSecureRoundData(); 
+    drawPremiumRouletteWheel(0, 0, false);
+    await generateSecureRoundData();
     updateLuckyNumbersUI();
-    
-    // ПРОВЕРКА НА КОРРЕКТНОСТЬ БАЛАНСА
-    let storedBalance = localStorage.getItem('wog_secure_balance');
-    
-    // Если баланса нет, если он равен 0, если он сломался (NaN), принудительно выдаем 100k
-    if (!storedBalance || isNaN(parseInt(storedBalance)) || parseInt(storedBalance) <= 0) { 
-        localStorage.setItem('wog_secure_balance', 100000); 
+
+    const balDisplay = document.getElementById('wp-balance-display');
+    if (balDisplay) balDisplay.innerText = "Загрузка...";
+
+    // Делаем первичный запрос баланса при открытии Mini App
+    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
+        fetch('https://xn----7sbfkf5bif1g.com', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                init_data: window.Telegram.WebApp.initData 
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.balance !== undefined) {
+                playerBalance = data.balance; // Записываем баланс из казино.db
+                WogLogger.info("Баланс успешно загружен с сервера:", playerBalance);
+            } else {
+                playerBalance = 100000; // Резервный баланс, если в БД сбой
+            }
+            refreshUI();
+        })
+        .catch(err => {
+            WogLogger.error("Критическая ошибка сети при старте. Проверьте бэкенд:", err);
+            playerBalance = 0;
+            refreshUI();
+        });
+    } else {
+        // Логика для тестов вне Телеграма
+        playerBalance = 100000;
+        refreshUI();
     }
-    
-    playerBalance = parseInt(localStorage.getItem('wog_secure_balance')); 
-    refreshUI();
 }
+
 
 initGameEngineOnLoad();
