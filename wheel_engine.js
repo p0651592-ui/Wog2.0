@@ -72,36 +72,6 @@ function buildNumbersKeyboardLayout() {
     if (!container) return;
     container.innerHTML = "";
     
-    // Инъекция стилей для золотых фишек и уменьшения кнопок, чтобы точно перебить старый CSS
-    if (!document.getElementById('wp-injected-compact-styles')) {
-        const styleSheet = document.createElement("style");
-        styleSheet.id = "wp-injected-compact-styles";
-        styleSheet.innerText = `
-            .wp-bet-trigger-btn { 
-                padding: 10px 4px !important; 
-                min-height: 44px !important; 
-                font-size: 12px !important; 
-                position: relative !important; 
-                overflow: visible !important; 
-            }
-            .wp-live-chip-badge {
-                position: absolute !important;
-                top: -8px !important;
-                right: -6px !important;
-                background: #f59e0b !important;
-                color: #000000 !important;
-                font-size: 9px !important;
-                font-weight: 900 !important;
-                padding: 1px 6px !important;
-                border-radius: 12px !important;
-                border: 1px solid #ffffff !important;
-                box-shadow: 0 2px 6px rgba(245, 158, 11, 0.6) !important;
-                z-index: 99 !important;
-            }
-        `;
-        document.head.appendChild(styleSheet);
-    }
-    
     const zeroBtn = document.createElement('button');
     zeroBtn.className = "wp-bet-trigger-btn wp-btn-green";
     zeroBtn.id = "cell-num0";
@@ -120,7 +90,6 @@ function buildNumbersKeyboardLayout() {
     }
 }
 buildNumbersKeyboardLayout();
-
 // ============================================================================
 // WOG PREMIUM CASINO ENGINE: WHEEL APP (PART 2 OF 3)
 // BET CONTROLLER, PROVABLY FAIR ENGINE & INTENSE SLOTS ANIMATION
@@ -189,44 +158,35 @@ function toggleKeyboardLayout(layoutName) {
     }
 }
 
-function formatCasinoValue(num) {
-    if (num >= 1.0e+12) return (num / 1.0e+12).toFixed(1).replace(/\.0$/, '') + 'T';
-    if (num >= 1.0e+9) return (num / 1.0e+9).toFixed(1).replace(/\.0$/, '') + 'B';
-    if (num >= 1.0e+6) return (num / 1.0e+6).toFixed(1).replace(/\.0$/, '') + 'M';
-    if (num >= 1.0e+3) return (num / 1.0e+3).toFixed(1).replace(/\.0$/, '') + 'K';
-    return num.toString();
-}
-
-
 function placeBetOnCell(cellId) {
     if (isGameSessionActive && secondsRemaining <= 0) return;
+    
     const inputField = document.getElementById('wp-bet-field');
     if (!inputField) return;
     activeBetAmount = parseInt(inputField.value) || 0;
+    
     if (activeBetAmount <= 0 || playerBalance < activeBetAmount) return;
     
-    if (!currentRoundBets[cellId]) { currentRoundBets[cellId] = 0; }
+    if (!currentRoundBets[cellId]) { 
+        currentRoundBets[cellId] = 0; 
+    }
     currentRoundBets[cellId] += activeBetAmount;
-    playerBalance -= activeBetAmount; totalRoundBetSum += activeBetAmount;
+    
+    playerBalance -= activeBetAmount; 
+    totalRoundBetSum += activeBetAmount;
     
     const targetBtn = document.getElementById(`cell-${cellId}`);
     if (targetBtn) { 
         targetBtn.classList.add('wp-bet-active-glow'); 
         targetBtn.classList.add('has-bets-placed'); 
         
+        // Ищем или создаем фишку внутри кнопки для отображения суммы ставки
         let chipBadge = targetBtn.querySelector('.wp-live-chip-badge');
         if (!chipBadge) {
             chipBadge = document.createElement('div');
             chipBadge.className = 'wp-live-chip-badge';
             targetBtn.appendChild(chipBadge);
         }
-        chipBadge.innerText = formatCasinoValue(currentRoundBets[cellId]);
-    }
-    refreshUI();
-    if (!isGameSessionActive) { startRoundCountdownTimer(); }
-    if (tg && typeof tg.HapticFeedback === 'object') { tg.HapticFeedback.impactOccurred('light'); }
-}
-
         // Записываем отформатированное значение ставки (например, 25K)
         chipBadge.innerText = formatCasinoValue(currentRoundBets[cellId]);
     }
@@ -578,20 +538,21 @@ function displayRoundWinnerModalPopup(amountWon, isLuckyHit, luckyBonus) {
 function closeResultModalPopup() {
     const modalPopup = document.getElementById('wp-result-modal-popup'); 
     if (modalPopup) modalPopup.style.display = "none";
-    currentRoundBets = {}; totalRoundBetSum = 0;
+    currentRoundBets = {}; 
+    totalRoundBetSum = 0;
     
     document.querySelectorAll('.wp-bet-trigger-btn').forEach(btn => { 
         btn.classList.remove('wp-bet-active-glow'); 
         btn.classList.remove('has-bets-placed'); 
-        // Удаляем фишку
-        const oldChip = btn.querySelector('.wp-live-chip-badge');
-        if (oldChip) oldChip.remove();
     });
     
-    const field = document.getElementById('wp-bet-field'); if (field) field.disabled = false;
-    drawPremiumRouletteWheel(0, 0, false); isGameSessionActive = false; refreshUI();
+    const field = document.getElementById('wp-bet-field'); 
+    if (field) field.disabled = false;
+    
+    drawPremiumRouletteWheel(0, 0, false); 
+    isGameSessionActive = false; 
+    refreshUI();
 }
-
 
 // [Внутрь функции closeResultModalPopup найди этот блок и замени]
 document.querySelectorAll('.wp-bet-trigger-btn').forEach(btn => { 
