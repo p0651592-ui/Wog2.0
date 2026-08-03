@@ -396,26 +396,49 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
         }
-
-        /* БАЗОВЫЕ СТИЛИ КНОПОК НА СТОЛЕ */
+        /* УМЕНЬШЕННЫЕ КНОПКИ СТОЛА СТАВОК */
         .wp-bet-trigger-btn {
             border: 1px solid var(--border-neon);
             border-radius: var(--radius-premium);
             color: #ffffff;
-            font-size: 14px;
+            font-size: 13px; /* Сделали шрифт чуть меньше */
             font-weight: 800;
-            padding: 16px 8px;
+            padding: 10px 6px; /* Уменьшили внутренние отступы для компактности */
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 2px;
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.2);
             position: relative;
-            overflow: hidden;
-            min-height: 56px;
+            overflow: visible; /* Разрешаем фишке вылезать */
+            min-height: 48px; /* Уменьшили минимальную высоту */
         }
+
+        /* ИНДИКАТОР ЖИВОЙ СТАВКИ НА КНОПКЕ (МИНИ-ФИШКА) */
+        .wp-live-chip-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--color-gold);
+            color: #000000;
+            font-size: 9px;
+            font-weight: 900;
+            padding: 2px 6px;
+            border-radius: 20px;
+            border: 1px solid #ffffff;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.5);
+            z-index: 10;
+            transform: scale(0);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Показываем фишку, когда класс активен */
+        .has-bets-placed .wp-live-chip-badge {
+            transform: scale(1);
+        }
+
 
         .wp-btn-red { background-color: var(--color-red); border-color: rgba(255,255,255,0.1); }
         .wp-btn-black { background-color: var(--color-black); border-color: rgba(255,255,255,0.05); }
