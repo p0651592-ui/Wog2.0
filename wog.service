@@ -1,0 +1,17 @@
+[Unit]
+Description=WOG Casino Backend
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/Wog2.0
+EnvironmentFile=/root/Wog2.0/.env
+ExecStart=/root/Wog2.0/.venv/bin/uvicorn main:app --host 0.0.0.0 --port 10000
+Restart=always
+RestartSec=3
+KillSignal=SIGINT
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target
