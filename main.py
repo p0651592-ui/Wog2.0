@@ -9,6 +9,7 @@ from urllib.parse import parse_qsl
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 
@@ -35,6 +36,7 @@ PUBLIC_API_ORIGINS = [
 ]
 RUN_HOST = env_str("HOST", "0.0.0.0")
 RUN_PORT = env_int("PORT", 10000)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 app = FastAPI(title=APP_TITLE)
 
@@ -247,8 +249,45 @@ def _get_or_create_user_from_profile(payload: ProfileRequest) -> dict:
     return _ensure_user(user_id, first_name, username, photo_url)
 
 
-@app.get("/")
+def _serve_html(file_name: str):
+    file_path = os.path.join(BASE_DIR, file_name)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail=f"{file_name} not found")
+    return FileResponse(file_path, media_type="text/html; charset=utf-8")
+
+
+@app.get("/", include_in_schema=False)
 async def root():
+    return _serve_html("index.html")
+
+
+@app.get("/index.html", include_in_schema=False)
+async def index_html():
+    return _serve_html("index.html")
+
+
+@app.get("/wheel.html", include_in_schema=False)
+async def wheel_html():
+    return _serve_html("wheel.html")
+
+
+@app.get("/dice.html", include_in_schema=False)
+async def dice_html():
+    return _serve_html("dice.html")
+
+
+@app.get("/crash.html", include_in_schema=False)
+async def crash_html():
+    return _serve_html("crash.html")
+
+
+@app.get("/bonus.html", include_in_schema=False)
+async def bonus_html():
+    return _serve_html("bonus.html")
+
+
+@app.get("/api/status")
+async def api_status():
     return {"status": "ok", "service": "WOG Casino Core Engine", "users_count": len(db["users"])}
 
 
