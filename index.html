@@ -18,8 +18,13 @@
     .profile{display:flex;align-items:center;gap:10px;width:100%}
     .avatar{width:36px;height:36px;border-radius:50%;background:#1c2130;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;font-weight:900;color:var(--blue);flex:0 0 auto}
     .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-    .card,.promo,.ticker,.nav,.card-game{box-shadow:var(--shadow)}
+    .card,.promo-card,.ticker,.nav,.card-game{box-shadow:var(--shadow)}
     .card{background:linear-gradient(180deg,#181d29 0%,var(--bg-card) 100%);border:1px solid var(--border);border-radius:var(--r);padding:22px 16px;text-align:center}
+    .promo-card{background:linear-gradient(180deg,#171d2a 0%,#121723 100%);border:1px dashed #34405d;border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px}
+    .promo-title{font-size:12px;font-weight:900;color:var(--gold);text-transform:uppercase;letter-spacing:.6px}
+    .promo-row{display:flex;gap:8px;width:100%}
+    .promo-input{flex:1;background:var(--bg-inner);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:12px 12px;font-size:14px;font-weight:800;outline:none;text-transform:uppercase}
+    .promo-btn{border:none;border-radius:12px;padding:12px 14px;font-size:13px;font-weight:900;cursor:pointer;background:var(--cyan);color:#00111d;white-space:nowrap}
     .balance{font-size:34px;font-weight:800;display:flex;justify-content:center;align-items:center;gap:8px;line-height:1}
     .sub{display:flex;justify-content:center;align-items:center;gap:6px;color:var(--gold);font-size:13px;font-weight:700;margin-top:4px;margin-bottom:18px}
     .btns{display:flex;gap:8px;width:100%}
@@ -44,8 +49,7 @@
     .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
     .admin{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 100px);right:24px;background:var(--gold);color:#000;border:none;padding:10px 16px;border-radius:20px;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.5px;box-shadow:0 4px 15px rgba(255,202,40,.4);cursor:pointer;z-index:99999;display:none}
     .muted{color:var(--muted)}
-    .hidden{display:none!important}
-    @media (max-width:380px){.grid{grid-template-columns:1fr}.grid .wide{grid-column:span 1}.nav{width:94%;left:3%}}
+    @media (max-width:380px){.grid{grid-template-columns:1fr}.grid .wide{grid-column:span 1}.nav{width:94%;left:3%}.promo-row{flex-direction:column}}
   </style>
 </head>
 <body>
@@ -73,6 +77,15 @@
         <span style="color:var(--blue);font-size:11px;font-weight:700">Подготовка к битве</span>
       </div>
       <span style="font-size:9px;font-weight:900;color:var(--blue);background:rgba(47,107,242,.1);padding:4px 8px;border-radius:6px;text-transform:uppercase;white-space:nowrap">✦ Событие</span>
+    </div>
+
+    <div class="promo-card">
+      <div class="promo-title">🎟️ Промокод</div>
+      <div class="promo-row">
+        <input id="promo-input" class="promo-input" type="text" placeholder="Введите промокод" autocomplete="off" inputmode="latin" />
+        <button class="promo-btn" type="button" onclick="claimPromoCode()">Активировать</button>
+      </div>
+      <div class="muted" style="font-size:11px;line-height:1.4">Активируй промокод и получи бонус WC прямо на баланс.</div>
     </div>
 
     <span class="section">Популярные игры</span>
@@ -110,7 +123,7 @@
     <div class="nav-item" onclick="showInfo('Игры доступны прямо на главном экране хаба!')" style="color:var(--muted)"><span style="font-size:18px">🎮</span><span style="font-size:9px;font-weight:700">Игры</span></div>
     <div class="nav-item" onclick="refreshData()" style="color:var(--muted)"><span style="font-size:18px">⚙️</span><span style="font-size:9px;font-weight:700">Обновить</span></div>
   </div>
-  <button class="admin" id="adminBtn" onclick="showInfo('Админка в разработке')">⚙️ Админка</button>
+  <button class="admin" id="adminBtn" onclick="openAdminPanel()">⚙️ Админка</button>
 
   <script>
     const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
@@ -123,13 +136,32 @@
     function openLink(url){ if(tg && typeof tg.openTelegramLink === 'function'){ tg.openTelegramLink(url); return; } window.open(url,'_blank','noopener,noreferrer'); }
     function showInfo(msg){ if(tg && tg.showAlert){ tg.showAlert(String(msg)); } else { alert(String(msg)); } }
     function navigateSafe(url){ if(tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred){ tg.HapticFeedback.impactOccurred('light'); } window.location.href = url; }
+    function openAdminPanel(){ window.location.href = apiUrl('/admin'); }
     function scrollTopSafe(){ window.scrollTo({ top: 0, behavior: 'smooth' }); }
     function updateUI(){ document.getElementById('balance').innerText = String(state.balance); document.getElementById('name').innerText = state.username ? `${state.firstName}${state.username ? ` (@${state.username})` : ''}` : state.firstName; const status = document.getElementById('status'); const adminBtn = document.getElementById('adminBtn'); if(Number(state.userId) === MY_ADMIN_ID){ status.innerText = 'ADMIN'; status.style.color = 'var(--gold)'; adminBtn.style.display='block'; } else { status.innerText = 'PLAYER'; status.style.color = 'var(--muted)'; adminBtn.style.display='none'; } const avatar = document.getElementById('avatar'); avatar.innerHTML = state.photoUrl ? `<img src="${state.photoUrl}" alt="avatar">` : (state.firstName ? state.firstName.charAt(0).toUpperCase() : 'W'); }
     async function postJson(path, payload){ const res = await fetch(apiUrl(path), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); let data = null; try { data = await res.json(); } catch(_) {} if(!res.ok) throw new Error((data && (data.detail || data.message)) || `Ошибка сервера (${res.status})`); return data; }
     async function syncProfile(){ try { const data = await postJson('/api/profile/me', { init_data: state.initData }); if(data && typeof data.balance !== 'undefined'){ state.balance = Number(data.balance) || 0; localStorage.setItem(CACHE_KEY, String(state.balance)); } } catch (e) { console.warn(e.message); } updateUI(); }
     async function refreshData(){ await syncProfile(); showInfo('Профиль обновлён'); }
+    async function claimPromoCode(){
+      const input = document.getElementById('promo-input');
+      const code = String(input.value || '').trim();
+      if(!code){ showInfo('Введи промокод'); return; }
+      try {
+        const data = await postJson('/api/promo/redeem', { init_data: state.initData, code });
+        if(typeof data.balance !== 'undefined'){
+          state.balance = Number(data.balance) || state.balance;
+          localStorage.setItem(CACHE_KEY, String(state.balance));
+        }
+        updateUI();
+        if(input) input.value = '';
+        showInfo(data.message || 'Промокод активирован');
+      } catch (error) {
+        showInfo(error.message || 'Не удалось активировать промокод');
+      }
+    }
     if(tg){ try { tg.ready(); tg.expand(); } catch(_) {} if(tg.initDataUnsafe && tg.initDataUnsafe.user){ const u = tg.initDataUnsafe.user; state.userId = u.id || state.userId; state.firstName = u.first_name || state.firstName; state.username = u.username || state.username; state.photoUrl = u.photo_url || ''; state.initData = tg.initData || ''; } }
-    updateUI(); syncProfile();
+    updateUI();
+    syncProfile();
   </script>
 </body>
 </html>
