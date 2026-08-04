@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0e17" />
+  <title>WOG Wheel</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root{--bg:#0b0e17;--card:#151923;--inner:#1c2130;--border:#222938;--blue:#2f6bf2;--gold:#ffca28;--cyan:#00d2d3;--green:#05c46b;--red:#ff3838;--text:#fff;--muted:#64748b;--shadow:0 10px 35px rgba(0,0,0,.35);--r:16px}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+    body{background:var(--bg);color:var(--text);padding:14px 14px calc(env(safe-area-inset-bottom) + 20px);padding-top:calc(env(safe-area-inset-top) + 12px);min-height:100vh;display:flex;justify-content:center;overflow-x:hidden;user-select:none;-webkit-user-select:none}
+    .app{width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .back{background:rgba(255,56,56,.12);color:var(--red);border:1px solid rgba(255,56,56,.35);padding:9px 14px;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer}
+    .title{display:flex;flex-direction:column;gap:2px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:14px}
+    .balance{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .balance strong{color:var(--gold);font-size:18px}
+    .wheel-zone{background:linear-gradient(180deg,#0f1320 0%,#101523 100%);border:1px solid var(--border);border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:12px;align-items:center;box-shadow:var(--shadow)}
+    .wheel-stage{position:relative;width:100%;max-width:340px;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
+    .wheel{width:100%;height:100%;border-radius:50%;border:10px solid #0f172a;box-shadow:inset 0 0 28px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.03);position:relative;transform:rotate(0deg);transition:transform 4.8s cubic-bezier(.15,.85,.08,1);overflow:hidden}
+    .wheel::after{content:"";position:absolute;inset:15%;border-radius:50%;background:radial-gradient(circle at 50% 50%, #090c15 0%, #090c15 45%, #111827 100%);border:2px solid var(--border);box-shadow:inset 0 0 12px rgba(99,102,241,.12)}
+    .pointer{position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:18px solid var(--gold);z-index:3;filter:drop-shadow(0 2px 5px rgba(245,158,11,.5))}
+    .center{position:absolute;width:42%;height:42%;border-radius:50%;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:4px;background:#090c15;border:2px solid var(--border);box-shadow:0 0 20px rgba(0,0,0,.8),inset 0 0 10px rgba(99,102,241,.12)}
+    .center .small{font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+    .center .big{font-size:18px;font-weight:900}
+    .controls{display:flex;flex-direction:column;gap:10px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .field,.select,.spin{width:100%;background:var(--inner);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:12px 12px;font-size:14px;font-weight:800;outline:none}
+    .field::placeholder{color:#64748b}
+    .spin{background:var(--blue);border:none;box-shadow:0 4px 15px rgba(47,107,242,.3);cursor:pointer;text-transform:uppercase;letter-spacing:.4px}
+    .spacer{height:4px}
+    .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .chip{background:#141a28;border:1px solid var(--border);border-radius:12px;color:var(--text);padding:11px 8px;font-weight:800;font-size:12px;cursor:pointer}
+    .chip.active{border-color:var(--gold);box-shadow:0 0 0 1px rgba(255,202,40,.35) inset}
+    .status{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .pill{background:#101523;border:1px solid var(--border);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;color:var(--muted)}
+    .result{font-size:17px;font-weight:900;line-height:1.35}
+    .result b{color:var(--gold)}
+    .last{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px}
+    .bubble{flex:0 0 auto;min-width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;border:1px solid rgba(255,255,255,.1)}
+    .red{background:var(--red)} .black{background:#1e2336} .green{background:var(--green)}
+    .muted{color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title"><div style="font-size:14px;font-weight:900">Wheel</div><div class="muted" style="font-size:11px;font-weight:700">Американская рулетка без Lucky Numbers</div></div>
+      <button class="back" onclick="location.href='index.html'">← Лобби</button>
+    </div>
+
+    <div class="card balance">
+      <div>
+        <div class="muted" style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px">Баланс</div>
+        <strong id="balance">0 W</strong>
+      </div>
+      <div style="text-align:right">
+        <div class="muted" style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px">Статус</div>
+        <div id="status" style="font-size:13px;font-weight:900">Готов к вращению</div>
+      </div>
+    </div>
+
+    <div class="wheel-zone">
+      <div class="wheel-stage">
+        <div class="pointer"></div>
+        <div id="wheel" class="wheel"></div>
+        <div class="center">
+          <div class="small" id="center-small">American Wheel</div>
+          <div class="big" id="center-big">Spin</div>
+          <div class="small" id="center-sub">0 • 00 • 1–36</div>
+        </div>
+      </div>
+      <div class="status" style="width:100%">
+        <div class="pill" id="last-win">Последний результат: —</div>
+        <div class="pill" id="last-type">Ставка: —</div>
+      </div>
+      <div class="result" id="result-text">Выбери тип ставки и нажми <b>Spin</b>.</div>
+      <div class="last" id="last-row"></div>
+    </div>
+
+    <div class="card controls">
+      <div class="row">
+        <select id="bet-type" class="select">
+          <option value="number">Число</option>
+          <option value="red">Красное</option>
+          <option value="black">Чёрное</option>
+          <option value="even">Чёт</option>
+          <option value="odd">Нечёт</option>
+          <option value="low">1–18</option>
+          <option value="high">19–36</option>
+          <option value="dozen1">1-я дюжина</option>
+          <option value="dozen2">2-я дюжина</option>
+          <option value="dozen3">3-я дюжина</option>
+          <option value="column1">1-й столбец</option>
+          <option value="column2">2-й столбец</option>
+          <option value="column3">3-й столбец</option>
+        </select>
+        <input id="bet-amount" class="field" type="number" min="1" step="1" placeholder="Ставка W" value="100" />
+      </div>
+      <input id="number-input" class="field" type="text" placeholder="Номер: 0, 00 или 1-36" />
+      <div class="chips">
+        <button class="chip" data-num="0">0</button>
+        <button class="chip" data-num="00">00</button>
+        <button class="chip" data-num="1">1</button>
+        <button class="chip" data-num="2">2</button>
+        <button class="chip" data-num="3">3</button>
+        <button class="chip" data-num="4">4</button>
+      </div>
+      <button id="spin-btn" class="spin">Spin</button>
+    </div>
+  </div>
+
+  <script>
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    const API_BASE = (window.WOG_CONFIG && window.WOG_CONFIG.API_BASE_URL) ? String(window.WOG_CONFIG.API_BASE_URL).replace(/\/$/, '') : '';
+    const state = {
+      balance: Number(localStorage.getItem('wog_secure_balance')) || 0,
+      initData: tg && tg.initData ? tg.initData : '',
+      last: [],
+      spinning: false,
+      userId: tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 0,
+    };
+
+    const AMERICAN_SEQUENCE = ['0','28','9','26','30','11','7','20','32','17','5','22','34','15','3','24','36','13','1','00','27','10','25','29','12','8','19','31','18','6','21','33','16','4','23','35','14','2'];
+    const RED_SET = new Set(['1','3','5','7','9','12','14','16','18','19','21','23','25','27','30','32','34','36']);
+
+    function apiUrl(path){ return API_BASE ? `${API_BASE}${path.startsWith('/') ? path : '/' + path}` : path; }
+    function setBalance(value){ state.balance = Math.max(0, Number(value) || 0); document.getElementById('balance').innerText = `${state.balance} W`; localStorage.setItem('wog_secure_balance', String(state.balance)); }
+    function colorOf(result){ if(result === '0' || result === '00') return 'green'; return RED_SET.has(String(result)) ? 'red' : 'black'; }
+    function isNumericResult(result){ return /^\d+$/.test(String(result)); }
+
+    function parseBetType(){ return document.getElementById('bet-type').value; }
+    function parseBetAmount(){ const amt = Number(document.getElementById('bet-amount').value); return Number.isFinite(amt) && amt > 0 ? Math.floor(amt) : 0; }
+    function getSelectedNumber(){ const raw = String(document.getElementById('number-input').value || '').trim().toUpperCase(); if(raw === '00') return '00'; if(raw === '0') return '0'; const n = Number(raw); if(Number.isInteger(n) && n >= 1 && n <= 36) return String(n); return ''; }
+    function payoutMultiplier(type){ if(type === 'number') return 36; if(type === 'dozen1' || type === 'dozen2' || type === 'dozen3' || type === 'column1' || type === 'column2' || type === 'column3') return 3; return 2; }
+    function isWin(result, type, selectedNumber){
+      const c = colorOf(result);
+      const n = Number(result);
+      switch(type){
+        case 'number': return selectedNumber !== '' && String(result) === String(selectedNumber);
+        case 'red': return c === 'red';
+        case 'black': return c === 'black';
+        case 'even': return isNumericResult(result) && n >= 1 && n <= 36 && n % 2 === 0;
+        case 'odd': return isNumericResult(result) && n >= 1 && n <= 36 && n % 2 === 1;
+        case 'low': return isNumericResult(result) && n >= 1 && n <= 18;
+        case 'high': return isNumericResult(result) && n >= 19 && n <= 36;
+        case 'dozen1': return isNumericResult(result) && n >= 1 && n <= 12;
+        case 'dozen2': return isNumericResult(result) && n >= 13 && n <= 24;
+        case 'dozen3': return isNumericResult(result) && n >= 25 && n <= 36;
+        case 'column1': return isNumericResult(result) && n >= 1 && n <= 36 && n % 3 === 1;
+        case 'column2': return isNumericResult(result) && n >= 1 && n <= 36 && n % 3 === 2;
+        case 'column3': return isNumericResult(result) && isNumericResult(result) && n >= 1 && n <= 36 && n % 3 === 0;
+        default: return false;
+      }
+    }
+    function resultLabel(result){ return `${result} ${colorOf(result).toUpperCase()}`; }
+    function updateWheelBackground(){
+      const segments = AMERICAN_SEQUENCE.map((num) => colorOf(num) === 'red' ? '#ff3838' : colorOf(num) === 'green' ? '#05c46b' : '#1e2336');
+      const step = 360 / segments.length;
+      const parts = segments.map((c, i) => `${c} ${i * step}deg ${(i + 1) * step}deg`).join(',');
+      document.getElementById('wheel').style.background = `conic-gradient(${parts})`;
+    }
+    function pushHistory(result){ state.last.unshift(result); state.last = state.last.slice(0, 8); const row = document.getElementById('last-row'); row.innerHTML = state.last.map(r => `<div class="bubble ${colorOf(r)}">${r}</div>`).join(''); }
+    function setStatus(text){ document.getElementById('status').innerText = text; }
+    function setResult(text){ document.getElementById('result-text').innerHTML = text; }
+    function setPill(id, text){ document.getElementById(id).innerText = text; }
+    function haptic(kind='impact'){ try { if(tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred) tg.HapticFeedback.impactOccurred(kind); } catch(_) {} }
+    function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
+    function randomNonce(len=10){ const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let out=''; const arr = new Uint32Array(len); crypto.getRandomValues(arr); for(let i=0;i<len;i++) out += chars[arr[i] % chars.length]; return out; }
+
+    document.querySelectorAll('.chip').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('number-input').value = btn.dataset.num;
+    }));
+
+    async function syncBalance() {
+      if (!state.initData) { setBalance(state.balance || 0); return; }
+      try {
+        const res = await fetch(apiUrl('/api/profile/me'), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ init_data: state.initData }) });
+        const data = await res.json();
+        if (res.ok && typeof data.balance !== 'undefined') setBalance(data.balance);
+      } catch (_) {}
+    }
+
+    async function spin() {
+      if (state.spinning) return;
+      const bet = parseBetAmount();
+      const type = parseBetType();
+      const selectedNumber = getSelectedNumber();
+      if (!bet) return setResult('Введите корректную ставку.');
+      if (type === 'number' && !selectedNumber) return setResult('Для ставки на число укажи 0, 00 или 1–36.');
+      if (state.balance < bet) return setResult('Недостаточно W для ставки.');
+
+      state.spinning = true;
+      document.getElementById('spin-btn').disabled = true;
+      setStatus('Колесо вращается...');
+      haptic('light');
+
+      const result = AMERICAN_SEQUENCE[Math.floor(Math.random() * AMERICAN_SEQUENCE.length)];
+      const win = isWin(result, type, selectedNumber);
+      const payout = win ? bet * payoutMultiplier(type) : 0;
+      const spinTurns = 4 + Math.floor(Math.random() * 4);
+      const sectorIndex = AMERICAN_SEQUENCE.indexOf(result);
+      const sectorAngle = 360 / AMERICAN_SEQUENCE.length;
+      const targetAngle = 360 - (sectorIndex * sectorAngle);
+      document.getElementById('wheel').style.transform = `rotate(${spinTurns * 360 + targetAngle}deg)`;
+      await wait(5000);
+
+      const clientSeed = randomNonce(12);
+      const serverSeed = randomNonce(16);
+      const serverSeedHash = `${serverSeed.slice(0, 4)}-${clientSeed.slice(0, 4)}-${Date.now().toString(36)}`;
+      const payload = {
+        init_data: state.initData,
+        game_type: 'wheel',
+        bet,
+        payout,
+        multiplier: win ? payoutMultiplier(type) : 0,
+        client_seed: clientSeed,
+        server_seed_hash: serverSeedHash,
+        server_seed: serverSeed,
+        nonce: Math.floor(Math.random() * 100000),
+        result_json: { result, color: colorOf(result), bet_type: type, selected_number: selectedNumber, win, payout }
+      };
+
+      try {
+        if (state.initData) {
+          const res = await fetch(apiUrl('/api/games/round/finish'), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+          const data = await res.json();
+          if (!res.ok) throw new Error((data && (data.detail || data.message)) || 'Ошибка игры');
+          if (data.profile && typeof data.profile.balance !== 'undefined') setBalance(data.profile.balance);
+          else setBalance((state.balance - bet) + payout);
+        } else {
+          setBalance((state.balance - bet) + payout);
+        }
+        const resultText = win
+          ? `Выпало <b>${result}</b>. Ставка <b>${type}</b> выиграла. Выигрыш: <b>${payout} W</b>.`
+          : `Выпало <b>${result}</b>. Ставка <b>${type}</b> не зашла.`;
+        setResult(resultText);
+        setPill('last-win', `Последний результат: ${resultLabel(result)}`);
+        setPill('last-type', `Ставка: ${type}${type === 'number' ? ` (${selectedNumber})` : ''}`);
+        pushHistory(result);
+        setStatus(win ? 'Победа!' : 'Попробуй ещё раз');
+      } catch (e) {
+        setResult(`Ошибка игры: ${String(e.message || e)}`);
+        setStatus('Ошибка');
+      } finally {
+        state.spinning = false;
+        document.getElementById('spin-btn').disabled = false;
+      }
+    }
+
+    document.getElementById('spin-btn').addEventListener('click', spin);
+    updateWheelBackground();
+    if (tg) { try { tg.ready(); tg.expand(); } catch(_) {} }
+    syncBalance();
+  </script>
+</body>
+</html>
