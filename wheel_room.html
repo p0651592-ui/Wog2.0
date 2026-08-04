@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0e17" />
+  <title>Wheel Plus Room</title>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #0b0e17; overflow: hidden; }
+    .shell { width: 100%; height: 100%; display: flex; flex-direction: column; }
+    .topbar { position: absolute; top: 0; left: 0; right: 0; z-index: 20; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 12px; background: rgba(11,14,23,.86); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid rgba(34,41,56,.8); color: #fff; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+    .title { display: flex; flex-direction: column; gap: 2px; }
+    .title strong { font-size: 14px; }
+    .title span { font-size: 11px; color: #64748b; font-weight: 700; }
+    .back { border: none; border-radius: 12px; padding: 10px 12px; font-size: 12px; font-weight: 900; color: #fff; background: #171a26; cursor: pointer; }
+    .frame { width: 100%; height: 100%; border: 0; }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="title">
+        <strong>Wheel Plus</strong>
+        <span>Общая комната • история • live игроки</span>
+      </div>
+      <button class="back" id="back-btn" type="button">← Меню</button>
+    </div>
+    <iframe id="wheel-frame" class="frame" src="wheel.html" allow="clipboard-read; clipboard-write"></iframe>
+  </div>
+
+  <script>
+    const backBtn = document.getElementById('back-btn');
+    const iframe = document.getElementById('wheel-frame');
+
+    backBtn.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    iframe.addEventListener('load', () => {
+      try {
+        const doc = iframe.contentWindow.document;
+        const script = doc.createElement('script');
+        script.src = 'wheel_room_runtime.js';
+        doc.head.appendChild(script);
+      } catch (error) {
+        console.error('Failed to inject room runtime:', error);
+      }
+    });
+  </script>
+</body>
+</html>
