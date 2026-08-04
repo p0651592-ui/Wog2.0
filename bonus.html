@@ -4,32 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>WOG Bonuses</title>
-    <!-- ПОДКЛЮЧЕНИЕ ОБНОВЛЕННОЙ СДК TELEGRAM WEB APP -->
-    <script src="https://telegram.org"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* ВСТАВЛЯЙ СЮДА: СТИЛЬ ДЛЯ КНОПКИ В БОНУСАХ */
-        .wp-bonus-back-main-btn {
-            background: rgba(99, 102, 241, 0.12) !important;
-            color: #6366f1 !important;
-            border: 1px solid rgba(99, 102, 241, 0.35) !important;
-            padding: 8px 16px !important;
-            border-radius: 12px !important;
-            font-size: 13px !important;
-            font-weight: 800 !important;
-            display: flex !important;
-            align-items: center !important;
-            gap: 6px !important;
-            cursor: pointer !important;
-            transition: all 0.15s ease !important;
-        }
-        .wp-bonus-back-main-btn:active {
-            background: #6366f1 !important;
-            color: #ffffff !important;
-            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4) !important;
-            transform: scale(0.96) !important;
-        }
-
-        
         :root {
             --bg-main: #0b0e17;
             --bg-card: #151923;
@@ -52,18 +28,16 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
-        body{
-            background-color: var(--bg-main);
+        body {
+            background: var(--bg-main);
             color: var(--text-main);
             padding: 16px;
-            /* ПРАВИЛЬНЫЕ БЕЗОПАСНЫЕ ОТСТУПЫ: СВЕРХУ 50px ОПУСКАЮТ ИГРУ ОТ КНОПКИ «ЗАКРЫТЬ» */
-            padding-top: calc(env(safe-area-inset-top) + 50px);
-            padding-bottom: calc(env(safe-area-inset-bottom) + 180px);
+            padding-top: calc(env(safe-area-inset-top) + 16px);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 160px);
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            overflow-y: auto;
         }
 
         .app-wrapper {
@@ -74,22 +48,52 @@
             gap: 16px;
         }
 
-        .lottery-card {
+        .topbar {
+            width: 100%;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .back-btn {
+            background: rgba(99, 102, 241, 0.12);
+            color: #6366f1;
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .back-btn:active {
+            transform: scale(0.97);
+            background: #6366f1;
+            color: #fff;
+        }
+
+        .lottery-card,
+        .bonus-info-card {
             background: var(--bg-card);
             border: 1px solid var(--border-neon);
             border-radius: var(--radius-premium);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+        }
+
+        .lottery-card {
             padding: 16px;
             text-align: center;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
         }
 
         .lottery-title {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             font-size: 15px;
-            font-weight: 700;
-            color: #ffffff;
+            font-weight: 800;
             margin-bottom: 16px;
         }
 
@@ -97,11 +101,10 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-            margin-bottom: 5px;
         }
 
         .cell-card {
-            aspect-ratio: 1.5;
+            aspect-ratio: 1.45;
             background: #1a202c;
             border: 1px solid var(--border-neon);
             border-radius: 10px;
@@ -114,7 +117,7 @@
             cursor: pointer;
             position: relative;
             overflow: hidden;
-            transition: background 0.2s, border-color 0.2s;
+            transition: background 0.2s, border-color 0.2s, transform 0.15s;
             background-image: repeating-linear-gradient(
                 45deg,
                 rgba(255, 255, 255, 0.02),
@@ -124,25 +127,25 @@
             );
         }
 
+        .cell-card:active { transform: scale(0.97); }
         .cell-card.revealed-blue { background: #1e3a8a !important; color: #60a5fa !important; border-color: #3b82f6; }
         .cell-card.revealed-purple { background: #4c1d95 !important; color: #c084fc !important; border-color: #8b5cf6; }
         .cell-card.revealed-gold { background: #78350f !important; color: #fbbf24 !important; border-color: #f59e0b; }
         .cell-card.revealed-red { background: #7f1d1d !important; color: #f87171 !important; border-color: #ef4444; }
 
-        .info-section-title {
+        .section-title {
             font-size: 15px;
             font-weight: 800;
             text-align: left;
-            padding-left: 2px;
-            margin-bottom: 2px;
+            margin: 2px 0;
         }
 
         .bonus-info-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
             padding: 16px;
             text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .bonus-info-text {
@@ -152,7 +155,7 @@
             font-weight: 500;
         }
 
-        .premium-action-btn {
+        .action-btn {
             width: 100%;
             padding: 14px;
             border-radius: 12px;
@@ -168,27 +171,31 @@
             letter-spacing: 0.5px;
             transition: transform 0.1s;
         }
-        .premium-action-btn:active { transform: scale(0.97); }
+
+        .action-btn:active { transform: scale(0.97); }
+        .action-btn.secondary { background: #1c2130; border: 1px solid var(--border-neon); color: var(--text-muted); }
+        .action-btn.primary { background: var(--neon-blue); color: #ffffff; box-shadow: 0 4px 15px rgba(47, 107, 242, 0.3); }
+        .action-btn.gold { background: #1c2130; border: 1px solid rgba(255, 202, 40, 0.35); color: var(--neon-gold); }
+
+        .status-line {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-top: 8px;
+        }
     </style>
 </head>
 <body>
-
-    <!-- ВСТАВЛЯЙ СТРОГО СЮДА: НАВИГАЦИОННАЯ ШАПКА -->
-    <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 12px;">
-        <button onclick="exitBonusesToLobby()" class="wp-bonus-back-main-btn">
-            🚪 Назад в меню
-        </button>
-    </div>
-
-    
     <div class="app-wrapper">
-        <!-- ОКНО ЛОТЕРЕИ 3Х3 (ВЕРСТКА ОПУЩЕНА ВНИЗ НА 50px ДЛЯ ЗАЩИТЫ ОТ КНОПКИ ЗАКРЫТЬ) -->
+        <div class="topbar">
+            <button class="back-btn" type="button" onclick="exitBonusesToLobby()">🚪 Назад в меню</button>
+        </div>
+
         <div class="lottery-card">
             <div class="lottery-title">
-                <span>🎁</span> <span id="game-status-text">Угадайте 3 одинаковых ячейки</span>
+                <span>🎁</span>
+                <span id="game-status-text">Угадайте 3 одинаковых ячейки</span>
             </div>
-            
-            <!-- СЕТКА КАРТОЧЕК ИЗ СКРИНШОТА -->
             <div class="grid-3x3" id="lottery-grid">
                 <div class="cell-card" onclick="openCell(0, this)"></div>
                 <div class="cell-card" onclick="openCell(1, this)"></div>
@@ -200,76 +207,41 @@
                 <div class="cell-card" onclick="openCell(7, this)"></div>
                 <div class="cell-card" onclick="openCell(8, this)"></div>
             </div>
-            
-            <div style="font-size: 11px; color: var(--text-muted); font-weight: 700; margin-top: 8px;" id="attempts-left-text">
-                Осталось попыток: 4
+            <div class="status-line" id="attempts-left-text">Осталось попыток: 4</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <span class="section-title">Стартовый бонус</span>
+            <div class="bonus-info-card">
+                <p class="bonus-info-text">
+                    У Вас закончились коины? Здесь всегда можете получить <span style="color:#fff;font-weight:700;">стартовый бонус</span> в размере от <span style="color:var(--neon-gold);font-weight:700;">300 до 1 500 WC</span>.
+                    Для получения бонуса Ваш баланс должен быть <span style="color:#fff;font-weight:700;">меньше 100 WC</span>.
+                    Можно получать не чаще <span style="color:#fff;font-weight:700;">1 раза за 10 минут</span>.
+                </p>
+                <button class="action-btn secondary" id="claim-start-bonus-btn" onclick="getDailyBonus()">🎁 Забрать бонус</button>
             </div>
         </div>
 
-        <!-- СТАРТОВЫЙ БОНУС ИЗ СКРИНШОТА -->
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            <span class="info-section-title">Стартовый бонус</span>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+            <span class="section-title">Рекламный бонус</span>
             <div class="bonus-info-card">
                 <p class="bonus-info-text">
-                    У Вас закончились коины? Здесь всегда можете получить <span style="color: #ffffff; font-weight: 700;">стартовый бонус</span>, в размере от <span style="color: var(--neon-gold); font-weight: 700;">300 до 1 500 WC</span>, который станет <span style="color: #ffffff; font-weight: 700;">отправной точкой</span> в покорении топа! А если не повезет, тогда возвращайтесь сюда и пробуйте снова. Удачи!<br><br>
-                    Для получения бонуса Ваш баланс должен быть <span style="color: #ffffff; font-weight: 700;">меньше 100 WC</span>. Можно получать не чаще <span style="color: #ffffff; font-weight: 700;">1 раза за 10 минут</span>.
+                    Смотрите рекламу и получайте бонус от <span style="color:var(--neon-gold);font-weight:700;">750 до 2 500</span> коинов за просмотр.
                 </p>
-                <button class="premium-action-btn" id="claim-start-bonus-btn" onclick="getDailyBonus()" style="background: #1c2130; border: 1px solid var(--border-neon); color: var(--text-muted); margin-top: 16px; font-size: 13px;">
-                    <span>🎁</span> Забрать бонус
-                </button>
-            </div>
-        </div>
-
-        <!-- РЕКЛАМНЫЙ БОНУС ИЗ СКРИНШОТА -->
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            <span class="info-section-title">Рекламный бонус</span>
-            <div class="bonus-info-card">
-                <p class="bonus-info-text">
-                    Смотрите рекламу и получайте бонус от <span style="color: var(--neon-gold); font-weight: 700;">750 до 2 500</span> коинов за просмотр!
-                </p>
-                <button class="premium-action-btn" onclick="watchAdBonus()" style="background: var(--neon-blue); color: #ffffff; margin-top: 16px; box-shadow: 0 4px 15px rgba(47, 107, 242, 0.3);">
-                    <span>📺</span> Смотреть рекламу
-                </button>
+                <button class="action-btn primary" onclick="watchAdBonus()">📺 Смотреть рекламу</button>
             </div>
         </div>
     </div>
+
     <script>
-        
-    // ВСТАВЛЯЙ СЮДА: ФУНКЦИЯ ДЛЯ КЛИКА КНОПКИ НАЗАД
-    function exitBonusesToLobby() {
-        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.HapticFeedback) {
-            window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
-        }
-        location.href = "index.html";
-    }
-        // Инициализируем Telegram WebApp API
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-        const SERVER_URL = "https://onrender.com";
-        const MY_ADMIN_ID = 6682822292;
+        const API_BASE = window.API_BASE || window.location.origin;
+        const ADMIN_ID = 6682822292;
 
-        let userId = MY_ADMIN_ID;
-        if (tg) {
-            try {
-                tg.expand();
-                tg.ready();
-                
-                // СВЕРХНАДЕЖНОЕ ВКЛЮЧЕНИЕ НАТИВНОЙ КНОПКИ НАЗАД В ТЕЛЕГРАМЕ
-                if (tg.BackButton) {
-                    tg.BackButton.show();
-                    tg.BackButton.offClick(); // Очищаем старые дубли кликов
-                    tg.BackButton.onClick(goBack); // Привязываем переход назад
-                }
-            } catch(e) { console.error(e); }
-            
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                userId = tg.initDataUnsafe.user.id;
-            }
-        }
-
-        // --- ЛОГИКА МИНИ-ИГРЫ ЛОТЕРЕИ 3Х3 ---
+        let userId = ADMIN_ID;
         let attemptsLeft = 4;
         let isGameOver = false;
-        
+
         const PRIZE_POOL = [
             { text: "5K W", style: "revealed-blue", value: 5000 },
             { text: "5K W", style: "revealed-blue", value: 5000 },
@@ -282,82 +254,138 @@
             { text: "100K W", style: "revealed-red", value: 100000 }
         ];
 
-        let generatedGrid = [...PRIZE_POOL].sort(() => Math.random() - 0.5);
-        let openedCounts = {};
+        const generatedGrid = [...PRIZE_POOL].sort(() => Math.random() - 0.5);
+        const openedCounts = {};
 
-        function openCell(index, element) {
+        function safeHaptic(type) {
+            try {
+                if (tg && tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function') {
+                    tg.HapticFeedback.impactOccurred(type);
+                }
+            } catch (_) {}
+        }
+
+        function showMessage(message) {
+            if (tg && typeof tg.showAlert === 'function') tg.showAlert(message);
+            else alert(message);
+        }
+
+        function exitBonusesToLobby() {
+            safeHaptic('light');
+            location.href = 'index.html';
+        }
+
+        function initTelegram() {
+            if (!tg) return;
+            try {
+                tg.ready();
+                tg.expand();
+                if (tg.BackButton) {
+                    tg.BackButton.show();
+                    tg.BackButton.offClick();
+                    tg.BackButton.onClick(exitBonusesToLobby);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+
+            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                userId = tg.initDataUnsafe.user.id || ADMIN_ID;
+            }
+        }
+
+        function updateAttemptsUI() {
+            const el = document.getElementById('attempts-left-text');
+            if (el) el.innerText = `Осталось попыток: ${attemptsLeft}`;
+        }
+
+        function revealAllCells() {
+            document.querySelectorAll('.cell-card').forEach((cell, idx) => {
+                if (!cell.classList.contains('revealed')) {
+                    const prize = generatedGrid[idx];
+                    cell.innerText = prize.text;
+                    cell.classList.add('revealed', prize.style);
+                    cell.style.opacity = '0.55';
+                }
+            });
+        }
+
+        async function sendRewardToServer(amount) {
+            if (!Number.isFinite(amount) || amount <= 0) return false;
+
+            try {
+                const response = await fetch(`${API_BASE}/api/balance`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id: userId,
+                        amount: amount,
+                        game_mode: 'bonus'
+                    })
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('Balance sync error:', error);
+                return null;
+            }
+        }
+
+        async function openCell(index, element) {
             if (isGameOver || attemptsLeft <= 0 || element.classList.contains('revealed')) return;
 
             const prize = generatedGrid[index];
-            attemptsLeft--;
-            
-            element.innerText = prize.text;
-            element.classList.add('revealed', prize.style);
-            document.getElementById('attempts-left-text').innerText = `Осталось попыток: ${attemptsLeft}`;
-
+            attemptsLeft -= 1;
             openedCounts[prize.text] = (openedCounts[prize.text] || 0) + 1;
 
-            if (openedCounts[prize.text] === 3) {
+            element.innerText = prize.text;
+            element.classList.add('revealed', prize.style);
+            updateAttemptsUI();
+            safeHaptic('light');
+
+            if (openedCounts[prize.text] >= 3) {
                 isGameOver = true;
                 document.getElementById('game-status-text').innerText = `🎉 Выиграно ${prize.text}!`;
-                sendRewardToServer(prize.value);
+                await sendRewardToServer(prize.value);
+                showMessage(`Отлично! +${prize.value} монет успешно зачислены на баланс.`);
                 revealAllCells();
                 return;
             }
 
             if (attemptsLeft === 0) {
                 isGameOver = true;
-                document.getElementById('game-status-text').innerText = "🎁 Не повезло...";
-                if (tg && typeof tg.showAlert === 'function') {
-                    tg.showAlert("Попытки закончились! Удача улыбнется в следующий раз.");
-                }
+                document.getElementById('game-status-text').innerText = '🎁 Не повезло...';
                 revealAllCells();
+                showMessage('Попытки закончились! Удача улыбнется в следующий раз.');
             }
         }
 
-        function revealAllCells() {
-            const cells = document.querySelectorAll('.cell-card');
-            cells.forEach((cell, idx) => {
-                if (!cell.classList.contains('revealed')) {
-                    const prize = generatedGrid[idx];
-                    cell.innerText = prize.text;
-                    cell.classList.add('revealed', prize.style);
-                    cell.style.opacity = "0.5";
-                }
-            });
-        }
-
-        function sendRewardToServer(amount) {
-            fetch(`${SERVER_URL}/api/balance`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: userId, amount: parseInt(amount), game_mode: "Лотерея 3х3" })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success && tg && typeof tg.showAlert === 'function') {
-                    tg.showAlert(`Отлично! +${amount} монет успешно зачислены на ваш баланс.`);
-                }
-            })
-            .catch(err => console.error("Ошибка сервера:", err));
-        }
-
-        function getDailyBonus() {
-            let randomBonus = Math.floor(Math.random() * (1500 - 300 + 1)) + 300;
-            sendRewardToServer(randomBonus);
-        }
-
-        function watchAdBonus() {
-            let adPrize = Math.floor(Math.random() * (2500 - 750 + 1)) + 750;
-            sendRewardToServer(adPrize);
-        }
-
-        function goBack() {
-            if (tg && tg.BackButton) {
-                tg.BackButton.hide(); // Гарантированно убираем стрелочку на главном экране
+        async function getDailyBonus() {
+            if (isGameOver) return;
+            const bonus = Math.floor(Math.random() * (1500 - 300 + 1)) + 300;
+            const result = await sendRewardToServer(bonus);
+            if (result) {
+                showMessage(`Стартовый бонус получен: +${bonus} монет.`);
+                safeHaptic('medium');
+            } else {
+                showMessage('Не удалось получить бонус. Проверьте соединение с сервером.');
             }
-            location.href = "index.html";
         }
+
+        async function watchAdBonus() {
+            const bonus = Math.floor(Math.random() * (2500 - 750 + 1)) + 750;
+            const result = await sendRewardToServer(bonus);
+            if (result) {
+                showMessage(`Рекламный бонус получен: +${bonus} монет.`);
+                safeHaptic('medium');
+            } else {
+                showMessage('Не удалось начислить рекламный бонус.');
+            }
+        }
+
+        initTelegram();
+        updateAttemptsUI();
     </script>
 </body>
 </html>
