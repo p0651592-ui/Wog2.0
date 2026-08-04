@@ -1,903 +1,135 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#0b0e17">
-    <title>WOG Launcher</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg-main: #0b0e17;
-            --bg-card: #151923;
-            --bg-inner: #1c2130;
-            --border-neon: #222938;
-            --neon-blue: #2f6bf2;
-            --neon-gold: #ffca28;
-            --neon-cyan: #00d2d3;
-            --neon-green: #05c46b;
-            --neon-red: #ff3838;
-            --text-main: #ffffff;
-            --text-muted: #64748b;
-            --radius-premium: 16px;
-            --shadow: 0 10px 35px rgba(0, 0, 0, 0.35);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        html, body {
-            min-height: 100%;
-        }
-
-        body {
-            background: var(--bg-main);
-            color: var(--text-main);
-            padding: 14px 14px calc(env(safe-area-inset-bottom) + 120px);
-            padding-top: calc(env(safe-area-inset-top) + 12px);
-            overflow-x: hidden;
-            user-select: none;
-            -webkit-user-select: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        button, input {
-            font: inherit;
-        }
-
-        .app-wrapper {
-            width: 100%;
-            max-width: 480px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .profile-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .avatar-box {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #1c2130;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            color: var(--neon-blue);
-            border: 1px solid var(--border-neon);
-            flex: 0 0 auto;
-        }
-
-        .avatar-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-        }
-
-        .stars-widget-card,
-        .event-ticker-box,
-        .promo-activation-card,
-        .tournament-banner-box,
-        .game-grid-card,
-        .wheel-plus-premium-card,
-        .control-circle-item,
-        .bottom-nav-dock {
-            box-shadow: var(--shadow);
-        }
-
-        .stars-widget-card {
-            background: linear-gradient(180deg, #181d29 0%, var(--bg-card) 100%);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 24px 16px;
-            text-align: center;
-        }
-
-        .stars-value-row {
-            font-size: 34px;
-            font-weight: 800;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-family: monospace;
-            line-height: 1;
-        }
-
-        .stars-sub-label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            color: var(--neon-gold);
-            font-size: 13px;
-            font-weight: 700;
-            margin-top: 3px;
-            margin-bottom: 22px;
-        }
-
-        .stars-action-btn {
-            flex: 1;
-            padding: 13px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.1s ease, opacity 0.15s ease;
-            border: none;
-        }
-
-        .stars-action-btn:active,
-        .control-circle-item:active,
-        .game-grid-card:active,
-        .wheel-plus-premium-card:active,
-        .nav-dock-tab:active {
-            transform: scale(0.97);
-        }
-
-        .event-ticker-box {
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: 14px;
-            padding: 12px 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .control-grid-row {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            width: 100%;
-        }
-
-        .control-circle-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: 14px;
-            padding: 12px 2px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-        }
-
-        .promo-activation-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .promo-input-wrapper {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-        }
-
-        .promo-input-wrapper input {
-            flex: 1;
-            background: #040508;
-            border: 1px solid var(--border-neon);
-            border-radius: 12px;
-            padding: 12px;
-            color: var(--text-main);
-            font-size: 14px;
-            font-weight: 700;
-            outline: none;
-            text-transform: uppercase;
-        }
-
-        .promo-activation-btn {
-            border: 1px solid var(--border-neon);
-            padding: 0 18px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 800;
-            cursor: pointer;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-
-        .tournament-banner-box {
-            background: linear-gradient(135deg, #112c6d 0%, #0d1626 100%);
-            border: 1px solid #193d82;
-            border-radius: var(--radius-premium);
-            padding: 18px;
-            text-align: left;
-        }
-
-        .games-neon-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            width: 100%;
-        }
-
-        .games-neon-grid .full-span-card {
-            grid-column: span 2;
-        }
-
-        .game-grid-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            min-height: 165px;
-        }
-
-        .game-card-icon-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .game-card-badge {
-            font-size: 10px;
-            font-weight: 800;
-            background: #1c2130;
-            padding: 3px 8px;
-            border-radius: 6px;
-            border: 1px solid var(--border-neon);
-        }
-
-        .wheel-plus-premium-card {
-            grid-column: span 1;
-            background: linear-gradient(135deg, #2b6bf3 0%, #1e4bb3 100%);
-            border: 2px solid #3b82f6;
-            border-radius: 24px;
-            padding: 12px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            min-height: 165px;
-            box-shadow: 0 8px 24px rgba(43, 107, 243, 0.3), inset 0 2px 10px rgba(255,255,255,0.2);
-            cursor: pointer;
-            transition: transform 0.2s ease;
-        }
-
-        .wp-online-badge {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            padding: 3px 8px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 800;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            z-index: 5;
-        }
-
-        .wp-history-row {
-            display: flex;
-            gap: 6px;
-            margin-top: 24px;
-            z-index: 5;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .wp-history-box {
-            background: #1b1e2b;
-            border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 10px rgba(0, 210, 211, 0.4);
-            border-radius: 8px;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 15px;
-            font-weight: 900;
-            color: var(--text-main);
-        }
-
-        .wp-graphics-container {
-            position: relative;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: auto;
-        }
-
-        .wp-circle-bg {
-            width: 120px;
-            height: 60px;
-            background: #0f172a;
-            border: 4px solid #1e293b;
-            border-top-left-radius: 120px;
-            border-top-right-radius: 120px;
-            border-bottom: none;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .wp-green-sector {
-            position: absolute;
-            top: 0;
-            width: 24px;
-            height: 100%;
-            background: #10b981;
-            clip-path: polygon(50% 100%, 0 0, 100% 0);
-        }
-
-        .wp-title-label {
-            font-size: 15px;
-            font-weight: 800;
-            color: var(--text-main);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            margin-top: -30px;
-            z-index: 6;
-            letter-spacing: 0.3px;
-        }
-
-        .wp-deco-x {
-            position: absolute;
-            color: rgba(255, 255, 255, 0.4);
-            font-weight: 900;
-            font-size: 14px;
-        }
-
-        .bottom-nav-dock {
-            position: fixed;
-            bottom: calc(env(safe-area-inset-bottom) + 20px);
-            left: 5%;
-            width: 90%;
-            background: #090b11;
-            border: 1px solid var(--border-neon);
-            border-radius: 20px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            padding: 12px 0;
-            z-index: 99998;
-        }
-
-        .nav-dock-tab {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-        }
-
-        .admin-neon-btn {
-            position: fixed;
-            bottom: calc(env(safe-area-inset-bottom) + 100px);
-            right: 24px;
-            background: var(--neon-gold);
-            color: #000000;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 20px;
-            font-weight: 900;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: 0 4px 15px rgba(255, 202, 40, 0.4);
-            cursor: pointer;
-            z-index: 99999;
-            display: none;
-        }
-
-        .section-title {
-            color: var(--text-main);
-            font-size: 14px;
-            font-weight: 800;
-            text-align: left;
-            padding-left: 2px;
-        }
-
-        .muted {
-            color: var(--text-muted);
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        @media (max-width: 380px) {
-            .control-grid-row {
-                grid-template-columns: repeat(3, 1fr);
-            }
-
-            .games-neon-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .games-neon-grid .full-span-card {
-                grid-column: span 1;
-            }
-
-            .wheel-plus-premium-card {
-                grid-column: span 1;
-            }
-
-            .bottom-nav-dock {
-                width: 94%;
-                left: 3%;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0e17" />
+  <title>WOG Launcher</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-main:#0b0e17; --bg-card:#151923; --bg-inner:#1c2130; --border:#222938;
+      --blue:#2f6bf2; --gold:#ffca28; --cyan:#00d2d3; --green:#05c46b; --red:#ff3838;
+      --text:#fff; --muted:#64748b; --shadow:0 10px 35px rgba(0,0,0,.35); --r:16px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+    body{background:var(--bg-main);color:var(--text);padding:14px 14px calc(env(safe-area-inset-bottom) + 120px);padding-top:calc(env(safe-area-inset-top) + 12px);min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;user-select:none;-webkit-user-select:none}
+    .app{width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px}
+    .profile{display:flex;align-items:center;gap:10px;width:100%}
+    .avatar{width:36px;height:36px;border-radius:50%;background:#1c2130;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;font-weight:900;color:var(--blue);flex:0 0 auto}
+    .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+    .card,.promo,.ticker,.nav,.card-game{box-shadow:var(--shadow)}
+    .card{background:linear-gradient(180deg,#181d29 0%,var(--bg-card) 100%);border:1px solid var(--border);border-radius:var(--r);padding:22px 16px;text-align:center}
+    .balance{font-size:34px;font-weight:800;display:flex;justify-content:center;align-items:center;gap:8px;line-height:1}
+    .sub{display:flex;justify-content:center;align-items:center;gap:6px;color:var(--gold);font-size:13px;font-weight:700;margin-top:4px;margin-bottom:18px}
+    .btns{display:flex;gap:8px;width:100%}
+    .btn{flex:1;padding:13px;border-radius:12px;font-size:14px;font-weight:800;border:none;cursor:pointer}
+    .ticker{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .section{color:var(--text);font-size:14px;font-weight:800;padding-left:2px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+    .grid .wide{grid-column:span 2}
+    .card-game{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:8px;cursor:pointer;min-height:165px}
+    .game-row{display:flex;justify-content:space-between;align-items:center}
+    .badge{font-size:10px;font-weight:800;background:#1c2130;padding:3px 8px;border-radius:6px;border:1px solid var(--border)}
+    .wheel-plus{background:linear-gradient(135deg,#2b6bf3 0%,#1e4bb3 100%);border:2px solid #3b82f6;border-radius:24px;padding:12px;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:space-between;min-height:165px;cursor:pointer}
+    .badge-online{position:absolute;top:10px;left:10px;background:rgba(15,23,42,.4);backdrop-filter:blur(4px);padding:3px 8px;border-radius:20px;font-size:11px;font-weight:800;display:flex;align-items:center;gap:4px;z-index:2}
+    .history{display:flex;gap:6px;margin-top:24px;justify-content:center;width:100%}
+    .hbox{background:#1b1e2b;border:2px solid var(--cyan);box-shadow:0 0 10px rgba(0,210,211,.4);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900}
+    .graphics{position:relative;width:100%;display:flex;flex-direction:column;align-items:center;margin-top:auto}
+    .circle{width:120px;height:60px;background:#0f172a;border:4px solid #1e293b;border-top-left-radius:120px;border-top-right-radius:120px;border-bottom:none;display:flex;align-items:flex-end;justify-content:center;position:relative;overflow:hidden}
+    .green-sector{position:absolute;top:0;width:24px;height:100%;background:#10b981;clip-path:polygon(50% 100%,0 0,100% 0)}
+    .title-label{font-size:15px;font-weight:800;text-shadow:0 2px 4px rgba(0,0,0,.5);margin-top:-30px;z-index:3;letter-spacing:.3px}
+    .x{position:absolute;color:rgba(255,255,255,.4);font-weight:900;font-size:14px}
+    .nav{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 20px);left:5%;width:90%;background:#090b11;border:1px solid var(--border);border-radius:20px;display:grid;grid-template-columns:repeat(4,1fr);padding:12px 0;z-index:99998}
+    .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+    .admin{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 100px);right:24px;background:var(--gold);color:#000;border:none;padding:10px 16px;border-radius:20px;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.5px;box-shadow:0 4px 15px rgba(255,202,40,.4);cursor:pointer;z-index:99999;display:none}
+    .muted{color:var(--muted)}
+    .hidden{display:none!important}
+    @media (max-width:380px){.grid{grid-template-columns:1fr}.grid .wide{grid-column:span 1}.nav{width:94%;left:3%}}
+  </style>
 </head>
 <body>
-    <div class="app-wrapper">
-        <div class="profile-container">
-            <div class="avatar-box" id="avatar-container">W</div>
-            <div style="display: flex; flex-direction: column; min-width: 0;">
-                <span id="username-display" style="font-size: 14px; font-weight: 800; color: var(--text-main);">Загрузка профиля...</span>
-                <span id="status-display" style="font-size: 11px; color: var(--text-muted); font-weight: 700; margin-top: 1px;">Подключение...</span>
-            </div>
-        </div>
-
-        <div class="stars-widget-card">
-            <div class="stars-value-row">
-                <span id="balance-display">0</span>
-                <span style="color: var(--text-main); font-weight: 900; font-size: 28px; font-family: sans-serif;">W</span>
-            </div>
-            <div class="stars-sub-label">
-                <span>10 ★</span>
-                <span style="color: var(--text-muted); font-weight: 400;">|</span>
-                <span style="color: var(--text-muted);">#820</span>
-            </div>
-            <div style="display: flex; gap: 8px; width: 100%;">
-                <button class="stars-action-btn" id="get-bonus-btn" onclick="location.href='bonus.html'" style="background: #171a26; border: 1px solid var(--border-neon); color: var(--text-main);">Получить</button>
-                <button class="stars-action-btn" id="buy-btn" onclick="openTelegramLinkSafe('https://t.me')" style="background: var(--neon-blue); color: var(--text-main); box-shadow: 0 4px 15px rgba(47, 107, 242, 0.3);">Купить</button>
-            </div>
-        </div>
-
-        <div class="event-ticker-box">
-            <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
-                <span style="color: var(--neon-gold); font-size: 13px; font-weight: 800;">⭐ Звёздная гонка</span>
-                <span style="color: var(--neon-blue); font-size: 11px; font-weight: 700;">Подготовка к битве</span>
-            </div>
-            <span style="font-size: 9px; font-weight: 900; color: var(--neon-blue); background: rgba(47, 107, 242, 0.1); padding: 4px 8px; border-radius: 6px; text-transform: uppercase; white-space: nowrap;">✦ Событие</span>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            <span class="section-title">Управление</span>
-            <div class="control-grid-row">
-                <div class="control-circle-item" onclick="showInfo('Профиль игрока')">
-                    <span style="font-size: 16px;">👤</span>
-                    <span style="font-size: 10px; color: var(--text-muted); font-weight: 700;">Профиль</span>
-                </div>
-                <div class="control-circle-item" onclick="showInfo('Кланы появятся скоро!')">
-                    <span style="font-size: 16px;">👑</span>
-                    <span style="font-size: 10px; color: var(--text-muted); font-weight: 700;">Клан</span>
-                </div>
-                <div class="control-circle-item" onclick="showInfo('Инвентарь пока пуст')">
-                    <span style="font-size: 16px;">📦</span>
-                    <span style="font-size: 10px; color: var(--text-muted); font-weight: 700;">Инвентарь</span>
-                </div>
-                <div class="control-circle-item" onclick="togglePromoBox()" style="border-bottom: 2px solid var(--neon-cyan);">
-                    <span style="font-size: 16px;">🎟️</span>
-                    <span style="font-size: 10px; color: var(--text-muted); font-weight: 700;">Промо</span>
-                </div>
-                <div class="control-circle-item" onclick="showInfo('Все системы WOG работают стабильно')">
-                    <span style="font-size: 16px;">⚙️</span>
-                    <span style="font-size: 10px; color: var(--text-muted); font-weight: 700;">Сервис</span>
-                </div>
-            </div>
-        </div>
-
-        <div id="promo-box-wrapper" class="promo-activation-card hidden" style="border: 1px dashed var(--border-neon);">
-            <span style="font-size: 11px; font-weight: 800; color: var(--neon-cyan); text-transform: uppercase;">🎟️ Активация промокода</span>
-            <div class="promo-input-wrapper">
-                <input type="text" id="promo-input" placeholder="Введите код..." autocomplete="off" inputmode="latin">
-                <button class="promo-activation-btn" onclick="claimPromoCode()" style="background: var(--neon-cyan); color: #000000; font-weight: 900;">Ввод</button>
-            </div>
-        </div>
-
-        <div class="tournament-banner-box">
-            <div style="display: flex; align-items: center; gap: 6px; color: #4db8ff; font-weight: 900; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
-                <span>🛡️</span> Турнир
-            </div>
-            <p style="font-size: 11px; color: #94a3b8; line-height: 1.5; margin-top: 6px; margin-bottom: 14px; font-weight: 500;">
-                С <span style="color: var(--neon-gold); font-weight: 700;">03.08</span> начнётся недельный турнир! Только в нём можно будет получить <span style="color: var(--neon-cyan); font-weight: 700;">новую валюту</span>, а лучшие игроки попадут на доску почёта.
-            </p>
-            <div style="display: flex; gap: 8px; width: 100%;">
-                <button onclick="showInfo('Билеты будут доступны перед началом турнира!')" style="flex: 1; background: var(--neon-blue); border: none; color: var(--text-main); padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase;">Купить билет</button>
-                <button onclick="showInfo('Турнир WOG Лаунчера. Главный приз — 100 000 W-монет!')" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: var(--text-main); padding: 10px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase;">О турнире</button>
-            </div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-            <span class="section-title">Популярные игры</span>
-            <div class="games-neon-grid">
-                <div class="wheel-plus-premium-card" onclick="navigateSafe('wheel.html')">
-                    <div class="wp-online-badge">👥 6</div>
-                    <div class="wp-deco-x" style="top: 35px; left: 8px; transform: rotate(15deg);">X</div>
-                    <div class="wp-deco-x" style="top: 45px; right: 10px; transform: rotate(-20deg); font-size:16px;">X</div>
-                    <div class="wp-deco-x" style="bottom: 12px; left: 12px; transform: rotate(-10deg);">X</div>
-                    <div class="wp-history-row">
-                        <div class="wp-history-box">2</div>
-                        <div class="wp-history-box">8</div>
-                        <div class="wp-history-box">12</div>
-                    </div>
-                    <div class="wp-graphics-container">
-                        <div class="wp-circle-bg">
-                            <div class="wp-green-sector"></div>
-                        </div>
-                        <div class="wp-title-label">Wheel Plus</div>
-                    </div>
-                </div>
-
-                <div class="game-grid-card" onclick="navigateSafe('dice.html')" style="border-left: 3px solid var(--neon-cyan); justify-content: center;">
-                    <div class="game-card-icon-row">
-                        <span style="font-size: 24px;">🎲</span>
-                        <span class="game-card-badge" style="color: var(--neon-cyan);">PREMIUM</span>
-                    </div>
-                    <span style="font-size: 14px; font-weight: 900; text-transform: uppercase; margin-top: 8px;">Кости</span>
-                </div>
-
-                <div class="game-grid-card full-span-card" onclick="showInfo('Краш-ракета на реставрации!')" style="border-left: 3px solid var(--neon-red); background: linear-gradient(90deg, var(--bg-card) 0%, rgba(255,56,56,0.01) 100%);">
-                    <div class="game-card-icon-row">
-                        <span style="font-size: 22px;">🚀</span>
-                        <span class="game-card-badge" style="color: var(--neon-red); background: rgba(255,56,56,0.03);">HIGH RISK</span>
-                    </div>
-                    <span style="font-size: 13px; font-weight: 900; text-transform: uppercase; margin-top: 2px;">Краш-ракета</span>
-                </div>
-            </div>
-        </div>
+  <div class="app">
+    <div class="profile">
+      <div class="avatar" id="avatar">W</div>
+      <div style="display:flex;flex-direction:column;min-width:0">
+        <span id="name" style="font-size:14px;font-weight:800">Загрузка профиля...</span>
+        <span id="status" class="muted" style="font-size:11px;font-weight:700;margin-top:1px">Подключение...</span>
+      </div>
     </div>
 
-    <div class="bottom-nav-dock">
-        <div class="nav-dock-tab" onclick="scrollToTop()" style="color: var(--neon-blue);">
-            <span style="font-size: 18px;">👤</span>
-            <span style="font-size: 9px; font-weight: 800;">Профиль</span>
-        </div>
-        <div class="nav-dock-tab" onclick="scrollToTop()" style="color: var(--text-muted);">
-            <span style="font-size: 18px;">🏠</span>
-            <span style="font-size: 9px; font-weight: 700;">Главная</span>
-        </div>
-        <div class="nav-dock-tab" onclick="showInfo('Игры доступны прямо на главном экране хаба!')" style="color: var(--text-muted);">
-            <span style="font-size: 18px;">🎮</span>
-            <span style="font-size: 9px; font-weight: 700;">Игры</span>
-        </div>
-        <div class="nav-dock-tab" onclick="refreshData()" style="color: var(--text-muted);">
-            <span style="font-size: 18px;">⚙️</span>
-            <span style="font-size: 9px; font-weight: 700;">Обновить</span>
-        </div>
+    <div class="card">
+      <div class="balance"><span id="balance">0</span><span style="font-size:28px;font-weight:900">W</span></div>
+      <div class="sub"><span>10 ★</span><span style="color:var(--muted);font-weight:400">|</span><span style="color:var(--muted)">#820</span></div>
+      <div class="btns">
+        <button class="btn" onclick="location.href='bonus.html'" style="background:#171a26;border:1px solid var(--border);color:var(--text)">Получить</button>
+        <button class="btn" onclick="openLink('https://t.me')" style="background:var(--blue);color:var(--text);box-shadow:0 4px 15px rgba(47,107,242,.3)">Купить</button>
+      </div>
     </div>
 
-    <button class="admin-neon-btn" id="admin-trigger-btn" onclick="openAdminMenu()">⚙️ Админка</button>
+    <div class="ticker">
+      <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+        <span style="color:var(--gold);font-size:13px;font-weight:800">⭐ Звёздная гонка</span>
+        <span style="color:var(--blue);font-size:11px;font-weight:700">Подготовка к битве</span>
+      </div>
+      <span style="font-size:9px;font-weight:900;color:var(--blue);background:rgba(47,107,242,.1);padding:4px 8px;border-radius:6px;text-transform:uppercase;white-space:nowrap">✦ Событие</span>
+    </div>
 
-    <script>
-        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-        const API_BASE = (window.WOG_CONFIG && window.WOG_CONFIG.API_BASE_URL)
-            ? String(window.WOG_CONFIG.API_BASE_URL).replace(/\/$/, '')
-            : '';
-        const SERVER_URL = API_BASE || '';
-        const MY_ADMIN_ID = 6682822292;
-        const CACHE_KEY = 'wog_secure_balance';
-        const DEFAULT_BALANCE = 500000000;
+    <span class="section">Популярные игры</span>
+    <div class="grid">
+      <div class="wheel-plus" onclick="navigateSafe('wheel.html')">
+        <div class="badge-online">👥 6</div>
+        <div class="x" style="top:35px;left:8px;transform:rotate(15deg)">X</div>
+        <div class="x" style="top:45px;right:10px;transform:rotate(-20deg);font-size:16px">X</div>
+        <div class="x" style="bottom:12px;left:12px;transform:rotate(-10deg)">X</div>
+        <div class="history"><div class="hbox">2</div><div class="hbox">8</div><div class="hbox">12</div></div>
+        <div class="graphics"><div class="circle"><div class="green-sector"></div></div><div class="title-label">Wheel Plus</div></div>
+      </div>
 
-        const state = {
-            userId: MY_ADMIN_ID,
-            firstName: 'Основатель (WOG)',
-            username: 'FounderAdmin',
-            photoUrl: '',
-            balance: Number(localStorage.getItem(CACHE_KEY)) || DEFAULT_BALANCE,
-            authData: '',
-        };
+      <div class="card-game" onclick="navigateSafe('wheel_classic.html')" style="border-left:3px solid var(--gold);justify-content:center;background:linear-gradient(180deg,#171a26 0%,#151923 100%);">
+        <div class="game-row"><span style="font-size:24px">🎡</span><span class="badge" style="color:var(--gold)">CLASSIC</span></div>
+        <span style="font-size:14px;font-weight:900;text-transform:uppercase;margin-top:8px">Wheel</span>
+        <span class="muted" style="font-size:11px;font-weight:700;line-height:1.4">Американская рулетка без Lucky Numbers</span>
+      </div>
 
-        function apiUrl(path) {
-            if (!path.startsWith('/')) {
-                path = '/' + path;
-            }
-            return SERVER_URL ? `${SERVER_URL}${path}` : path;
-        }
+      <div class="card-game" onclick="navigateSafe('dice.html')" style="border-left:3px solid var(--cyan);justify-content:center;">
+        <div class="game-row"><span style="font-size:24px">🎲</span><span class="badge" style="color:var(--cyan)">PREMIUM</span></div>
+        <span style="font-size:14px;font-weight:900;text-transform:uppercase;margin-top:8px">Кости</span>
+      </div>
 
-        function safeAlert(message) {
-            if (tg && typeof tg.showAlert === 'function') {
-                tg.showAlert(String(message));
-            } else {
-                alert(String(message));
-            }
-        }
+      <div class="card-game wide" onclick="showInfo('Краш-ракета на реставрации!')" style="border-left:3px solid var(--red);background:linear-gradient(90deg,var(--bg-card) 0%,rgba(255,56,56,.01) 100%)">
+        <div class="game-row"><span style="font-size:22px">🚀</span><span class="badge" style="color:var(--red);background:rgba(255,56,56,.03)">HIGH RISK</span></div>
+        <span style="font-size:13px;font-weight:900;text-transform:uppercase;margin-top:2px">Краш-ракета</span>
+      </div>
+    </div>
+  </div>
 
-        function showInfo(message) {
-            if (tg && tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
-                tg.HapticFeedback.notificationOccurred('impact');
-            }
-            safeAlert(message);
-        }
+  <div class="nav">
+    <div class="nav-item" onclick="scrollTopSafe()" style="color:var(--blue)"><span style="font-size:18px">👤</span><span style="font-size:9px;font-weight:800">Профиль</span></div>
+    <div class="nav-item" onclick="scrollTopSafe()" style="color:var(--muted)"><span style="font-size:18px">🏠</span><span style="font-size:9px;font-weight:700">Главная</span></div>
+    <div class="nav-item" onclick="showInfo('Игры доступны прямо на главном экране хаба!')" style="color:var(--muted)"><span style="font-size:18px">🎮</span><span style="font-size:9px;font-weight:700">Игры</span></div>
+    <div class="nav-item" onclick="refreshData()" style="color:var(--muted)"><span style="font-size:18px">⚙️</span><span style="font-size:9px;font-weight:700">Обновить</span></div>
+  </div>
+  <button class="admin" id="adminBtn" onclick="showInfo('Админка в разработке')">⚙️ Админка</button>
 
-        function navigateSafe(url) {
-            if (tg && typeof tg.HapticFeedback?.impactOccurred === 'function') {
-                tg.HapticFeedback.impactOccurred('light');
-            }
-            window.location.href = url;
-        }
+  <script>
+    const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+    const API_BASE = (window.WOG_CONFIG && window.WOG_CONFIG.API_BASE_URL) ? String(window.WOG_CONFIG.API_BASE_URL).replace(/\/$/, '') : '';
+    const CACHE_KEY = 'wog_secure_balance';
+    const MY_ADMIN_ID = 6682822292;
+    const state = { userId: MY_ADMIN_ID, firstName: 'Основатель (WOG)', username: 'FounderAdmin', photoUrl: '', balance: Number(localStorage.getItem(CACHE_KEY)) || 500000000, initData: '' };
 
-        function openTelegramLinkSafe(url) {
-            if (tg && typeof tg.openTelegramLink === 'function') {
-                tg.openTelegramLink(url);
-                return;
-            }
-            window.open(url, '_blank', 'noopener,noreferrer');
-        }
-
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function updateUI() {
-            const balanceEl = document.getElementById('balance-display');
-            const usernameEl = document.getElementById('username-display');
-            const statusEl = document.getElementById('status-display');
-            const avatarEl = document.getElementById('avatar-container');
-            const adminBtn = document.getElementById('admin-trigger-btn');
-
-            if (balanceEl) balanceEl.innerText = String(state.balance);
-
-            const displayName = state.username
-                ? `${state.firstName}${state.username ? ` (@${state.username})` : ''}`
-                : state.firstName;
-
-            if (usernameEl) usernameEl.innerText = displayName;
-
-            if (Number(state.userId) === MY_ADMIN_ID) {
-                if (statusEl) {
-                    statusEl.innerText = 'ADMIN';
-                    statusEl.style.color = 'var(--neon-gold)';
-                }
-                if (adminBtn) adminBtn.style.display = 'block';
-            } else {
-                if (statusEl) {
-                    statusEl.innerText = 'PLAYER';
-                    statusEl.style.color = 'var(--text-muted)';
-                }
-                if (adminBtn) adminBtn.style.display = 'none';
-            }
-
-            if (avatarEl) {
-                if (state.photoUrl) {
-                    avatarEl.innerHTML = `<img src="${state.photoUrl}" class="avatar-img" alt="Avatar">`;
-                } else {
-                    avatarEl.textContent = state.firstName ? state.firstName.charAt(0).toUpperCase() : 'W';
-                }
-            }
-        }
-
-        async function requestJson(path, payload) {
-            const response = await fetch(apiUrl(path), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-
-            let data = null;
-            try {
-                data = await response.json();
-            } catch (_) {
-                data = null;
-            }
-
-            if (!response.ok) {
-                const message = data && (data.detail || data.message)
-                    ? (data.detail || data.message)
-                    : `Ошибка сервера (${response.status})`;
-                throw new Error(message);
-            }
-
-            return data;
-        }
-
-        async function syncWithServer() {
-            try {
-                const data = await requestJson('/api/user', {
-                    id: state.userId,
-                    first_name: state.firstName,
-                    username: state.username,
-                    photo_url: state.photoUrl,
-                    auth_data: state.authData,
-                });
-
-                if (data && typeof data.balance !== 'undefined' && data.balance !== null) {
-                    state.balance = Number(data.balance) || 0;
-                    localStorage.setItem(CACHE_KEY, String(state.balance));
-                    updateUI();
-                }
-            } catch (error) {
-                console.warn('Не удалось синхронизироваться с сервером:', error.message);
-            }
-        }
-
-        function togglePromoBox() {
-            const promoBox = document.getElementById('promo-box-wrapper');
-            if (!promoBox) return;
-
-            const isHidden = promoBox.classList.contains('hidden');
-            promoBox.classList.toggle('hidden');
-            if (isHidden) {
-                promoBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }
-
-        async function claimPromoCode() {
-            const input = document.getElementById('promo-input');
-            if (!input) return;
-
-            const code = input.value.trim().toUpperCase();
-            if (!code) {
-                showInfo('Введите промокод');
-                return;
-            }
-
-            try {
-                const data = await requestJson('/api/promo/activate', {
-                    id: state.userId,
-                    code,
-                });
-
-                if (typeof data.balance !== 'undefined') {
-                    state.balance = Number(data.balance) || state.balance;
-                    localStorage.setItem(CACHE_KEY, String(state.balance));
-                    updateUI();
-                }
-
-                input.value = '';
-                safeAlert(data.message || 'Промокод активирован');
-            } catch (error) {
-                safeAlert(error.message || 'Ошибка соединения с сервером');
-            }
-        }
-
-        async function refreshData() {
-            localStorage.setItem(CACHE_KEY, String(state.balance));
-            if (tg && tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
-                tg.HapticFeedback.notificationOccurred('success');
-            }
-            await syncWithServer();
-        }
-
-        async function openAdminMenu() {
-            const choice = prompt(
-                'УПРАВЛЕНИЕ ХАБОМ WOG:\n1 - Начислить монеты\n2 - Создать промокод\n3 - Просмотр промокодов',
-                '1'
-            );
-            if (!choice) return;
-
-            try {
-                if (choice === '1') {
-                    const amt = prompt('Сколько монет начислить?', '100000');
-                    if (!amt || isNaN(amt)) return;
-                    const data = await requestJson('/api/balance', {
-                        id: state.userId,
-                        amount: parseInt(amt, 10),
-                    });
-                    if (typeof data.balance !== 'undefined') {
-                        state.balance = Number(data.balance) || state.balance;
-                        localStorage.setItem(CACHE_KEY, String(state.balance));
-                        updateUI();
-                        safeAlert('Баланс успешно изменён');
-                    }
-                } else if (choice === '2') {
-                    let code = prompt('Название промокода (например: WOGCOINS):');
-                    if (!code) return;
-                    code = code.trim().toUpperCase();
-                    const reward = prompt('Сумма выигрыша:', '5000');
-                    const uses = prompt('Количество использований:', '10');
-                    if (!reward || !uses) return;
-
-                    await requestJson('/api/promo/create', {
-                        admin_id: state.userId,
-                        code,
-                        reward: parseInt(reward, 10),
-                        uses: parseInt(uses, 10),
-                    });
-                    safeAlert(`Промокод ${code} сохранён`);
-                } else if (choice === '3') {
-                    const data = await requestJson('/api/promo/list', {
-                        admin_id: state.userId,
-                    });
-                    const entries = Object.entries(data || {});
-                    if (!entries.length) {
-                        safeAlert('Промокодов пока нет');
-                        return;
-                    }
-                    const out = ['Список активных промокодов:'];
-                    for (const [key, value] of entries) {
-                        out.push(`${key} -> ${value.reward} монет (осталось: ${value.uses})`);
-                    }
-                    safeAlert(out.join('\n'));
-                }
-            } catch (error) {
-                safeAlert(error.message || 'Ошибка выполнения запроса');
-            }
-        }
-
-        function initTelegram() {
-            if (!tg) {
-                state.firstName = 'Гость';
-                state.username = '';
-                state.photoUrl = '';
-                state.authData = '';
-                const statusEl = document.getElementById('status-display');
-                if (statusEl) statusEl.innerText = 'Открыто вне Telegram';
-                updateUI();
-                return;
-            }
-
-            try {
-                tg.ready();
-                tg.expand();
-                if (tg.BackButton) tg.BackButton.hide();
-            } catch (error) {
-                console.warn('Telegram WebApp init error:', error);
-            }
-
-            const user = tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user : null;
-            state.authData = tg.initData || '';
-
-            if (user && user.id) {
-                state.userId = user.id;
-                state.firstName = user.first_name || 'Игрок';
-                state.username = user.username || '';
-                state.photoUrl = user.photo_url || '';
-            }
-
-            updateUI();
-            syncWithServer();
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            updateUI();
-            initTelegram();
-
-            const promoInput = document.getElementById('promo-input');
-            if (promoInput) {
-                promoInput.addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        claimPromoCode();
-                    }
-                });
-            }
-        });
-    </script>
+    function apiUrl(path){ return API_BASE ? `${API_BASE}${path.startsWith('/') ? path : '/' + path}` : path; }
+    function openLink(url){ if(tg && typeof tg.openTelegramLink === 'function'){ tg.openTelegramLink(url); return; } window.open(url,'_blank','noopener,noreferrer'); }
+    function showInfo(msg){ if(tg && tg.showAlert){ tg.showAlert(String(msg)); } else { alert(String(msg)); } }
+    function navigateSafe(url){ if(tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred){ tg.HapticFeedback.impactOccurred('light'); } window.location.href = url; }
+    function scrollTopSafe(){ window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    function updateUI(){ document.getElementById('balance').innerText = String(state.balance); document.getElementById('name').innerText = state.username ? `${state.firstName}${state.username ? ` (@${state.username})` : ''}` : state.firstName; const status = document.getElementById('status'); const adminBtn = document.getElementById('adminBtn'); if(Number(state.userId) === MY_ADMIN_ID){ status.innerText = 'ADMIN'; status.style.color = 'var(--gold)'; adminBtn.style.display='block'; } else { status.innerText = 'PLAYER'; status.style.color = 'var(--muted)'; adminBtn.style.display='none'; } const avatar = document.getElementById('avatar'); avatar.innerHTML = state.photoUrl ? `<img src="${state.photoUrl}" alt="avatar">` : (state.firstName ? state.firstName.charAt(0).toUpperCase() : 'W'); }
+    async function postJson(path, payload){ const res = await fetch(apiUrl(path), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); let data = null; try { data = await res.json(); } catch(_) {} if(!res.ok) throw new Error((data && (data.detail || data.message)) || `Ошибка сервера (${res.status})`); return data; }
+    async function syncProfile(){ try { const data = await postJson('/api/profile/me', { init_data: state.initData }); if(data && typeof data.balance !== 'undefined'){ state.balance = Number(data.balance) || 0; localStorage.setItem(CACHE_KEY, String(state.balance)); } } catch (e) { console.warn(e.message); } updateUI(); }
+    async function refreshData(){ await syncProfile(); showInfo('Профиль обновлён'); }
+    if(tg){ try { tg.ready(); tg.expand(); } catch(_) {} if(tg.initDataUnsafe && tg.initDataUnsafe.user){ const u = tg.initDataUnsafe.user; state.userId = u.id || state.userId; state.firstName = u.first_name || state.firstName; state.username = u.username || state.username; state.photoUrl = u.photo_url || ''; state.initData = tg.initData || ''; } }
+    updateUI(); syncProfile();
+  </script>
 </body>
 </html>
