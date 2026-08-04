@@ -33,6 +33,8 @@ PUBLIC_API_ORIGINS = [
     for origin in os.getenv("CORS_ORIGINS", "*").split(",")
     if origin.strip()
 ]
+RUN_HOST = env_str("HOST", "0.0.0.0")
+RUN_PORT = env_int("PORT", 10000)
 
 app = FastAPI(title=APP_TITLE)
 
@@ -470,4 +472,4 @@ async def handle_github_webhook(payload: GitHubPushPayload):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="0.0.0.0", port=10000, reload=False)
+    uvicorn.run("main:app", host=RUN_HOST, port=RUN_PORT, reload=False)
