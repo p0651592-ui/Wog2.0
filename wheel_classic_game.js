@@ -214,7 +214,7 @@
     if (!el.wheel) return;
     const index = Math.max(0, WHEEL_SEQUENCE.indexOf(String(result)));
     const segment = 360 / WHEEL_SEQUENCE.length;
-    const spins = 6 + Math.floor(Math.random() * 3);
+    const spins = 7;
     const landing = (360 - (index * segment) - (segment / 2));
     const current = Number((el.wheel.dataset.rotation || '0')) || 0;
     const next = current + (spins * 360) + landing;
