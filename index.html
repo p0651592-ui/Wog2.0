@@ -4,47 +4,353 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#0b0e17" />
-  <title>WOG Launcher</title>
+  <title>Wheel Games</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
-      --bg-main:#0b0e17; --bg-card:#151923; --bg-inner:#1c2130; --border:#222938;
-      --blue:#2f6bf2; --gold:#ffca28; --cyan:#00d2d3; --green:#05c46b; --red:#ff3838;
-      --text:#fff; --muted:#64748b; --shadow:0 10px 35px rgba(0,0,0,.35); --r:16px;
+      --bg-main:#0b0e17;
+      --bg-card:#151923;
+      --bg-inner:#1c2130;
+      --border:#222938;
+      --blue:#2f6bf2;
+      --gold:#ffca28;
+      --cyan:#00d2d3;
+      --green:#05c46b;
+      --red:#ff3838;
+      --text:#fff;
+      --muted:#64748b;
+      --shadow:0 10px 35px rgba(0,0,0,.35);
+      --r:16px;
     }
-    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-    body{background:var(--bg-main);color:var(--text);padding:14px 14px calc(env(safe-area-inset-bottom) + 120px);padding-top:calc(env(safe-area-inset-top) + 12px);min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden;user-select:none;-webkit-user-select:none}
-    .app{width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px}
-    .profile{display:flex;align-items:center;gap:10px;width:100%}
-    .avatar{width:36px;height:36px;border-radius:50%;background:#1c2130;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;font-weight:900;color:var(--blue);flex:0 0 auto}
-    .avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-    .card,.promo,.ticker,.nav,.card-game{box-shadow:var(--shadow)}
-    .card{background:linear-gradient(180deg,#181d29 0%,var(--bg-card) 100%);border:1px solid var(--border);border-radius:var(--r);padding:22px 16px;text-align:center}
-    .balance{font-size:34px;font-weight:800;display:flex;justify-content:center;align-items:center;gap:8px;line-height:1}
-    .sub{display:flex;justify-content:center;align-items:center;gap:6px;color:var(--gold);font-size:13px;font-weight:700;margin-top:4px;margin-bottom:18px}
-    .btns{display:flex;gap:8px;width:100%}
-    .btn{flex:1;padding:13px;border-radius:12px;font-size:14px;font-weight:800;border:none;cursor:pointer}
-    .ticker{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-    .section{color:var(--text);font-size:14px;font-weight:800;padding-left:2px}
-    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
-    .grid .wide{grid-column:span 2}
-    .card-game{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:8px;cursor:pointer;min-height:165px}
-    .game-row{display:flex;justify-content:space-between;align-items:center}
-    .badge{font-size:10px;font-weight:800;background:#1c2130;padding:3px 8px;border-radius:6px;border:1px solid var(--border)}
-    .wheel-plus{background:linear-gradient(135deg,#2b6bf3 0%,#1e4bb3 100%);border:2px solid #3b82f6;border-radius:24px;padding:12px;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:space-between;min-height:165px;cursor:pointer}
-    .badge-online{position:absolute;top:10px;left:10px;background:rgba(15,23,42,.4);backdrop-filter:blur(4px);padding:3px 8px;border-radius:20px;font-size:11px;font-weight:800;display:flex;align-items:center;gap:4px;z-index:2}
-    .history{display:flex;gap:6px;margin-top:24px;justify-content:center;width:100%}
-    .hbox{background:#1b1e2b;border:2px solid var(--cyan);box-shadow:0 0 10px rgba(0,210,211,.4);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900}
-    .graphics{position:relative;width:100%;display:flex;flex-direction:column;align-items:center;margin-top:auto}
-    .circle{width:120px;height:60px;background:#0f172a;border:4px solid #1e293b;border-top-left-radius:120px;border-top-right-radius:120px;border-bottom:none;display:flex;align-items:flex-end;justify-content:center;position:relative;overflow:hidden}
-    .green-sector{position:absolute;top:0;width:24px;height:100%;background:#10b981;clip-path:polygon(50% 100%,0 0,100% 0)}
-    .title-label{font-size:15px;font-weight:800;text-shadow:0 2px 4px rgba(0,0,0,.5);margin-top:-30px;z-index:3;letter-spacing:.3px}
-    .x{position:absolute;color:rgba(255,255,255,.4);font-weight:900;font-size:14px}
-    .nav{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 20px);left:5%;width:90%;background:#090b11;border:1px solid var(--border);border-radius:20px;display:grid;grid-template-columns:repeat(4,1fr);padding:12px 0;z-index:99998}
-    .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
-    .admin{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 100px);right:24px;background:var(--gold);color:#000;border:none;padding:10px 16px;border-radius:20px;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.5px;box-shadow:0 4px 15px rgba(255,202,40,.4);cursor:pointer;z-index:99999;display:none}
-    .muted{color:var(--muted)}
-    @media (max-width:380px){.grid{grid-template-columns:1fr}.grid .wide{grid-column:span 1}.nav{width:94%;left:3%}}
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background: var(--bg-main);
+      color: var(--text);
+      padding: 14px 14px calc(env(safe-area-inset-bottom) + 120px);
+      padding-top: calc(env(safe-area-inset-top) + 12px);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #1c2130;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-weight: 900;
+      color: var(--blue);
+      flex: 0 0 auto;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .card,
+    .promo,
+    .ticker,
+    .nav,
+    .card-game {
+      box-shadow: var(--shadow);
+    }
+
+    .card {
+      background: linear-gradient(180deg, #181d29 0%, var(--bg-card) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 22px 16px;
+      text-align: center;
+    }
+
+    .balance {
+      font-size: 34px;
+      font-weight: 800;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      line-height: 1;
+    }
+
+    .sub {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      color: var(--gold);
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 4px;
+      margin-bottom: 18px;
+    }
+
+    .btns {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 13px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      border: none;
+      cursor: pointer;
+    }
+
+    .ticker {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section {
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 800;
+      padding-left: 2px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .grid .wide {
+      grid-column: span 2;
+    }
+
+    .card-game {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+      min-height: 165px;
+    }
+
+    .game-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .badge {
+      font-size: 10px;
+      font-weight: 800;
+      background: #1c2130;
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+
+    .wheel-plus {
+      background: linear-gradient(135deg, #2b6bf3 0%, #1e4bb3 100%);
+      border: 2px solid #3b82f6;
+      border-radius: 24px;
+      padding: 12px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 165px;
+      cursor: pointer;
+    }
+
+    .badge-online {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(15,23,42,.4);
+      backdrop-filter: blur(4px);
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      z-index: 2;
+    }
+
+    .history {
+      display: flex;
+      gap: 6px;
+      margin-top: 24px;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .hbox {
+      background: #1b1e2b;
+      border: 2px solid var(--cyan);
+      box-shadow: 0 0 10px rgba(0,210,211,.4);
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .graphics {
+      position: relative;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: auto;
+    }
+
+    .circle {
+      width: 120px;
+      height: 60px;
+      background: #0f172a;
+      border: 4px solid #1e293b;
+      border-top-left-radius: 120px;
+      border-top-right-radius: 120px;
+      border-bottom: none;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .green-sector {
+      position: absolute;
+      top: 0;
+      width: 24px;
+      height: 100%;
+      background: #10b981;
+      clip-path: polygon(50% 100%,0 0,100% 0);
+    }
+
+    .title-label {
+      font-size: 15px;
+      font-weight: 800;
+      text-shadow: 0 2px 4px rgba(0,0,0,.5);
+      margin-top: -30px;
+      z-index: 3;
+      letter-spacing: .3px;
+    }
+
+    .x {
+      position: absolute;
+      color: rgba(255,255,255,.4);
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .nav {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom) + 20px);
+      left: 5%;
+      width: 90%;
+      background: #090b11;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 12px 0;
+      z-index: 99998;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .admin {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom) + 100px);
+      right: 24px;
+      background: var(--gold);
+      color: #000;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 20px;
+      font-weight: 900;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      box-shadow: 0 4px 15px rgba(255,202,40,.4);
+      cursor: pointer;
+      z-index: 99999;
+      display: none;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    @media (max-width:380px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .grid .wide {
+        grid-column: span 1;
+      }
+      .nav {
+        width: 94%;
+        left: 3%;
+      }
+    }
   </style>
 </head>
 <body>
@@ -58,8 +364,15 @@
     </div>
 
     <div class="card">
-      <div class="balance"><span id="balance">0</span><span style="font-size:28px;font-weight:900">W</span></div>
-      <div class="sub"><span>10 ★</span><span style="color:var(--muted);font-weight:400">|</span><span style="color:var(--muted)">#820</span></div>
+      <div class="balance">
+        <span id="balance">0</span>
+        <span style="font-size:28px;font-weight:900">W</span>
+      </div>
+      <div class="sub">
+        <span>10 ★</span>
+        <span style="color:var(--muted);font-weight:400">|</span>
+        <span style="color:var(--muted)">#820</span>
+      </div>
       <div class="btns">
         <button class="btn" onclick="location.href='bonus.html'" style="background:#171a26;border:1px solid var(--border);color:var(--text)">Получить</button>
         <button class="btn" onclick="openLink('https://t.me')" style="background:var(--blue);color:var(--text);box-shadow:0 4px 15px rgba(47,107,242,.3)">Купить</button>
@@ -81,49 +394,192 @@
         <div class="x" style="top:35px;left:8px;transform:rotate(15deg)">X</div>
         <div class="x" style="top:45px;right:10px;transform:rotate(-20deg);font-size:16px">X</div>
         <div class="x" style="bottom:12px;left:12px;transform:rotate(-10deg)">X</div>
-        <div class="history"><div class="hbox">2</div><div class="hbox">8</div><div class="hbox">12</div></div>
-        <div class="graphics"><div class="circle"><div class="green-sector"></div></div><div class="title-label">Wheel Plus</div></div>
+        <div class="history">
+          <div class="hbox">2</div>
+          <div class="hbox">8</div>
+          <div class="hbox">12</div>
+        </div>
+        <div class="graphics">
+          <div class="circle"><div class="green-sector"></div></div>
+          <div class="title-label">Wheel Plus</div>
+        </div>
       </div>
 
       <div class="card-game" onclick="navigateSafe('dice.html')" style="border-left:3px solid var(--cyan);justify-content:center;">
-        <div class="game-row"><span style="font-size:24px">🎲</span><span class="badge" style="color:var(--cyan)">PREMIUM</span></div>
+        <div class="game-row">
+          <span style="font-size:24px">🎲</span>
+          <span class="badge" style="color:var(--cyan)">PREMIUM</span>
+        </div>
         <span style="font-size:14px;font-weight:900;text-transform:uppercase;margin-top:8px">Кости</span>
       </div>
 
       <div class="card-game wide" onclick="showInfo('Краш-ракета на реставрации!')" style="border-left:3px solid var(--red);background:linear-gradient(90deg,var(--bg-card) 0%,rgba(255,56,56,.01) 100%)">
-        <div class="game-row"><span style="font-size:22px">🚀</span><span class="badge" style="color:var(--red);background:rgba(255,56,56,.03)">HIGH RISK</span></div>
+        <div class="game-row">
+          <span style="font-size:22px">🚀</span>
+          <span class="badge" style="color:var(--red);background:rgba(255,56,56,.03)">HIGH RISK</span>
+        </div>
         <span style="font-size:13px;font-weight:900;text-transform:uppercase;margin-top:2px">Краш-ракета</span>
       </div>
     </div>
   </div>
 
   <div class="nav">
-    <div class="nav-item" onclick="scrollTopSafe()" style="color:var(--blue)"><span style="font-size:18px">👤</span><span style="font-size:9px;font-weight:800">Профиль</span></div>
-    <div class="nav-item" onclick="scrollTopSafe()" style="color:var(--muted)"><span style="font-size:18px">🏠</span><span style="font-size:9px;font-weight:700">Главная</span></div>
-    <div class="nav-item" onclick="showInfo('Игры доступны прямо на главном экране хаба!')" style="color:var(--muted)"><span style="font-size:18px">🎮</span><span style="font-size:9px;font-weight:700">Игры</span></div>
-    <div class="nav-item" onclick="refreshData()" style="color:var(--muted)"><span style="font-size:18px">⚙️</span><span style="font-size:9px;font-weight:700">Обновить</span></div>
+    <div class="nav-item" onclick="scrollTopSafe()" style="color:var(--blue)">
+      <span style="font-size:18px">👤</span>
+      <span style="font-size:9px;font-weight:800">Профиль</span>
+    </div>
+    <div class="nav-item" onclick="scrollTopSafe()" style="color:var(--muted)">
+      <span style="font-size:18px">🏠</span>
+      <span style="font-size:9px;font-weight:700">Главная</span>
+    </div>
+    <div class="nav-item" onclick="showInfo('Игры доступны прямо на главном экране хаба!')" style="color:var(--muted)">
+      <span style="font-size:18px">🎮</span>
+      <span style="font-size:9px;font-weight:700">Игры</span>
+    </div>
+    <div class="nav-item" onclick="refreshData()" style="color:var(--muted)">
+      <span style="font-size:18px">⚙️</span>
+      <span style="font-size:9px;font-weight:700">Обновить</span>
+    </div>
   </div>
+
   <button class="admin" id="adminBtn" onclick="openAdminPanel()">⚙️ Админка</button>
 
   <script>
     const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-    const API_BASE = (window.WOG_CONFIG && window.WOG_CONFIG.API_BASE_URL) ? String(window.WOG_CONFIG.API_BASE_URL).replace(/\/$/, '') : '';
+    const API_BASE = (window.WOG_CONFIG && window.WOG_CONFIG.API_BASE_URL)
+      ? String(window.WOG_CONFIG.API_BASE_URL).replace(/\/$/, '')
+      : '';
+
     const CACHE_KEY = 'wog_secure_balance';
     const MY_ADMIN_ID = 6682822292;
-    const state = { userId: MY_ADMIN_ID, firstName: 'Основатель (WOG)', username: 'FounderAdmin', photoUrl: '', balance: Number(localStorage.getItem(CACHE_KEY)) || 500000000, initData: '' };
 
-    function apiUrl(path){ return API_BASE ? `${API_BASE}${path.startsWith('/') ? path : '/' + path}` : path; }
-    function openLink(url){ if(tg && typeof tg.openTelegramLink === 'function'){ tg.openTelegramLink(url); return; } window.open(url,'_blank','noopener,noreferrer'); }
-    function showInfo(msg){ if(tg && tg.showAlert){ tg.showAlert(String(msg)); } else { alert(String(msg)); } }
-    function navigateSafe(url){ if(tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred){ tg.HapticFeedback.impactOccurred('light'); } window.location.href = url; }
-    function openAdminPanel(){ window.location.href = apiUrl('/admin'); }
-    function scrollTopSafe(){ window.scrollTo({ top: 0, behavior: 'smooth' }); }
-    function updateUI(){ document.getElementById('balance').innerText = String(state.balance); document.getElementById('name').innerText = state.username ? `${state.firstName}${state.username ? ` (@${state.username})` : ''}` : state.firstName; const status = document.getElementById('status'); const adminBtn = document.getElementById('adminBtn'); if(Number(state.userId) === MY_ADMIN_ID){ status.innerText = 'ADMIN'; status.style.color = 'var(--gold)'; adminBtn.style.display='block'; } else { status.innerText = 'PLAYER'; status.style.color = 'var(--muted)'; adminBtn.style.display='none'; } const avatar = document.getElementById('avatar'); avatar.innerHTML = state.photoUrl ? `<img src="${state.photoUrl}" alt="avatar">` : (state.firstName ? state.firstName.charAt(0).toUpperCase() : 'W'); }
-    async function postJson(path, payload){ const res = await fetch(apiUrl(path), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); let data = null; try { data = await res.json(); } catch(_) {} if(!res.ok) throw new Error((data && (data.detail || data.message)) || `Ошибка сервера (${res.status})`); return data; }
-    async function syncProfile(){ try { const data = await postJson('/api/profile/me', { init_data: state.initData }); if(data && typeof data.balance !== 'undefined'){ state.balance = Number(data.balance) || 0; localStorage.setItem(CACHE_KEY, String(state.balance)); } } catch (e) { console.warn(e.message); } updateUI(); }
-    async function refreshData(){ await syncProfile(); showInfo('Профиль обновлён'); }
-    if(tg){ try { tg.ready(); tg.expand(); } catch(_) {} if(tg.initDataUnsafe && tg.initDataUnsafe.user){ const u = tg.initDataUnsafe.user; state.userId = u.id || state.userId; state.firstName = u.first_name || state.firstName; state.username = u.username || state.username; state.photoUrl = u.photo_url || ''; state.initData = tg.initData || ''; } }
-    updateUI(); syncProfile();
+    const state = {
+      userId: MY_ADMIN_ID,
+      firstName: 'Основатель (WOG)',
+      username: 'FounderAdmin',
+      photoUrl: '',
+      balance: Number(localStorage.getItem(CACHE_KEY)) || 500000000,
+      initData: ''
+    };
+
+    function apiUrl(path) {
+      return API_BASE ? `${API_BASE}${path.startsWith('/') ? path : '/' + path}` : path;
+    }
+
+    function openLink(url) {
+      if (tg && typeof tg.openTelegramLink === 'function') {
+        tg.openTelegramLink(url);
+        return;
+      }
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+
+    function showInfo(msg) {
+      if (tg && tg.showAlert) {
+        tg.showAlert(String(msg));
+      } else {
+        alert(String(msg));
+      }
+    }
+
+    function navigateSafe(url) {
+      if (tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred) {
+        tg.HapticFeedback.impactOccurred('light');
+      }
+      window.location.href = url;
+    }
+
+    function openAdminPanel() {
+      window.location.href = apiUrl('/admin');
+    }
+
+    function scrollTopSafe() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateUI() {
+      document.getElementById('balance').innerText = String(state.balance);
+
+      const title = state.username
+        ? `${state.firstName}${state.username ? ` (@${state.username})` : ''}`
+        : state.firstName;
+
+      document.getElementById('name').innerText = title;
+
+      const status = document.getElementById('status');
+      const adminBtn = document.getElementById('adminBtn');
+
+      if (Number(state.userId) === MY_ADMIN_ID) {
+        status.innerText = 'ADMIN';
+        status.style.color = 'var(--gold)';
+        adminBtn.style.display = 'block';
+      } else {
+        status.innerText = 'PLAYER';
+        status.style.color = 'var(--muted)';
+        adminBtn.style.display = 'none';
+      }
+
+      const avatar = document.getElementById('avatar');
+      avatar.innerHTML = state.photoUrl
+        ? `<img src="${state.photoUrl}" alt="avatar">`
+        : (state.firstName ? state.firstName.charAt(0).toUpperCase() : 'W');
+    }
+
+    async function postJson(path, payload) {
+      const res = await fetch(apiUrl(path), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      let data = null;
+      try {
+        data = await res.json();
+      } catch (_) {}
+
+      if (!res.ok) {
+        throw new Error((data && (data.detail || data.message)) || `Ошибка сервера (${res.status})`);
+      }
+
+      return data;
+    }
+
+    async function syncProfile() {
+      try {
+        const data = await postJson('/api/profile/me', { init_data: state.initData });
+        if (data && typeof data.balance !== 'undefined') {
+          state.balance = Number(data.balance) || 0;
+          localStorage.setItem(CACHE_KEY, String(state.balance));
+        }
+      } catch (e) {
+        console.warn(e.message);
+      }
+      updateUI();
+    }
+
+    async function refreshData() {
+      await syncProfile();
+      showInfo('Профиль обновлён');
+    }
+
+    if (tg) {
+      try {
+        tg.ready();
+        tg.expand();
+      } catch (_) {}
+
+      if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const u = tg.initDataUnsafe.user;
+        state.userId = u.id || state.userId;
+        state.firstName = u.first_name || state.firstName;
+        state.username = u.username || state.username;
+        state.photoUrl = u.photo_url || '';
+        state.initData = tg.initData || '';
+      }
+    }
+
+    updateUI();
+    syncProfile();
   </script>
 </body>
 </html>
