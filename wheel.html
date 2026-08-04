@@ -71,6 +71,7 @@
     .num-btn.green{background:rgba(16,185,129,.18)}
     .num-btn.blue{background:rgba(37,99,235,.18)}
     .num-btn.gold{background:rgba(245,182,27,.18);border-color:rgba(245,182,27,.5);box-shadow:0 0 0 1px rgba(245,182,27,.15) inset}
+    .num-btn.active{outline:2px solid var(--gold)}
     .num-btn .badge{font-size:9px;font-weight:900;background:rgba(0,0,0,.34);padding:2px 6px;border-radius:999px;color:#fff}
     .num-btn .amount{font-size:9px;font-weight:800;color:rgba(255,255,255,.75)}
     .players{display:flex;flex-direction:column;gap:8px}
@@ -224,6 +225,7 @@
       currentRound: null,
       recentRounds: [],
       players: [],
+      cellTotals: {},
       selectedCell: '0',
       lastLoadAt: 0,
       countdownTimer: null,
@@ -350,15 +352,15 @@
       $('round-index').textContent = `#${round.round_index || state.room?.round_index || 1}`;
       $('round-bets').textContent = `${fmt(round.total_bet || 0)} W`;
       $('round-payout').textContent = `${fmt(round.total_payout || 0)} W`;
-      $('round-players').textContent = String((round.live_players || []).length || 0);
-      $('online-count').textContent = String((round.live_players || []).length || 0);
+      $('round-players').textContent = String((state.players || []).length || 0);
+      $('online-count').textContent = String((state.players || []).length || 0);
       renderLuckyNumbers();
       renderWheelFace();
     }
 
     function renderPlayers() {
       const list = $('players-list');
-      const players = (state.currentRound && state.currentRound.live_players) ? state.currentRound.live_players : [];
+      const players = state.players || [];
       if (!list) return;
       if (!players.length) {
         list.innerHTML = '<div class="player-item"><div class="player-left"><div class="avatar">W</div><div class="player-meta"><div class="player-name">Пока никто не поставил</div><div class="player-sub">Стань первым в этом раунде</div></div></div><div class="bet-badge">0 W</div></div>';
@@ -373,7 +375,7 @@
               <div class="player-sub">Баланс: ${fmt(p.balance)} W</div>
             </div>
           </div>
-          <div class="bet-badge">${fmt(p.total_bet)} W</div>
+          <div class="bet-badge">${fmt(p.amount || p.total_bet || 0)} W</div>
         </div>
       `).join('');
     }
@@ -387,9 +389,7 @@
       grid.innerHTML = numbers.map((num) => {
         const color = wheelColor(num, lucky);
         const badge = luckyMap.has(num) ? `<div class="badge">x${luckyMap.get(num)}</div>` : '';
-        const amount = (state.currentRound && state.currentRound.bets)
-          ? state.currentRound.bets.filter((b) => String(b.cell_key) === num).reduce((sum, b) => sum + Number(b.amount || 0), 0)
-          : 0;
+        const amount = Number((state.cellTotals && state.cellTotals[num]) || 0);
         return `
           <button class="num-btn ${color}" data-cell="${num}" type="button">
             <span>${num}</span>
@@ -425,15 +425,13 @@
       state.currentRound = snapshot.current_round || state.currentRound;
       state.recentRounds = snapshot.recent_rounds || state.recentRounds;
       state.players = snapshot.players || state.players;
+      state.cellTotals = snapshot.cell_totals || state.cellTotals;
       if (typeof snapshot.viewer_balance !== 'undefined') setBalance(snapshot.viewer_balance);
       renderHistory();
       renderCurrentStats();
       renderPlayers();
       renderNumbersGrid();
       renderRecentRounds();
-      if (snapshot.profile && snapshot.profile.text) {
-        $('balance').textContent = `${fmt(snapshot.profile.balance ?? state.balance)} W`;
-      }
       updateCountdown();
     }
 
@@ -470,6 +468,8 @@
         if (data.room) state.room = data.room;
         if (data.current_round) state.currentRound = data.current_round;
         if (data.recent_rounds) state.recentRounds = data.recent_rounds;
+        if (data.players) state.players = data.players;
+        if (data.cell_totals) state.cellTotals = data.cell_totals;
         renderCurrentStats();
         renderPlayers();
         renderNumbersGrid();
@@ -512,7 +512,6 @@
       $('back-btn').addEventListener('click', () => { window.location.href = 'index.html'; });
       $('refresh-btn').addEventListener('click', loadRoom);
       $('bet-now-btn').addEventListener('click', () => placeBet(state.selectedCell || '0'));
-      $('bet-amount').addEventListener('input', () => {});
       $('modal-close').addEventListener('click', closeFairModal);
       $('fair-modal').addEventListener('click', (e) => {
         if (e.target === $('fair-modal')) closeFairModal();
