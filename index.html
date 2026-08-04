@@ -110,7 +110,7 @@
     <div class="nav-item" onclick="showInfo('Игры доступны прямо на главном экране хаба!')" style="color:var(--muted)"><span style="font-size:18px">🎮</span><span style="font-size:9px;font-weight:700">Игры</span></div>
     <div class="nav-item" onclick="refreshData()" style="color:var(--muted)"><span style="font-size:18px">⚙️</span><span style="font-size:9px;font-weight:700">Обновить</span></div>
   </div>
-  <button class="admin" id="adminBtn" onclick="showInfo('Админка в разработке')">⚙️ Админка</button>
+  <button class="admin" id="adminBtn" onclick="openAdminPanel()">⚙️ Админка</button>
 
   <script>
     const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
@@ -123,6 +123,7 @@
     function openLink(url){ if(tg && typeof tg.openTelegramLink === 'function'){ tg.openTelegramLink(url); return; } window.open(url,'_blank','noopener,noreferrer'); }
     function showInfo(msg){ if(tg && tg.showAlert){ tg.showAlert(String(msg)); } else { alert(String(msg)); } }
     function navigateSafe(url){ if(tg && tg.HapticFeedback && tg.HapticFeedback.impactOccurred){ tg.HapticFeedback.impactOccurred('light'); } window.location.href = url; }
+    function openAdminPanel(){ navigateSafe('/admin'); }
     function scrollTopSafe(){ window.scrollTo({ top: 0, behavior: 'smooth' }); }
     function updateUI(){ document.getElementById('balance').innerText = String(state.balance); document.getElementById('name').innerText = state.username ? `${state.firstName}${state.username ? ` (@${state.username})` : ''}` : state.firstName; const status = document.getElementById('status'); const adminBtn = document.getElementById('adminBtn'); if(Number(state.userId) === MY_ADMIN_ID){ status.innerText = 'ADMIN'; status.style.color = 'var(--gold)'; adminBtn.style.display='block'; } else { status.innerText = 'PLAYER'; status.style.color = 'var(--muted)'; adminBtn.style.display='none'; } const avatar = document.getElementById('avatar'); avatar.innerHTML = state.photoUrl ? `<img src="${state.photoUrl}" alt="avatar">` : (state.firstName ? state.firstName.charAt(0).toUpperCase() : 'W'); }
     async function postJson(path, payload){ const res = await fetch(apiUrl(path), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); let data = null; try { data = await res.json(); } catch(_) {} if(!res.ok) throw new Error((data && (data.detail || data.message)) || `Ошибка сервера (${res.status})`); return data; }
