@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>WOG Premium Dice</title>
-    <!-- ПОДКЛЮЧЕНИЕ ОБНОВЛЕННОЙ СДК TELEGRAM WEB APP -->
-    <script src="https://telegram.org"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --bg-main: #111422;
@@ -21,21 +20,12 @@
             --text-muted: #64748b;
             --radius-premium: 14px;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body {
-            background-color: var(--bg-main);
+            background: var(--bg-main);
             color: var(--text-main);
             padding: 14px;
-            padding-top: calc(env(safe-area-inset-top) + 15px);
-            /* Большой отступ снизу защищает интерфейс стола от шторки Telegram */
+            padding-top: calc(env(safe-area-inset-top) + 14px);
             padding-bottom: calc(env(safe-area-inset-bottom) + 140px);
             overflow-x: hidden;
             user-select: none;
@@ -45,36 +35,39 @@
             align-items: center;
             min-height: 100vh;
         }
-
-        .app-wrapper {
-            width: 100%;
-            max-width: 480px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
-        .section-title {
+        .app-wrapper { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 14px; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .back-btn {
+            background: rgba(47,107,242,0.12);
+            color: #8cb0ff;
+            border: 1px solid rgba(47,107,242,0.35);
+            padding: 8px 14px;
+            border-radius: 12px;
             font-size: 13px;
-            color: var(--text-muted);
-            font-weight: 700;
-            text-align: left;
-            padding-left: 2px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 4px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
         }
-
-        /* КАРТОЧКА ИСТОРИИ И ВЕРХНЕГО ЭКРАНА */
-        .top-screen-card {
+        .card {
             background: linear-gradient(180deg, #161a2b 0%, var(--bg-card) 100%);
             border: 1px solid var(--border-neon);
             border-radius: var(--radius-premium);
-            padding: 16px;
-            text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
-/* ЗОНА СТАВОК И ИНПУТОВ */
+        .top-screen-card { padding: 16px; text-align: center; }
+        .status-title { font-size: 15px; font-weight: 900; margin-bottom: 8px; }
+        .dice-row { display: flex; justify-content: center; gap: 14px; margin: 12px 0; }
+        .die-box {
+            width: 44px; height: 44px; border-radius: 10px;
+            background: #242b44; border: 1px solid var(--border-neon);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; font-weight: 900; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .muted-line { font-size: 12px; color: var(--text-muted); font-weight: 800; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 0 4px; gap: 10px; }
+        .pill { color: #ffd56a; font-family: monospace; font-weight: 900; }
         .bet-box-widget {
             background: var(--bg-card);
             border: 1px solid var(--border-neon);
@@ -83,18 +76,17 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
         }
-
         .bet-input-wrapper {
             display: flex;
+            align-items: center;
             background: #090c15;
             border: 1px solid var(--border-neon);
             border-radius: 10px;
             padding: 4px;
-            align-items: center;
-            width: 60%;
+            width: 100%;
         }
-
         .bet-field {
             width: 100%;
             background: transparent;
@@ -106,7 +98,6 @@
             padding-left: 8px;
             font-family: monospace;
         }
-
         .bet-utility-btn {
             background: var(--bg-inner);
             border: 1px solid var(--border-neon);
@@ -118,34 +109,32 @@
             cursor: pointer;
             margin-left: 4px;
         }
-
-        .quick-bet-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-            width: 100%;
+        .quick-bet-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; }
+        .quick-chip-btn, .tab-select-btn, .outcome-card-btn, .even-odd-btn, .cube-select-btn, .premium-roll-btn {
+            cursor: pointer;
+            border: none;
+            color: #ffffff;
         }
-
         .quick-chip-btn {
             background: var(--bg-card);
             border: 1px solid var(--border-neon);
-            color: #ffffff;
             padding: 10px 0;
             font-size: 13px;
             font-weight: 700;
             border-radius: 10px;
-            cursor: pointer;
             text-align: center;
         }
-
-        /* СТОЛ СТАВОК: КНОПКИ ОДИН В ОДИН С ФОТО */
-        .main-outcomes-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            width: 100%;
+        .section-title {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 700;
+            text-align: left;
+            padding-left: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
         }
-
+        .main-outcomes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; }
         .outcome-card-btn {
             border-radius: 10px;
             padding: 12px 4px;
@@ -154,12 +143,9 @@
             align-items: center;
             font-weight: 800;
             font-size: 14px;
-            cursor: pointer;
             position: relative;
-            border: none;
             color: #ffffff;
         }
-
         .outcome-badge-coef {
             position: absolute;
             bottom: 4px;
@@ -170,18 +156,10 @@
             border-radius: 4px;
             color: rgba(255,255,255,0.8);
         }
-
         .btn-under-style { background: var(--btn-yellow); color: #4c300e !important; }
         .btn-seven-style { background: var(--btn-green); }
         .btn-over-style { background: var(--btn-red); }
-
-        .even-odd-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            width: 100%;
-        }
-
+        .even-odd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
         .even-odd-btn {
             border-radius: 10px;
             padding: 12px 0;
@@ -191,57 +169,26 @@
             justify-content: center;
             align-items: center;
             position: relative;
-            border: none;
             color: #ffffff;
-            cursor: pointer;
         }
-
         .btn-even-style { background: var(--btn-blue); }
         .btn-odd-style { background: #2a314b; border: 1px solid var(--border-neon); }
-
-        /* СЕТКА С КУБИКАМИ 3.2х */
-        .cubes-grid-32 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            width: 100%;
-        }
-
+        .cubes-grid-32 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; }
         .cube-select-btn {
             background: var(--btn-purple);
-            border: none;
             border-radius: 10px;
             padding: 10px 4px;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 4px;
-            cursor: pointer;
             position: relative;
-            color: #ffffff;
         }
-
         .mini-cube-icon {
-            width: 18px;
-            height: 18px;
-            background: #ffffff;
-            color: #000000;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 900;
+            width: 18px; height: 18px; background: #ffffff; color: #000000; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900;
         }
-
-        /* СЕЛЕКТОРЫ ВКЛАДОК ВНИЗУ */
-        .tabs-footer-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            width: 100%;
-        }
-
+        .tabs-footer-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; }
         .tab-select-btn {
             border-radius: 10px;
             padding: 12px 0;
@@ -251,385 +198,119 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            border: none;
-            cursor: pointer;
             color: #ffffff;
         }
-
-        /* ПОДСВЕТКА ВЫБРАННОЙ СТАВКИ */
-        .selected-bet-active {
-            box-shadow: inset 0 0 0 2px #ffffff, 0 0 12px rgba(255,255,255,0.4);
-        }
-
-        /* НЕОНОВАЯ ИГРОВАЯ КНОПКА ЗАПУСКА */
+        .selected-bet-active { box-shadow: inset 0 0 0 2px #ffffff, 0 0 12px rgba(255,255,255,0.35); }
         .premium-roll-btn {
             width: 100%;
             background: var(--btn-blue);
-            color: #ffffff;
-            border: none;
             padding: 14px;
             border-radius: 12px;
             font-size: 15px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            cursor: pointer;
             box-shadow: 0 4px 20px rgba(47, 107, 242, 0.4);
         }
+        .premium-roll-btn:disabled { opacity: 0.7; cursor: not-allowed; }
     </style>
 </head>
 <body>
-
     <div class="app-wrapper">
-        <!-- ВЕРХНИЙ ЭКРАН И ИСТОРИЯ БРОСКОВ -->
-        <div class="top-screen-card">
-            <div id="game-status-label" style="font-size: 15px; font-weight: 800; color: #ffffff; margin-bottom: 8px;">Сделайте ваши ставки</div>
-            <div style="display: flex; justify-content: center; gap: 14px; margin: 12px 0;">
-                <div class="mini-cube-icon" id="result-cube-1" style="width: 44px; height: 44px; font-size: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">🎲</div>
-                <div class="mini-cube-icon" id="result-cube-2" style="width: 44px; height: 44px; font-size: 20px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">🎲</div>
+        <div class="topbar">
+            <button class="back-btn" type="button" id="back-btn">‹ Назад</button>
+            <div style="font-size:11px;color:var(--text-muted);font-weight:800;text-transform:uppercase;letter-spacing:.4px;">Dice Premium</div>
+        </div>
+
+        <div class="card top-screen-card">
+            <div id="game-status-label" class="status-title">Сделайте ваши ставки</div>
+            <div class="dice-row">
+                <div class="die-box" id="result-cube-1">🎲</div>
+                <div class="die-box" id="result-cube-2">🎲</div>
             </div>
-            <div id="sum-display" style="font-size: 12px; color: var(--text-muted); font-weight: 800; height: 14px;">Выпавшее число отобразится здесь</div>
+            <div id="sum-display" class="muted-line">Выпавшее число отобразится здесь</div>
         </div>
 
-        <!-- ИНФОРМАЦИОННАЯ ПАНЕЛЬ СТАВОК И БАЛАНСА -->
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
-            <span style="font-size: 12px; color: var(--text-muted); font-weight: 700;">Ваши ставки: <span id="current-bet-label" style="color:#ffffff;">0 W</span></span>
-            <span style="font-size: 13px; font-weight: 800; color: var(--text-muted);">Ваш баланс: <span id="balance-display" style="color:var(--neon-gold); font-family: monospace;">5000</span> <span style="color:var(--neon-blue);">W</span></span>
+        <div class="info-row">
+            <span class="muted-line">Ваши ставки: <span id="current-bet-label" class="pill">0 W</span></span>
+            <span class="muted-line">Ваш баланс: <span id="balance-display" class="pill">0</span> <span style="color:var(--btn-blue);">W</span></span>
         </div>
 
-        <!-- ВИДЖЕТ ВВОДА СТАВКИ -->
         <div class="bet-box-widget">
             <div class="bet-input-wrapper">
-                <span style="font-size: 11px; color: var(--text-muted); font-weight: 800; padding-left: 4px; text-transform: uppercase;">Ставка</span>
+                <span style="font-size:11px;color:var(--text-muted);font-weight:800;padding-left:4px;text-transform:uppercase;">Ставка</span>
                 <input type="number" id="bet-input" class="bet-field" value="100" min="1">
             </div>
-            <div style="display: flex; gap: 4px;">
-                <button class="bet-utility-btn" onclick="adjustBet('x2')">x2</button>
-                <button class="bet-utility-btn" onclick="adjustBet('half')">/2</button>
+            <div style="display:flex;gap:4px;">
+                <button class="bet-utility-btn" id="bet-x2" type="button">x2</button>
+                <button class="bet-utility-btn" id="bet-half" type="button">/2</button>
             </div>
         </div>
 
-        <!-- БЫСТРЫЕ ЧИПЫ СТАВОК ИЗ СКРИНШОТА -->
         <div class="quick-bet-row">
-            <button class="quick-chip-btn" onclick="addBetAmount(10)">+ 10</button>
-            <button class="quick-chip-btn" onclick="addBetAmount(100)">+ 100</button>
-            <button class="quick-chip-btn" onclick="addBetAmount(1000)">+ 1K</button>
-            <button class="quick-chip-btn" onclick="addBetAmount(25000)">+ 25K</button>
+            <button class="quick-chip-btn" data-add="10" type="button">+ 10</button>
+            <button class="quick-chip-btn" data-add="100" type="button">+ 100</button>
+            <button class="quick-chip-btn" data-add="1000" type="button">+ 1K</button>
+            <button class="quick-chip-btn" data-add="25000" type="button">+ 25K</button>
         </div>
 
         <span class="section-title">Стол ставок</span>
 
-        <!-- СКРИНШОТ 1: ГЛАВНЫЙ СТОЛ СТАВОК -->
-        <div id="table-main-view" style="display: flex; flex-direction: column; gap: 10px;">
+        <div id="table-main-view" style="display:flex; flex-direction:column; gap:10px;">
             <div class="main-outcomes-grid">
-                <button class="outcome-card-btn btn-under-style" id="bet-under" onclick="selectBetType('under')">
-                    &lt; 7 <span class="outcome-badge-coef">x2.4</span>
-                </button>
-                <button class="outcome-card-btn btn-green-style" id="bet-seven" onclick="selectBetType('seven')">
-                    7 <span class="outcome-badge-coef">x5.9</span>
-                </button>
-                <button class="outcome-card-btn btn-over-style" id="bet-over" onclick="selectBetType('over')">
-                    &gt; 7 <span class="outcome-badge-coef">x2.4</span>
-                </button>
+                <button class="outcome-card-btn btn-under-style" id="bet-under" data-bet="under" type="button">&lt; 7 <span class="outcome-badge-coef">x2.4</span></button>
+                <button class="outcome-card-btn btn-seven-style" id="bet-seven" data-bet="seven" type="button">7 <span class="outcome-badge-coef">x5.9</span></button>
+                <button class="outcome-card-btn btn-over-style" id="bet-over" data-bet="over" type="button">&gt; 7 <span class="outcome-badge-coef">x2.4</span></button>
             </div>
-
             <div class="even-odd-grid">
-                <button class="even-odd-btn btn-even-style" id="bet-even" onclick="selectBetType('even')">
-                    Четное <span class="outcome-badge-coef">x2</span>
-                </button>
-                <button class="even-odd-btn btn-odd-style" id="bet-odd" onclick="selectBetType('odd')">
-                    Нечетное <span class="outcome-badge-coef">x2</span>
-                </button>
+                <button class="even-odd-btn btn-even-style" id="bet-even" data-bet="even" type="button">Четное <span class="outcome-badge-coef">x2</span></button>
+                <button class="even-odd-btn btn-odd-style" id="bet-odd" data-bet="odd" type="button">Нечетное <span class="outcome-badge-coef">x2</span></button>
             </div>
-
             <div class="cubes-grid-32">
-                <button class="cube-select-btn" id="bet-c1" onclick="selectBetType('c1')">
-                    <div class="mini-cube-icon">1</div><span class="outcome-badge-coef">x3.2</span>
-                </button>
-                <button class="cube-select-btn" id="bet-c2" onclick="selectBetType('c2')">
-                    <div class="mini-cube-icon">2</div><span class="outcome-badge-coef">x3.2</span>
-                </button>
-                <button class="cube-select-btn" id="bet-c3" onclick="selectBetType('c3')">
-                    <div class="mini-cube-icon">3</div><span class="outcome-badge-coef">x3.2</span>
-                </button>
-                <button class="cube-select-btn" id="bet-c4" onclick="selectBetType('c4')">
-                    <div class="mini-cube-icon">4</div><span class="outcome-badge-coef">x3.2</span>
-                </button>
-                <button class="cube-select-btn" id="bet-c5" onclick="selectBetType('c5')">
-                    <div class="mini-cube-icon">5</div><span class="outcome-badge-coef">x3.2</span>
-                </button>
-                <button class="cube-select-btn" id="bet-c6" onclick="selectBetType('c6')">
-                    <div class="mini-cube-icon">6</div><span class="outcome-badge-coef">x3.2</span>
-                </button>
+                <button class="cube-select-btn" id="bet-c1" data-bet="c1" type="button"><div class="mini-cube-icon">1</div><span class="outcome-badge-coef">x3.2</span></button>
+                <button class="cube-select-btn" id="bet-c2" data-bet="c2" type="button"><div class="mini-cube-icon">2</div><span class="outcome-badge-coef">x3.2</span></button>
+                <button class="cube-select-btn" id="bet-c3" data-bet="c3" type="button"><div class="mini-cube-icon">3</div><span class="outcome-badge-coef">x3.2</span></button>
+                <button class="cube-select-btn" id="bet-c4" data-bet="c4" type="button"><div class="mini-cube-icon">4</div><span class="outcome-badge-coef">x3.2</span></button>
+                <button class="cube-select-btn" id="bet-c5" data-bet="c5" type="button"><div class="mini-cube-icon">5</div><span class="outcome-badge-coef">x3.2</span></button>
+                <button class="cube-select-btn" id="bet-c6" data-bet="c6" type="button"><div class="mini-cube-icon">6</div><span class="outcome-badge-coef">x3.2</span></button>
             </div>
         </div>
 
-        <!-- СКРИНШОТ 2: СЕТКА ТОЧНЫХ СУММ -->
-        <div id="table-numbers-view" style="display: none; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%;">
-            <button class="even-odd-btn btn-even-style" id="bet-sum2" onclick="selectBetType('sum2')">2 <span class="outcome-badge-coef">x35.3</span></button>
-            <button class="even-odd-btn btn-even-style" id="bet-sum3" onclick="selectBetType('sum3')">3 <span class="outcome-badge-coef">x17.6</span></button>
-            <button class="even-odd-btn btn-even-style" id="bet-sum4" onclick="selectBetType('sum4')">4 <span class="outcome-badge-coef">x11.8</span></button>
-            <button class="even-odd-btn btn-even-style" id="bet-sum5" onclick="selectBetType('sum5')">5 <span class="outcome-badge-coef">x8.8</span></button>
-            <button class="even-odd-btn btn-even-style" id="bet-sum6" onclick="selectBetType('sum6')">6 <span class="outcome-badge-coef">x7.1</span></button>
-            <button class="even-odd-btn btn-even-style" id="bet-sum7" onclick="selectBetType('sum7')">7 <span class="outcome-badge-coef">x5.9</span></button>
-            <button class="even-odd-btn btn-even-style" id="bet-sum8" onclick="selectBetType('sum8')">8 <span class="outcome-badge-coef">x7.1</span></button>
-            <button class="even-odd-btn btn-even-style" id="bet-sum9" onclick="selectBetType('sum9')">9 <span class="outcome-badge-coef">x8.8</span></button>
-            <button class="even-odd-btn btn-even-style" id="bet-sum10" onclick="selectBetType('sum10')">10 <span class="outcome-badge-coef">x11.8</span></button>
-            <button class="even-odd-btn btn-even-style" id="bet-sum11" onclick="selectBetType('sum11')">11 <span class="outcome-badge-coef">x17.6</span></button>
-            <button class="even-odd-btn btn-even-style" id="bet-sum12" onclick="selectBetType('sum12')">12 <span class="outcome-badge-coef">x35.3</span></button>
-            <button class="tab-select-btn" onclick="switchTableTab('main')" style="background: var(--btn-red); font-size: 11px;">↩ Назад</button>
+        <div id="table-numbers-view" style="display:none; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%;">
+            <button class="even-odd-btn btn-even-style" id="bet-sum2" data-bet="sum2" type="button">2 <span class="outcome-badge-coef">x35.3</span></button>
+            <button class="even-odd-btn btn-even-style" id="bet-sum3" data-bet="sum3" type="button">3 <span class="outcome-badge-coef">x17.6</span></button>
+            <button class="even-odd-btn btn-even-style" id="bet-sum4" data-bet="sum4" type="button">4 <span class="outcome-badge-coef">x11.8</span></button>
+            <button class="even-odd-btn btn-even-style" id="bet-sum5" data-bet="sum5" type="button">5 <span class="outcome-badge-coef">x8.8</span></button>
+            <button class="even-odd-btn btn-even-style" id="bet-sum6" data-bet="sum6" type="button">6 <span class="outcome-badge-coef">x7.1</span></button>
+            <button class="even-odd-btn btn-even-style" id="bet-sum7" data-bet="sum7" type="button">7 <span class="outcome-badge-coef">x5.9</span></button>
+            <button class="even-odd-btn btn-even-style" id="bet-sum8" data-bet="sum8" type="button">8 <span class="outcome-badge-coef">x7.1</span></button>
+            <button class="even-odd-btn btn-even-style" id="bet-sum9" data-bet="sum9" type="button">9 <span class="outcome-badge-coef">x8.8</span></button>
+            <button class="even-odd-btn btn-even-style" id="bet-sum10" data-bet="sum10" type="button">10 <span class="outcome-badge-coef">x11.8</span></button>
+            <button class="even-odd-btn btn-even-style" id="bet-sum11" data-bet="sum11" type="button">11 <span class="outcome-badge-coef">x17.6</span></button>
+            <button class="even-odd-btn btn-even-style" id="bet-sum12" data-bet="sum12" type="button">12 <span class="outcome-badge-coef">x35.3</span></button>
+            <button class="tab-select-btn" id="numbers-back-btn" type="button" style="background: var(--btn-red); font-size: 11px;">↩ Назад</button>
         </div>
 
-        <!-- СКРИНШОТ 3: СЕТКА ДЛЯ ПАР (ДУБЛЕЙ КУБИКОВ) -->
-        <div id="table-pairs-view" style="display: none; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%;">
-            <button class="even-odd-btn btn-over-style" id="bet-p1" onclick="selectBetType('p1')">⚀⚀ <span class="outcome-badge-coef">x35.3</span></button>
-            <button class="even-odd-btn btn-over-style" id="bet-p2" onclick="selectBetType('p2')">⚁⚁ <span class="outcome-badge-coef">x35.3</span></button>
-            <button class="even-odd-btn btn-over-style" id="bet-p3" onclick="selectBetType('p3')">⚂⚂ <span class="outcome-badge-coef">x35.3</span></button>
-            <button class="even-odd-btn btn-over-style" id="bet-p4" onclick="selectBetType('p4')">⚃⚃ <span class="outcome-badge-coef">x35.3</span></button>
-            <button class="even-odd-btn btn-over-style" id="bet-p5" onclick="selectBetType('p5')">⚄⚄ <span class="outcome-badge-coef">x35.3</span></button>
-            <button class="even-odd-btn btn-over-style" id="bet-p6" onclick="selectBetType('p6')">⚅⚅ <span class="outcome-badge-coef">x35.3</span></button>
-            <button class="even-odd-btn btn-even-style" id="bet-anypair" onclick="selectBetType('anypair')" style="grid-column: span 2; background: var(--btn-purple); padding: 14px 0;">Любая пара <span class="outcome-badge-coef">x5.9</span></button>
-            <button class="tab-select-btn" onclick="switchTableTab('main')" style="grid-column: span 2; background: var(--btn-red); font-size: 11px; padding: 10px 0;">↩ Назад</button>
+        <div id="table-pairs-view" style="display:none; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%;">
+            <button class="even-odd-btn btn-over-style" id="bet-p1" data-bet="p1" type="button">⚀⚀ <span class="outcome-badge-coef">x35.3</span></button>
+            <button class="even-odd-btn btn-over-style" id="bet-p2" data-bet="p2" type="button">⚁⚁ <span class="outcome-badge-coef">x35.3</span></button>
+            <button class="even-odd-btn btn-over-style" id="bet-p3" data-bet="p3" type="button">⚂⚂ <span class="outcome-badge-coef">x35.3</span></button>
+            <button class="even-odd-btn btn-over-style" id="bet-p4" data-bet="p4" type="button">⚃⚃ <span class="outcome-badge-coef">x35.3</span></button>
+            <button class="even-odd-btn btn-over-style" id="bet-p5" data-bet="p5" type="button">⚄⚄ <span class="outcome-badge-coef">x35.3</span></button>
+            <button class="even-odd-btn btn-over-style" id="bet-p6" data-bet="p6" type="button">⚅⚅ <span class="outcome-badge-coef">x35.3</span></button>
+            <button class="even-odd-btn" id="bet-anypair" data-bet="anypair" type="button" style="grid-column: span 2; background: var(--btn-purple); padding: 14px 0;">Любая пара <span class="outcome-badge-coef">x5.9</span></button>
+            <button class="tab-select-btn" id="pairs-back-btn" type="button" style="grid-column: span 2; background: var(--btn-red); font-size: 11px; padding: 10px 0;">↩ Назад</button>
         </div>
 
-        <!-- ТРИ КНОПКИ НАВИГАЦИИ ПО ВКЛАДКАМ -->
         <div class="tabs-footer-row">
-            <button class="tab-select-btn" id="tab-btn-main" onclick="switchTableTab('main')" style="background: #2a314b; color: var(--neon-cyan);">🎯 Главный стол</button>
-            <button class="tab-select-btn" id="tab-btn-numbers" onclick="switchTableTab('numbers')" style="background: #1c2130;">🎰 Числа</button>
-            <button class="tab-select-btn" id="tab-btn-pairs" onclick="switchTableTab('pairs')" style="background: #1c2130;">🎲 Пары</button>
+            <button class="tab-select-btn" id="tab-btn-main" type="button" style="background:#2a314b; color:#00ffcc;">🎯 Главный стол</button>
+            <button class="tab-select-btn" id="tab-btn-numbers" type="button" style="background:#1c2130;">🎰 Числа</button>
+            <button class="tab-select-btn" id="tab-btn-pairs" type="button" style="background:#1c2130;">🎲 Пары</button>
         </div>
 
-        <button class="premium-roll-btn" id="roll-action-trigger" onclick="executeDiceBet()">Подтвердить ставку</button>
+        <button class="premium-roll-btn" id="roll-action-trigger" type="button">Подтвердить ставку</button>
     </div>
-    <script>
-        // Инициализируем Telegram WebApp API
-        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-        if (tg) {
-            try { 
-                tg.expand();
-                tg.ready();
-                if (tg.BackButton) {
-                    tg.BackButton.show();
-                    tg.BackButton.offClick();
-                    tg.BackButton.onClick(() => {
-                        if (tg.BackButton) tg.BackButton.hide();
-                        location.href = "index.html";
-                    });
-                }
-            } catch(e) { console.error(e); }
-        }
 
-        const SERVER_URL = "https://onrender.com";
-        const MY_ADMIN_ID = 6682822292;
-        
-        let userId = MY_ADMIN_ID;
-        if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            userId = tg.initDataUnsafe.user.id;
-        }
-
-        let playerBalance = 5000;
-        let activeBetType = 'under'; 
-        let isRolling = false;
-
-        // МАТРИЦА МНОЖИТЕЛЕЙ КАЗИНО ИЗ ВСЕХ ТРЕХ СКРИНШОТОВ
-        const MULTIPLIERS = {
-            under: 2.4, seven: 5.9, over: 2.4, even: 2.0, odd: 2.0,
-            c1: 3.2, c2: 3.2, c3: 3.2, c4: 3.2, c5: 3.2, c6: 3.2,
-            sum2: 35.3, sum3: 17.6, sum4: 11.8, sum5: 8.8, sum6: 7.1, sum7: 5.9, sum8: 7.1, sum9: 8.8, sum10: 11.8, sum11: 17.6, sum12: 35.3,
-            p1: 35.3, p2: 35.3, p3: 35.3, p4: 35.3, p5: 35.3, p6: 35.3, anypair: 5.9
-        };
-
-        // Загружаем серверный баланс при старте игры
-        function fetchBalance() {
-            fetch(`${SERVER_URL}/api/user`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: userId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data && data.balance !== undefined) {
-                    playerBalance = data.balance;
-                    updateUI();
-                }
-            })
-            .catch(err => updateUI());
-        }
-        fetchBalance();
-
-        function updateUI() {
-            document.getElementById('balance-display').innerText = playerBalance;
-        }
-
-        // УПРАВЛЕНИЕ ДИНАМИЧЕСКИМИ ВКЛАДКАМИ СТОЛА (ИЗ СКРИНШОТОВ)
-        function switchTableTab(tabName) {
-            if (isRolling) return;
-            
-            const mainView = document.getElementById('table-main-view');
-            const numbersView = document.getElementById('table-numbers-view');
-            const pairsView = document.getElementById('table-pairs-view');
-            
-            mainView.style.display = "none";
-            numbersView.style.display = "none";
-            if (pairsView) pairsView.style.display = "none";
-
-            document.getElementById('tab-btn-main').style.background = "#1c2130";
-            document.getElementById('tab-btn-numbers').style.background = "#1c2130";
-            document.getElementById('tab-btn-pairs').style.background = "#1c2130";
-
-            if (tabName === 'main') {
-                mainView.style.display = "flex";
-                document.getElementById('tab-btn-main').style.background = "#2a314b";
-                selectBetType('under');
-            } else if (tabName === 'numbers') {
-                numbersView.style.display = "grid";
-                document.getElementById('tab-btn-numbers').style.background = "#2a314b";
-                selectBetType('sum7');
-            } else if (tabName === 'pairs' && pairsView) {
-                pairsView.style.display = "grid";
-                document.getElementById('tab-btn-pairs').style.background = "#2a314b";
-                selectBetType('anypair');
-            }
-        }
-
-        // ПОДСВЕТКА ЯЧЕЙКИ ПРИ НАЖАТИИ С ОТОБРАЖЕНИЕМ КФ СТАВКИ
-        function selectBetType(betType) {
-            if (isRolling) return;
-            activeBetType = betType;
-
-            document.querySelectorAll('.outcome-card-btn, .even-odd-btn, .cube-select-btn').forEach(btn => {
-                btn.classList.remove('selected-bet-active');
-            });
-
-            const activeBtn = document.getElementById(`bet-${betType}`);
-            if (activeBtn) activeBtn.classList.add('selected-bet-active');
-
-            const currentBetAmt = parseInt(document.getElementById('bet-input').value) || 0;
-            document.getElementById('current-bet-label').innerText = `${currentBetAmt} W (x${MULTIPLIERS[betType]})`;
-        }
-// УПРАВЛЕНИЕ РАЗМЕРОМ СТАВКИ КНОПКАМИ И ЧИПАМИ
-        function adjustBet(action) {
-            if (isRolling) return;
-            const input = document.getElementById('bet-input');
-            let currentBet = parseInt(input.value) || 100;
-
-            if (action === 'x2') currentBet = Math.min(playerBalance, currentBet * 2);
-            if (action === 'half') currentBet = Math.max(10, Math.floor(currentBet / 2));
-
-            input.value = currentBet;
-            selectBetType(activeBetType);
-        }
-
-        function addBetAmount(amount) {
-            if (isRolling) return;
-            const input = document.getElementById('bet-input');
-            let currentBet = parseInt(input.value) || 0;
-            input.value = Math.min(playerBalance, currentBet + amount);
-            selectBetType(activeBetType);
-        }
-
-        // ДВИЖОК РАСЧЁТА ИСХОДОВ И БРОСКА КУБИКОВ
-        function executeDiceBet() {
-            if (isRolling) return;
-            
-            const betInput = document.getElementById('bet-input');
-            const bet = parseInt(betInput.value);
-
-            if (isNaN(bet) || bet <= 0 || bet > playerBalance) {
-                alert("Некорректная сумма ставки!");
-                return;
-            }
-
-            isRolling = true;
-            document.getElementById('roll-action-trigger').disabled = true;
-            document.getElementById('game-status-label').innerText = "Ставка принята. Бросок...";
-
-            const c1 = document.getElementById('result-cube-1');
-            const c2 = document.getElementById('result-cube-2');
-            c1.innerText = "🎲"; c2.innerText = "🎲";
-
-            if (tg && typeof tg.HapticFeedback === 'object') tg.HapticFeedback.impactOccurred('medium');
-
-            setTimeout(() => {
-                // Серверный алгоритм генерации очков (честный ГСЧ двух костей)
-                let val1 = Math.floor(Math.random() * 6) + 1;
-                let val2 = Math.floor(Math.random() * 6) + 1;
-                let sum = val1 + val2;
-
-                c1.innerText = val1;
-                c2.innerText = val2;
-                document.getElementById('sum-display').innerText = `Результат броска: ${val1} + ${val2} = ${sum}`;
-
-                // ПРОВЕРКА ВЫИГРЫША ПО МАТРИЦЕ ИСХОДОВ
-                let isWin = false;
-                
-                // Вкладка 1: Общий стол
-                if (activeBetType === 'under' && sum < 7) isWin = true;
-                if (activeBetType === 'seven' && sum === 7) isWin = true;
-                if (activeBetType === 'over' && sum > 7) isWin = true;
-                if (activeBetType === 'even' && sum % 2 === 0) isWin = true;
-                if (activeBetType === 'odd' && sum % 2 !== 0) isWin = true;
-                if (activeBetType === 'c1' && (val1 === 1 || val2 === 1)) isWin = true;
-                if (activeBetType === 'c2' && (val1 === 2 || val2 === 2)) isWin = true;
-                if (activeBetType === 'c3' && (val1 === 3 || val2 === 3)) isWin = true;
-                if (activeBetType === 'c4' && (val1 === 4 || val2 === 4)) isWin = true;
-                if (activeBetType === 'c5' && (val1 === 5 || val2 === 5)) isWin = true;
-                if (activeBetType === 'c6' && (val1 === 6 || val2 === 6)) isWin = true;
-                
-                // Вкладка 2: Точные суммы (Числа)
-                if (activeBetType === `sum${sum}`) isWin = true;
-
-                // Вкладка 3: Пары
-                let isPair = (val1 === val2);
-                if (activeBetType === 'anypair' && isPair) isWin = true;
-                if (activeBetType === 'p1' && isPair && val1 === 1) isWin = true;
-                if (activeBetType === 'p2' && isPair && val1 === 2) isWin = true;
-                if (activeBetType === 'p3' && isPair && val1 === 3) isWin = true;
-                if (activeBetType === 'p4' && isPair && val1 === 4) isWin = true;
-                if (activeBetType === 'p5' && isPair && val1 === 5) isWin = true;
-                if (activeBetType === 'p6' && isPair && val1 === 6) isWin = true;
-
-                let changeAmount = 0;
-                if (isWin) {
-                    let winProfit = Math.floor(bet * MULTIPLIERS[activeBetType]) - bet;
-                    changeAmount = winProfit;
-                    document.getElementById('game-status-label').innerText = `🎉 Выигрыш! +${winProfit + bet} W`;
-                    document.getElementById('game-status-label').style.color = "var(--btn-green)";
-                    if (tg && typeof tg.HapticFeedback === 'object') tg.HapticFeedback.notificationOccurred('success');
-                } else {
-                    changeAmount = -bet;
-                    document.getElementById('game-status-label').innerText = `💥 Проигрыш! -${bet} W`;
-                    document.getElementById('game-status-label').style.color = "var(--btn-red)";
-                    if (tg && typeof tg.HapticFeedback === 'object') tg.HapticFeedback.notificationOccurred('error');
-                }
-
-                // СИНХРОНИЗАЦИЯ СЕРВЕРНОЙ БАЗЫ ДАННЫХ RENDER
-                fetch(`${SERVER_URL}/api/balance`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: userId, amount: changeAmount })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        playerBalance = data.balance;
-                        updateUI();
-                    }
-                })
-                .catch(err => {
-                    // Локальный резервный подсчёт при сбое сети
-                    playerBalance += changeAmount;
-                    updateUI();
-                });
-
-                isRolling = false;
-                document.getElementById('roll-action-trigger').disabled = false;
-                selectBetType(activeBetType);
-            }, 1000);
-        }
-
-        // Первичный запуск подсветки первой кнопки
-        selectBetType('under');
-    </script>
+    <script src="dice_game.js"></script>
 </body>
 </html>
