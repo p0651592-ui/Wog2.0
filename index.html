@@ -44,7 +44,6 @@
     .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
     .admin{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 100px);right:24px;background:var(--gold);color:#000;border:none;padding:10px 16px;border-radius:20px;font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.5px;box-shadow:0 4px 15px rgba(255,202,40,.4);cursor:pointer;z-index:99999;display:none}
     .muted{color:var(--muted)}
-    .hidden{display:none!important}
     @media (max-width:380px){.grid{grid-template-columns:1fr}.grid .wide{grid-column:span 1}.nav{width:94%;left:3%}}
   </style>
 </head>
@@ -84,12 +83,6 @@
         <div class="x" style="bottom:12px;left:12px;transform:rotate(-10deg)">X</div>
         <div class="history"><div class="hbox">2</div><div class="hbox">8</div><div class="hbox">12</div></div>
         <div class="graphics"><div class="circle"><div class="green-sector"></div></div><div class="title-label">Wheel Plus</div></div>
-      </div>
-
-      <div class="card-game" onclick="navigateSafe('wheel_classic.html')" style="border-left:3px solid var(--gold);justify-content:center;background:linear-gradient(180deg,#171a26 0%,#151923 100%);">
-        <div class="game-row"><span style="font-size:24px">🎡</span><span class="badge" style="color:var(--gold)">CLASSIC</span></div>
-        <span style="font-size:14px;font-weight:900;text-transform:uppercase;margin-top:8px">Wheel</span>
-        <span class="muted" style="font-size:11px;font-weight:700;line-height:1.4">Американская рулетка без Lucky Numbers</span>
       </div>
 
       <div class="card-game" onclick="navigateSafe('dice.html')" style="border-left:3px solid var(--cyan);justify-content:center;">
