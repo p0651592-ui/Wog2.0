@@ -1,579 +1,990 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>WOG Wheel Plus Premium</title>
-    <script src="https://telegram.org"></script>
-    <style>
-        :root {
-            --bg-main: #0c0f1d;
-            --bg-card: #151a30;
-            --bg-inner: #1d233d;
-            --border-neon: #29315c;
-            --color-red: #e52e4d;
-            --color-black: #1e2336;
-            --color-green: #10b981;
-            --color-blue: #2563eb;
-            --color-gold: #f59e0b;
-            --color-purple: #6366f1;
-            --text-main: #ffffff;
-            --text-muted: #64748b;
-            --radius-premium: 16px;
-        }
-        /* Базовый сброс и параметры body для корректного отображения в Telegram */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0c0f1d" />
+  <title>WOG Wheel Plus Premium</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg-main: #0c0f1d;
+      --bg-card: #151a30;
+      --bg-inner: #1d233d;
+      --border-neon: #29315c;
+      --color-red: #e52e4d;
+      --color-black: #1e2336;
+      --color-green: #10b981;
+      --color-blue: #2563eb;
+      --color-gold: #f59e0b;
+      --text-main: #ffffff;
+      --text-muted: #64748b;
+      --radius-premium: 16px;
+      --shadow: 0 10px 28px rgba(0,0,0,.35);
+    }
 
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            padding: 14px;
-            padding-top: calc(env(safe-area-inset-top) + 48px); /* Защита от шапки Telegram */
-            padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
-            overflow-x: hidden;
-            user-select: none;
-            -webkit-user-select: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
 
-        /* Обертка для контента с ограничением ширины */
-        .app-wrapper {
-            width: 100%;
-            max-width: 480px;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
+    body {
+      background: var(--bg-main);
+      color: var(--text-main);
+      padding: 14px;
+      padding-top: calc(env(safe-area-inset-top) + 48px);
+      padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+      overflow-x: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
 
-        .section-title {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            margin-bottom: 2px;
-            margin-top: 4px;
-        }
-        /* НАВИГАЦИОННАЯ КНОПКА ВОЗВРАТА В ЛОББИ */
-        .wp-back-navigation-container {
-            width: 100%;
-            display: flex;
-            justify-content: flex-start;
-            margin-bottom: -2px;
-        }
+    .app-wrapper {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
 
-        .wp-back-lobby-btn {
-            background: rgba(229, 46, 77, 0.12);
-            color: var(--color-red);
-            border: 1px solid rgba(229, 46, 77, 0.35);
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 0 10px rgba(229, 46, 77, 0.05);
-        }
+    .section-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin: 4px 0 2px;
+    }
 
-        .wp-back-lobby-btn:active {
-            background: var(--color-red);
-            color: #ffffff;
-            box-shadow: 0 0 15px rgba(229, 46, 77, 0.4);
-            transform: scale(0.96);
-        }
+    .wp-back-navigation-container {
+      width: 100%;
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: -2px;
+    }
 
-        /* ЛЕНТА ИСТОРИИ ИГР (ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ) */
-        .history-card-scroll {
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 10px 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            overflow-x: auto;
-            width: 100%;
-            white-space: nowrap;
-        }
+    .wp-back-lobby-btn {
+      background: rgba(229, 46, 77, 0.12);
+      color: var(--color-red);
+      border: 1px solid rgba(229, 46, 77, 0.35);
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all .2s ease;
+      box-shadow: 0 0 10px rgba(229, 46, 77, 0.05);
+    }
 
-        .history-card-scroll::-webkit-scrollbar {
-            display: none;
-        }
+    .wp-back-lobby-btn:active {
+      background: var(--color-red);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(229, 46, 77, 0.4);
+      transform: scale(.96);
+    }
 
-        .hist-circle {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            font-weight: 800;
-            color: white;
-            flex-shrink: 0;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    .history-card-scroll {
+      background: var(--bg-card);
+      border: 1px solid var(--border-neon);
+      border-radius: var(--radius-premium);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      width: 100%;
+      white-space: nowrap;
+      box-shadow: var(--shadow);
+    }
 
-        .hist-circle.red { background-color: var(--color-red); }
-        .hist-circle.black { background-color: var(--color-black); }
-        .hist-circle.green { background-color: var(--color-green); }
+    .history-card-scroll::-webkit-scrollbar { display: none; }
 
-        /* ЗОНА ПРЕМИАЛЬНЫХ СЛОТОВ LUCKY NUMBERS */
-        .wp-lucky-slots-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            width: 100%;
-        }
+    .hist-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: white;
+      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,.1);
+      cursor: pointer;
+    }
 
-        .wp-slot-box {
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 12px 6px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            min-height: 80px;
-        }
+    .hist-circle.red { background: var(--color-red); }
+    .hist-circle.black { background: var(--color-black); }
+    .hist-circle.green { background: var(--color-green); }
+    .hist-circle.gold { background: var(--color-gold); color: #0b1020; }
 
-        .wp-bonus-number {
-            font-size: 26px;
-            font-weight: 900;
-            color: #ffffff;
-            line-height: 1;
-            margin-bottom: 4px;
-        }
+    .wp-lucky-slots-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      width: 100%;
+    }
 
-        .wp-bonus-multiplier {
-            font-size: 11px;
-            font-weight: 800;
-            padding: 2px 8px;
-            border-radius: 6px;
-            text-transform: uppercase;
-        }
+    .wp-slot-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-neon);
+      border-radius: var(--radius-premium);
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80px;
+      box-shadow: var(--shadow);
+    }
 
-        .wp-m50 { background: rgba(37, 99, 235, 0.15); color: #93c5fd; }
-        .wp-m100 { background: rgba(99, 102, 241, 0.15); color: #c7d2fe; }
-        .wp-m300 { background: rgba(245, 158, 11, 0.15); color: #fef08a; }
-        /* ГРАФИЧЕСКАЯ ЗОНА РУЛЕТОЧНОГО КОЛЕСА CANVAS */
-        .wheel-display-zone {
-            width: 100%;
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.5);
-        }
+    .wp-bonus-number {
+      font-size: 26px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
 
-        .wheel-canvas-container {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            max-width: 340px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .wp-bonus-multiplier {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
 
-        #wheel-render-canvas {
-            width: 100% !important;
-            height: 100% !important;
-            display: block;
-        }
+    .wp-m50 { background: rgba(37, 99, 235, .15); color: #93c5fd; }
+    .wp-m100 { background: rgba(99, 102, 241, .15); color: #c7d2fe; }
+    .wp-m300 { background: rgba(245, 158, 11, .15); color: #fef08a; }
 
-        /* УКАЗАТЕЛЬ СЕКТОРА (ТРЕУГОЛЬНИК НАД КОЛЕСОМ) */
-        .wheel-top-pin-pointer {
-            position: absolute;
-            top: -2px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-top: 18px solid var(--color-gold);
-            z-index: 10;
-            filter: drop-shadow(0 2px 5px rgba(245, 158, 11, 0.5));
-        }
+    .wheel-display-zone {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-neon);
+      border-radius: var(--radius-premium);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: inset 0 0 25px rgba(0,0,0,.5), var(--shadow);
+    }
 
-        /* ЭЛЕКТРОННОЕ ТАБЛО В ЦЕНТРЕ РУЛЕТКИ */
-        .wheel-center-digital-scoreboard {
-            position: absolute;
-            width: 44%;
-            height: 44%;
-            background: #090c15;
-            border: 2px solid var(--border-neon);
-            border-radius: 50%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 5;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(99, 102, 241, 0.1);
-            padding: 8px;
-            text-align: center;
-        }
+    .wheel-canvas-container {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-width: 340px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        #wp-center-emoji {
-            font-size: 26px;
-            margin-bottom: 2px;
-            line-height: 1;
-        }
+    #wheel-render-canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      border-radius: 50%;
+      transition: transform 4.8s cubic-bezier(.15,.85,.08,1);
+    }
 
-        #wp-center-text {
-            font-size: 11px;
-            font-weight: 900;
-            color: #ffffff;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            line-height: 1.2;
-        }
-        /* ПАНЕЛЬ ОТОБРАЖЕНИЯ БАЛАНСОВ И ТЕКУЩИХ СТАВОК */
-        .wp-stats-dashboard-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 14px 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-        }
+    .wheel-top-pin-pointer {
+      position: absolute;
+      top: -2px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-top: 18px solid var(--color-gold);
+      z-index: 10;
+      filter: drop-shadow(0 2px 5px rgba(245,158,11,.5));
+    }
 
-        .wp-stats-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            font-size: 13px;
-            font-weight: 700;
-        }
+    .wheel-center-digital-scoreboard {
+      position: absolute;
+      width: 44%;
+      height: 44%;
+      background: #090c15;
+      border: 2px solid var(--border-neon);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      box-shadow: 0 0 20px rgba(0,0,0,.8), inset 0 0 10px rgba(99,102,241,.1);
+      padding: 8px;
+      text-align: center;
+    }
 
-        .wp-stat-value {
-            font-size: 16px;
-            font-weight: 900;
-            color: #ffffff;
-        }
+    #wp-center-emoji { font-size: 26px; margin-bottom: 2px; line-height: 1; }
+    #wp-center-text {
+      font-size: 11px;
+      font-weight: 900;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      line-height: 1.2;
+    }
 
-        .wp-stat-label {
-            color: var(--text-muted);
-        }
+    .wp-stats-dashboard-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-neon);
+      border-radius: var(--radius-premium);
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      box-shadow: var(--shadow);
+    }
 
-        .wp-bet-row { display: flex; gap: 8px; }
+    .wp-stats-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
 
-        .wp-bet-button,
-        .wp-action-button {
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 800;
-            color: #ffffff;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
+    .wp-stat-pill {
+      background: var(--bg-inner);
+      border: 1px solid var(--border-neon);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
 
-        .wp-bet-button {
-            background: var(--color-blue);
-            padding: 14px 12px;
-            flex: 1;
-        }
+    .wp-stat-pill span:last-child { color: var(--color-gold); }
 
-        .wp-action-button { background: #1d233d; padding: 12px 14px; }
+    .numbers-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-neon);
+      border-radius: var(--radius-premium);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: var(--shadow);
+    }
 
-        .wp-bet-button:active,
-        .wp-action-button:active {
-            transform: scale(0.97);
-            opacity: 0.85;
-        }
+    .numbers-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
-        .wp-number-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            width: 100%;
-        }
+    .numbers-title { font-size: 14px; font-weight: 900; }
+    .numbers-sub { font-size: 11px; color: var(--text-muted); font-weight: 700; }
 
-        .wp-number-grid .num-cell {
-            border-radius: 14px;
-            min-height: 60px;
-            background: var(--bg-inner);
-            border: 1px solid var(--border-neon);
-            color: #fff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 16px;
-            gap: 4px;
-        }
+    .numbers-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      max-height: 470px;
+      overflow: auto;
+      padding-right: 2px;
+    }
 
-        .wp-number-grid .num-cell.red { background: rgba(229,46,77,.18); }
-        .wp-number-grid .num-cell.black { background: rgba(30,35,54,.8); }
-        .wp-number-grid .num-cell.green { background: rgba(16,185,129,.18); }
+    .numbers-grid::-webkit-scrollbar { width: 4px; }
+    .numbers-grid::-webkit-scrollbar-thumb { background: var(--border-neon); border-radius: 999px; }
 
-        .wp-number-grid .num-badge {
-            font-size: 9px;
-            font-weight: 900;
-            color: rgba(255,255,255,.85);
-            background: rgba(0,0,0,.25);
-            padding: 2px 6px;
-            border-radius: 999px;
-        }
+    .num-btn {
+      position: relative;
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 14px;
+      padding: 12px 8px;
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 4px;
+      font-weight: 900;
+      font-size: 16px;
+      cursor: pointer;
+      color: #fff;
+      background: #1b1f34;
+    }
 
-        .wp-players-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: var(--radius-premium);
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+    .num-btn.green { background: rgba(16,185,129,.18); }
+    .num-btn.blue { background: rgba(37,99,235,.18); }
+    .num-btn.gold {
+      background: rgba(245,182,27,.18);
+      border-color: rgba(245,182,27,.5);
+      box-shadow: 0 0 0 1px rgba(245,182,27,.15) inset;
+    }
 
-        .wp-player-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            background: #101523;
-            border: 1px solid var(--border-neon);
-            border-radius: 14px;
-            padding: 10px 12px;
-        }
+    .num-btn.active { outline: 2px solid var(--color-gold); }
+    .num-btn .badge {
+      font-size: 9px;
+      font-weight: 900;
+      background: rgba(0,0,0,.34);
+      padding: 2px 6px;
+      border-radius: 999px;
+      color: #fff;
+    }
 
-        .wp-player-left {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 0;
-        }
+    .num-btn .amount { font-size: 9px; font-weight: 800; color: rgba(255,255,255,.75); }
 
-        .wp-avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: #1f2740;
-            border: 1px solid var(--border-neon);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 900;
-            color: var(--color-gold);
-            flex: 0 0 auto;
-        }
+    .panel-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
 
-        .wp-player-meta {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-        }
+    .players-card,
+    .recent-card,
+    .fair-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-neon);
+      border-radius: var(--radius-premium);
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
 
-        .wp-player-name {
-            font-size: 13px;
-            font-weight: 900;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    .players-head,
+    .recent-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
 
-        .wp-player-sub {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 700;
-        }
+    .players-list { display: flex; flex-direction: column; gap: 8px; }
+    .player-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      background: #101523;
+      border: 1px solid var(--border-neon);
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
 
-        .wp-bet-badge {
-            font-size: 11px;
-            font-weight: 900;
-            background: rgba(37,99,235,.14);
-            color: #9dc0ff;
-            padding: 4px 8px;
-            border-radius: 999px;
-            white-space: nowrap;
-        }
+    .player-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .avatar {
+      width: 30px; height: 30px; border-radius: 50%; background: #1f2740;
+      border: 1px solid var(--border-neon); display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 900; color: var(--color-gold); flex: 0 0 auto;
+    }
+    .player-meta { display: flex; flex-direction: column; min-width: 0; }
+    .player-name { font-size: 13px; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .player-sub { font-size: 11px; color: var(--text-muted); font-weight: 700; }
+    .bet-badge {
+      font-size: 11px; font-weight: 900; background: rgba(37,99,235,.14); color: #9dc0ff;
+      padding: 4px 8px; border-radius: 999px; white-space: nowrap;
+    }
 
-        .wp-modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(7, 10, 20, 0.85);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 16px;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-        }
+    .recent-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+    .recent-card-item {
+      background: #101523; border: 1px solid var(--border-neon); border-radius: 14px; padding: 10px 8px;
+      display: flex; flex-direction: column; gap: 4px; align-items: center; cursor: pointer;
+    }
+    .recent-card-item.green { background: rgba(16,185,129,.14); }
+    .recent-card-item.gold { background: rgba(245,182,27,.16); }
+    .recent-card-item.blue { background: rgba(37,99,235,.14); }
+    .recent-number { font-size: 18px; font-weight: 900; line-height: 1; }
+    .recent-meta { font-size: 10px; color: var(--text-muted); font-weight: 700; }
 
-        .wp-modal-card {
-            width: 100%;
-            max-width: 420px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-neon);
-            border-radius: 20px;
-            padding: 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,.5);
-        }
+    .controls-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-neon);
+      border-radius: var(--radius-premium);
+      padding: 14px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
-        .wp-modal-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 10px;
-        }
+    .controls-top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
 
-        .wp-modal-title {
-            font-size: 17px;
-            font-weight: 900;
-        }
+    .bet-input {
+      width: 100%;
+      background: var(--bg-inner);
+      border: 1px solid var(--border-neon);
+      border-radius: 12px;
+      color: var(--text-main);
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 800;
+      outline: none;
+    }
 
-        .wp-modal-close {
-            border: none;
-            background: #1d233d;
-            color: #fff;
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 900;
-        }
+    .bet-btn {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 900;
+      font-size: 14px;
+      cursor: pointer;
+      color: #08111f;
+      background: var(--color-gold);
+      white-space: nowrap;
+    }
 
-        .wp-modal-text {
-            font-size: 12px;
-            color: var(--text-muted);
-            line-height: 1.5;
-            word-break: break-word;
-        }
-    </style>
+    .bet-badges {
+      display: grid;
+      grid-template-columns: repeat(4,1fr);
+      gap: 8px;
+    }
+
+    .chip {
+      border: 1px solid var(--border-neon);
+      border-radius: 12px;
+      padding: 11px 8px;
+      background: #141a28;
+      color: var(--text-main);
+      font-weight: 900;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .result-box {
+      background: #101523;
+      border: 1px solid var(--border-neon);
+      border-radius: 14px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--text-main);
+    }
+
+    .muted { color: var(--text-muted); }
+    .hidden { display: none !important; }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(6,8,16,.86);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 420px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-neon);
+      border-radius: var(--radius-premium);
+      box-shadow: var(--shadow);
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .modal-title { font-size: 16px; font-weight: 900; }
+    .modal-close {
+      border: none;
+      background: #171a26;
+      color: #fff;
+      border: 1px solid var(--border-neon);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .fair-box {
+      background: #101523;
+      border: 1px solid var(--border-neon);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      word-break: break-word;
+    }
+
+    .fair-line {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .fair-line b { color: #fff; }
+
+    @media (max-width: 420px) {
+      .wp-stats-row,
+      .panel-row,
+      .controls-top { grid-template-columns: 1fr; }
+      .bet-badges { grid-template-columns: repeat(2,1fr); }
+      .recent-grid { grid-template-columns: repeat(2,1fr); }
+      .numbers-grid { grid-template-columns: repeat(3,1fr); }
+    }
+  </style>
 </head>
 <body>
-    <div class="app-wrapper">
-        <div class="wp-back-navigation-container">
-            <button class="wp-back-lobby-btn" id="wp-back-lobby-btn">← Лобби</button>
-        </div>
-
-        <div class="history-card-scroll" id="history-row"></div>
-
-        <div class="section-title">Lucky Numbers</div>
-        <div class="wp-lucky-slots-row" id="lucky-slots-row"></div>
-
-        <div class="wheel-display-zone">
-            <div class="wheel-canvas-container">
-                <div class="wheel-top-pin-pointer"></div>
-                <canvas id="wheel-render-canvas"></canvas>
-                <div class="wheel-center-digital-scoreboard">
-                    <div id="wp-center-emoji">🎡</div>
-                    <div id="wp-center-text">WHEEL PLUS</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="wp-stats-dashboard-card">
-            <div class="wp-stats-row"><span class="wp-stat-label">Ваш баланс</span><span class="wp-stat-value" id="balance-label">0 W</span></div>
-            <div class="wp-stats-row"><span class="wp-stat-label">Ваши ставки</span><span class="wp-stat-value" id="my-bet-label">0 W</span></div>
-            <div class="wp-stats-row"><span class="wp-stat-label">Участников</span><span class="wp-stat-value" id="players-count-label">0</span></div>
-        </div>
-
-        <div class="wp-stats-dashboard-card">
-            <div class="wp-bet-row">
-                <button class="wp-bet-button" id="bet-red-btn">Красное</button>
-                <button class="wp-bet-button" id="bet-black-btn">Чёрное</button>
-                <button class="wp-bet-button" id="bet-green-btn">0</button>
-            </div>
-            <div class="wp-bet-row">
-                <button class="wp-action-button" id="refresh-btn">Обновить</button>
-                <button class="wp-action-button" id="fair-btn">Проверка честности</button>
-            </div>
-        </div>
-
-        <div>
-            <div class="section-title">Игроки в комнате</div>
-            <div class="wp-players-card" id="players-list"></div>
-        </div>
-
-        <div>
-            <div class="section-title">Новые ставки</div>
-            <div class="wp-number-grid" id="number-grid"></div>
-        </div>
+  <div class="app-wrapper">
+    <div class="wp-back-navigation-container">
+      <button class="wp-back-lobby-btn" id="back-btn" type="button">← Лобби</button>
     </div>
 
-    <div class="wp-modal" id="fair-modal">
-        <div class="wp-modal-card">
-            <div class="wp-modal-head">
-                <div>
-                    <div class="wp-modal-title">Проверка честности</div>
-                    <div class="wp-modal-text" id="fair-modal-subtitle"></div>
-                </div>
-                <button class="wp-modal-close" id="fair-modal-close">×</button>
-            </div>
-            <div class="wp-modal-text" id="fair-modal-body"></div>
+    <div class="history-card-scroll" id="history-line"></div>
+
+    <div class="wp-stats-dashboard-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <div>
+          <div class="section-title">Wheel Plus</div>
+          <div style="font-size:14px;font-weight:900" id="lucky-title">Lucky Numbers</div>
+          <div class="numbers-sub">Текущий раунд и его множители</div>
         </div>
+        <div class="wp-stat-pill" style="min-width:150px"><span>Раунд</span><span id="round-index">#1</span></div>
+      </div>
+      <div class="wp-lucky-slots-row" id="lucky-row"></div>
     </div>
 
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script>
-        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-        const API_BASE = (window.WOG_CONFIG && window.WOG_CONFIG.API_BASE_URL) ? String(window.WOG_CONFIG.API_BASE_URL).replace(/\/$/, '') : '';
-        const CACHE_KEY = 'wog_secure_balance';
-        const state = {
-          balance: Number(localStorage.getItem(CACHE_KEY)) || 0,
-          initData: tg && tg.initData ? tg.initData : '',
-          players: [],
-          currentRound: null,
-          recentRounds: [],
-          selectedCell: '0',
-          fetchBusy: false,
-        };
-        const $ = (id) => document.getElementById(id);
-        const apiUrl = (path) => `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`;
-        function safeAlert(message){ if (tg && typeof tg.showAlert === 'function') tg.showAlert(String(message)); else alert(String(message)); }
-        async function postJson(path, payload){ const res = await fetch(apiUrl(path), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); let data = null; try { data = await res.json(); } catch(_) {} if(!res.ok) throw new Error((data && (data.detail || data.message)) || `Ошибка сервера (${res.status})`); return data; }
-        function fmt(n){ return Number(n || 0).toLocaleString('ru-RU'); }
-        function wheelColor(number, luckyNumbers) { if (String(number) === '0') return 'green'; if ((luckyNumbers || []).some((item) => String(item.number) === String(number))) return 'gold'; return 'blue'; }
-        function avatarLetter(name) { const text = String(name || 'W').trim(); return text ? text.charAt(0).toUpperCase() : 'W'; }
-        function setBalance(value) { state.balance = Math.max(0, Number(value) || 0); localStorage.setItem(CACHE_KEY, String(state.balance)); $('balance-label').textContent = `${fmt(state.balance)} W`; }
-        function setSelectedCell(cell) { state.selectedCell = String(cell); $('selected-cell').textContent = state.selectedCell; document.querySelectorAll('[data-cell]').forEach((btn) => { btn.classList.toggle('active', btn.dataset.cell === state.selectedCell); }); }
-        function updateCountdown(){ const el = $('countdown'); if (el) el.textContent = '00:00'; }
-        function renderLuckyNumbers(){ const row = $('lucky-slots-row'); const lucky = (state.currentRound && state.currentRound.lucky_numbers) ? state.currentRound.lucky_numbers : []; if (!row) return; row.innerHTML = (lucky.length ? lucky : [{ number: '—', multiplier: 0 }, { number: '—', multiplier: 0 }, { number: '—', multiplier: 0 }]).map((item) => `<div class="wp-slot-box"><div class="wp-bonus-number" style="color:${item.number === '—' ? 'var(--text-muted)' : 'var(--text-main)'}">${item.number}</div><div class="wp-bonus-multiplier ${item.multiplier === 50 ? 'wp-m50' : item.multiplier === 100 ? 'wp-m100' : 'wp-m300'}">x${item.multiplier || 0}</div></div>`).join(''); }
-        function renderWheelFace(){ const canvas = $('wheel-render-canvas'); if (!canvas) return; const ctx = canvas.getContext('2d'); const size = Math.min(canvas.clientWidth || 340, 340); canvas.width = size; canvas.height = size; ctx.clearRect(0,0,size,size); const lucky = (state.currentRound && state.currentRound.lucky_numbers) ? state.currentRound.lucky_numbers : []; const step = (Math.PI * 2) / 37; const numbers = Array.from({ length: 37 }, (_, i) => String(i)); numbers.forEach((num, idx) => { ctx.beginPath(); ctx.moveTo(size/2, size/2); ctx.arc(size/2, size/2, size/2 - 8, idx * step - Math.PI/2, (idx + 1) * step - Math.PI/2); ctx.closePath(); const color = wheelColor(num, lucky); ctx.fillStyle = color === 'green' ? '#10b981' : color === 'gold' ? '#f5b61b' : '#2563eb'; ctx.fill(); }); const center = size/2; ctx.beginPath(); ctx.arc(center, center, size*0.22, 0, Math.PI*2); ctx.fillStyle = '#090c15'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#29315c'; ctx.stroke(); }
-        function renderCurrentStats(){ const round = state.currentRound || {}; $('wp-center-text').textContent = state.currentRound && state.currentRound.status === 'settled' ? String(state.currentRound.result_number || 'WHEEL PLUS') : 'WHEEL PLUS'; $('my-bet-label').textContent = `${fmt(round.player_total_bet || 0)} W`; $('players-count-label').textContent = String((state.players || []).length || 0); renderLuckyNumbers(); renderWheelFace(); }
-        function renderPlayers(){ const list = $('players-list'); const players = state.players || []; if (!list) return; if (!players.length) { list.innerHTML = '<div class="wp-player-item"><div class="wp-player-left"><div class="wp-avatar">W</div><div class="wp-player-meta"><div class="wp-player-name">Пока никто не поставил</div><div class="wp-player-sub">Стань первым в этом раунде</div></div></div><div class="wp-bet-badge">0 W</div></div>'; return; } list.innerHTML = players.map((p) => `<div class="wp-player-item"><div class="wp-player-left"><div class="wp-avatar">${avatarLetter(p.username)}</div><div class="wp-player-meta"><div class="wp-player-name">${p.username}</div><div class="wp-player-sub">Баланс: ${fmt(p.balance)} W</div></div></div><div class="wp-bet-badge">${fmt(p.amount || p.total_bet || 0)} W</div></div>`).join(''); }
-        function renderNumbersGrid(){ const grid = $('number-grid'); const lucky = (state.currentRound && state.currentRound.lucky_numbers) ? state.currentRound.lucky_numbers : []; const luckyMap = new Map(lucky.map((item) => [String(item.number), Number(item.multiplier || 0)])); if (!grid) return; const numbers = Array.from({ length: 37 }, (_, i) => String(i)); grid.innerHTML = numbers.map((num) => { const color = wheelColor(num, lucky); const badge = luckyMap.has(num) ? `<div class="num-badge">x${luckyMap.get(num)}</div>` : ''; return `<button class="num-cell ${color}" data-cell="${num}" type="button"><span>${num}</span>${badge}</button>`; }).join(''); grid.querySelectorAll('[data-cell]').forEach((btn) => { btn.addEventListener('click', () => setSelectedCell(btn.dataset.cell || '0')); }); setSelectedCell(state.selectedCell || '0'); }
-        function renderRecentRounds(){ const items = (state.recentRounds || []).slice(0, 8); const history = $('history-row'); if (!history) return; history.innerHTML = items.map((round) => `<div class="hist-circle ${round.result_color || 'blue'}" data-round-id="${round.id}" title="Раунд #${round.round_index}">${round.result_number || '—'}</div>`).join(''); history.querySelectorAll('[data-round-id]').forEach((item) => item.addEventListener('click', () => openFairModal(Number(item.dataset.roundId)))); }
-        function renderEverything(snapshot){ state.currentRound = snapshot.current_round || state.currentRound; state.recentRounds = snapshot.recent_rounds || state.recentRounds; state.players = snapshot.players || state.players; if (typeof snapshot.balance !== 'undefined') setBalance(snapshot.balance); renderCurrentStats(); renderPlayers(); renderNumbersGrid(); renderRecentRounds(); updateCountdown(); }
-        async function loadRoom(){ if(state.fetchBusy) return; state.fetchBusy = true; try { const snapshot = await postJson('/api/wheel-plus/room', { init_data: state.initData }); renderEverything(snapshot); } catch (error) { console.error(error); safeAlert(error.message || 'Не удалось загрузить комнату'); } finally { state.fetchBusy = false; } }
-        async function placeBet(cellKey){ const amount = Math.floor(Number($('bet-amount') ? $('bet-amount').value : 0)); if (!Number.isFinite(amount) || amount <= 0) { safeAlert('Укажи корректную ставку'); return; } if (amount > state.balance) { safeAlert('Недостаточно W'); return; } try { const data = await postJson('/api/wheel-plus/bet', { init_data: state.initData, cell_key: String(cellKey), amount }); if (typeof data.balance !== 'undefined') setBalance(data.balance); if (data.room) state.room = data.room; if (data.current_round) state.currentRound = data.current_round; if (data.recent_rounds) state.recentRounds = data.recent_rounds; if (data.players) state.players = data.players; renderCurrentStats(); renderPlayers(); renderNumbersGrid(); renderRecentRounds(); safeAlert(`Ставка ${fmt(amount)} W на ${cellKey} принята`); } catch (error) { console.error(error); safeAlert(error.message || 'Не удалось поставить'); } }
-        async function openFairModal(roundId){ if (!roundId) return; try { const data = await postJson('/api/wheel-plus/reveal', { init_data: state.initData, round_id: roundId }); const fair = data.fair || {}; const round = data.round || {}; $('fair-modal-subtitle').textContent = `Раунд #${round.round_index || roundId}`; $('fair-modal-body').innerHTML = `<div class="wp-modal-text"><b>Результат:</b> ${fair.result_number || '—'} (${String(fair.result_color || '').toUpperCase() || '—'})</div><div class="wp-modal-text"><b>Server seed hash:</b> ${fair.server_seed_hash || '—'}</div><div class="wp-modal-text"><b>Server seed:</b> ${fair.server_seed || '—'}</div><div class="wp-modal-text"><b>Client seed:</b> ${fair.client_seed || '—'}</div><div class="wp-modal-text"><b>Nonce:</b> ${fair.nonce ?? '—'}</div><div class="wp-modal-text"><b>Lucky numbers:</b> ${(round.lucky_numbers || []).map((item) => `${item.number}×${item.multiplier}`).join(', ') || '—'}</div>`; $('fair-modal').style.display = 'flex'; } catch (error) { safeAlert(error.message || 'Раунд ещё не раскрыт'); } }
-        function closeFairModal(){ $('fair-modal').style.display = 'none'; }
-        function wireInputs(){ $('wp-back-lobby-btn').addEventListener('click', () => { window.location.href = 'index.html'; }); $('refresh-btn').addEventListener('click', loadRoom); $('fair-btn').addEventListener('click', () => { const round = state.currentRound; if (round && round.id) openFairModal(Number(round.id)); }); $('fair-modal-close').addEventListener('click', closeFairModal); $('fair-modal').addEventListener('click', (e) => { if (e.target === $('fair-modal')) closeFairModal(); }); $('bet-red-btn').addEventListener('click', () => setSelectedCell('red')); $('bet-black-btn').addEventListener('click', () => setSelectedCell('black')); $('bet-green-btn').addEventListener('click', () => setSelectedCell('0')); document.querySelectorAll('[data-chip]').forEach((chip) => { chip.addEventListener('click', () => { const current = Math.max(0, Number($('bet-amount').value || 0)); $('bet-amount').value = String(current + Number(chip.dataset.chip || 0)); }); }); }
-        function tick(){ updateCountdown(); }
-        function boot(){ if (tg && typeof tg.ready === 'function') tg.ready(); if (tg && typeof tg.expand === 'function') tg.expand(); wireInputs(); loadRoom(); state.refreshTimer = window.setInterval(loadRoom, 4000); state.countdownTimer = window.setInterval(tick, 1000); }
-        document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', boot, { once: true }) : boot();
-    </script>
+    <div class="wheel-display-zone">
+      <div class="wheel-canvas-container">
+        <div class="wheel-top-pin-pointer"></div>
+        <div id="wheel-render-canvas"></div>
+        <div class="wheel-center-digital-scoreboard">
+          <div id="wp-center-emoji">🎡</div>
+          <div id="wp-center-text">Ставки открыты</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wp-stats-dashboard-card">
+      <div class="wp-stats-row">
+        <div class="wp-stat-pill"><span>Осталось</span><span id="countdown">00:00</span></div>
+        <div class="wp-stat-pill"><span>Ставок</span><span id="round-bets">0 W</span></div>
+        <div class="wp-stat-pill"><span>Участников</span><span id="round-players">0</span></div>
+        <div class="wp-stat-pill"><span>Выплата</span><span id="round-payout">0 W</span></div>
+      </div>
+      <div class="wp-stats-row">
+        <div class="wp-stat-pill"><span>Ваш баланс</span><span id="balance">0 W</span></div>
+        <div class="wp-stat-pill"><span>Выбрано</span><span id="selected-cell">—</span></div>
+        <div class="wp-stat-pill"><span>Ваши ставки</span><span id="player-total-bet">0 W</span></div>
+        <div class="wp-stat-pill"><span>Статус</span><span id="room-status">betting</span></div>
+      </div>
+    </div>
+
+    <div class="controls-card">
+      <div class="controls-top">
+        <input id="bet-amount" class="bet-input" type="number" min="1" step="1" value="100" />
+        <button class="bet-btn" id="bet-now-btn" type="button">Поставить</button>
+      </div>
+      <div class="bet-badges">
+        <button class="chip" data-chip="10" type="button">+10</button>
+        <button class="chip" data-chip="100" type="button">+100</button>
+        <button class="chip" data-chip="1000" type="button">+1K</button>
+        <button class="chip" data-chip="25000" type="button">+25K</button>
+      </div>
+      <div class="result-box" id="result-box">Выбери число и поставь ставку.</div>
+    </div>
+
+    <div class="numbers-card">
+      <div class="numbers-head">
+        <div>
+          <div class="numbers-title">Сетка номеров</div>
+          <div class="numbers-sub">Нажми на число для ставки</div>
+        </div>
+        <div class="wp-stat-pill"><span>Онлайн</span><span id="online-count">0</span></div>
+      </div>
+      <div class="numbers-grid" id="numbers-grid"></div>
+    </div>
+
+    <div class="panel-row">
+      <div class="players-card">
+        <div class="players-head">
+          <div>
+            <div class="numbers-title">Игроки в комнате</div>
+            <div class="numbers-sub">Реальные ставки текущего раунда</div>
+          </div>
+        </div>
+        <div class="players-list" id="players-list"></div>
+      </div>
+
+      <div class="recent-card">
+        <div class="recent-head">
+          <div>
+            <div class="numbers-title">История</div>
+            <div class="numbers-sub">Нажми на прошлый раунд</div>
+          </div>
+        </div>
+        <div class="recent-grid" id="recent-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="fair-modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">Проверка честности</div>
+          <div class="numbers-sub" id="modal-subtitle">Раунд</div>
+        </div>
+        <button class="modal-close" id="modal-close" type="button">Закрыть</button>
+      </div>
+      <div class="fair-box" id="fair-content"></div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+      const API_BASE = (window.WOG_CONFIG && window.WOG_CONFIG.API_BASE_URL)
+        ? String(window.WOG_CONFIG.API_BASE_URL).replace(/\/$/, '')
+        : '';
+
+      const WHEEL_SEQUENCE = [
+        '0', '26', '16', '33', '11', '30', '8', '23', '5', '17', '1', '36',
+        '14', '28', '3', '21', '6', '25', '10', '34', '12', '19', '24', '7',
+        '29', '18', '32', '9', '22', '15', '35', '4', '27', '13', '31', '2',
+      ];
+
+      const RED_NUMBERS = new Set(['1','3','5','7','9','12','14','16','18','19','21','23','25','27','30','32','34','36']);
+      const BLACK_NUMBERS = new Set(['2','4','6','8','10','11','13','15','17','20','22','24','26','28','29','31','33','35']);
+      const BET_LABELS = {
+        number: 'Число', red: 'Красное', black: 'Чёрное', even: 'Чёт', odd: 'Нечёт', low: '1–18', high: '19–36',
+        dozen1: '1-я дюжина', dozen2: '2-я дюжина', dozen3: '3-я дюжина', column1: '1-й столбец', column2: '2-й столбец', column3: '3-й столбец',
+      };
+
+      const state = {
+        initData: tg && tg.initData ? tg.initData : '',
+        balance: Number(localStorage.getItem('wog_secure_balance')) || 0,
+        betType: 'number',
+        selectedNumber: '0',
+        spinning: false,
+        history: [],
+        room: null,
+        currentRound: null,
+        recentRounds: [],
+        players: [],
+        cellTotals: {},
+        selectedCell: '0',
+        fetchBusy: false,
+      };
+
+      const el = {};
+
+      function apiUrl(path) { return `${API_BASE}${path.startsWith('/') ? path : `/${path}`}`; }
+      function safeAlert(message) { const text = String(message); if (tg && typeof tg.showAlert === 'function') tg.showAlert(text); else alert(text); }
+      function setBalance(value) { state.balance = Math.max(0, Number(value) || 0); localStorage.setItem('wog_secure_balance', String(state.balance)); el.balance.textContent = `${state.balance.toLocaleString('ru-RU')} W`; }
+      function setStatus(message) { el.roomStatus.textContent = String(message || 'betting'); }
+      function colorOf(result) { const value = String(result); if (value === '0') return 'green'; if (RED_NUMBERS.has(value)) return 'red'; if (BLACK_NUMBERS.has(value)) return 'black'; return 'blue'; }
+      function wheelColor(number, luckyNumbers) { if (String(number) === '0') return 'green'; if ((luckyNumbers || []).some((item) => String(item.number) === String(number))) return 'gold'; return 'blue'; }
+      function avatarLetter(name) { const text = String(name || 'W').trim(); return text ? text.charAt(0).toUpperCase() : 'W'; }
+      function setSelectedCell(cell) { state.selectedCell = String(cell); el.selectedCell.textContent = state.selectedCell; document.querySelectorAll('[data-cell]').forEach((btn) => { btn.classList.toggle('active', btn.dataset.cell === state.selectedCell); }); }
+
+      function requestJson(path, payload) {
+        return fetch(apiUrl(path), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }).then(async (response) => {
+          let data = null;
+          try { data = await response.json(); } catch (_) {}
+          if (!response.ok) throw new Error((data && (data.detail || data.message)) ? (data.detail || data.message) : `Ошибка сервера (${response.status})`);
+          return data;
+        });
+      }
+
+      function updateCountdown() {
+        if (!state.currentRound || !state.currentRound.betting_ends_at) { el.countdown.textContent = '00:00'; return; }
+        const end = new Date(state.currentRound.betting_ends_at).getTime();
+        const left = Math.max(0, Math.floor((end - Date.now()) / 1000));
+        const mm = String(Math.floor(left / 60)).padStart(2, '0');
+        const ss = String(left % 60).padStart(2, '0');
+        el.countdown.textContent = `${mm}:${ss}`;
+        if (left <= 0 && !state.fetchBusy) loadRoom();
+      }
+
+      function renderHistory() {
+        const items = (state.recentRounds || []).slice(0, 10);
+        el.historyLine.innerHTML = items.map((round) => {
+          const color = String(round.result_color || 'blue');
+          const label = String(round.result_number || '—');
+          return `<div class="hist-circle ${color}" data-round-id="${round.id}" title="Раунд #${round.round_index}">${label}${round.total_payout > 0 ? '' : ''}</div>`;
+        }).join('');
+        el.historyLine.querySelectorAll('[data-round-id]').forEach((item) => {
+          item.addEventListener('click', () => openFairModal(Number(item.dataset.roundId)));
+        });
+      }
+
+      function renderLuckyNumbers() {
+        const lucky = (state.currentRound && state.currentRound.lucky_numbers) ? state.currentRound.lucky_numbers : [];
+        el.luckyRow.innerHTML = (lucky.length ? lucky : [{ number: '—', multiplier: 0 }, { number: '—', multiplier: 0 }, { number: '—', multiplier: 0 }]).map((item) => `
+          <div class="wp-slot-box">
+            <div class="wp-bonus-number">${item.number}</div>
+            <div class="wp-bonus-multiplier ${item.multiplier === 50 ? 'wp-m50' : item.multiplier === 100 ? 'wp-m100' : 'wp-m300'}">x${item.multiplier || 0}</div>
+          </div>
+        `).join('');
+        el.luckyTitle.textContent = `Lucky Numbers${lucky.length ? '' : ' — loading'}`;
+      }
+
+      function paintWheel() {
+        const lucky = (state.currentRound && state.currentRound.lucky_numbers) ? state.currentRound.lucky_numbers : [];
+        const step = 360 / WHEEL_SEQUENCE.length;
+        const parts = WHEEL_SEQUENCE.map((num, idx) => {
+          const from = idx * step;
+          const to = (idx + 1) * step;
+          const color = wheelColor(num, lucky);
+          const fill = color === 'green' ? '#10b981' : color === 'gold' ? '#f5b61b' : '#2563eb';
+          return `${fill} ${from}deg ${to}deg`;
+        }).join(', ');
+        el.wheel.style.background = `conic-gradient(${parts})`;
+      }
+
+      function spinWheelToResult(result) {
+        if (!el.wheel) return;
+        const index = Math.max(0, WHEEL_SEQUENCE.indexOf(String(result)));
+        const segment = 360 / WHEEL_SEQUENCE.length;
+        const spins = 7;
+        const landing = (360 - (index * segment) - (segment / 2));
+        const current = Number((el.wheel.dataset.rotation || '0')) || 0;
+        const next = current + (spins * 360) + landing;
+        el.wheel.dataset.rotation = String(next);
+        el.wheel.style.transform = `rotate(${next}deg)`;
+      }
+
+      function renderCurrentStats() {
+        const round = state.currentRound || {};
+        el.roomSubtitle.textContent = state.room ? `${state.room.title} • ${state.room.status} • раунд ${state.room.round_index}` : 'Загрузка комнаты…';
+        el.roundIndex.textContent = `#${round.round_index || state.room?.round_index || 1}`;
+        el.roundBets.textContent = `${Number(round.total_bet || 0).toLocaleString('ru-RU')} W`;
+        el.roundPayout.textContent = `${Number(round.total_payout || 0).toLocaleString('ru-RU')} W`;
+        el.roundPlayers.textContent = String((state.players || []).length || 0);
+        el.onlineCount.textContent = String((state.players || []).length || 0);
+        el.playerTotalBet.textContent = `${Number(round.player_total_bet || 0).toLocaleString('ru-RU')} W`;
+        el.centerText.textContent = state.currentRound && state.currentRound.status === 'settled' ? 'Раунд завершён' : 'Ставки открыты';
+        el.centerEmoji.textContent = state.currentRound && state.currentRound.result_number ? state.currentRound.result_number : '🎡';
+        el.resultBox.innerHTML = state.currentRound && state.currentRound.result_number
+          ? `🎉 Выпало <b>${state.currentRound.result_number}</b>. ${state.currentRound.result_color ? `Цвет: <b>${state.currentRound.result_color}</b>.` : ''}`
+          : 'Выбери число и поставь ставку.';
+        renderLuckyNumbers();
+        paintWheel();
+      }
+
+      function renderPlayers() {
+        const players = state.players || [];
+        if (!players.length) {
+          el.playersList.innerHTML = '<div class="player-item"><div class="player-left"><div class="avatar">W</div><div class="player-meta"><div class="player-name">Пока никто не поставил</div><div class="player-sub">Стань первым в этом раунде</div></div></div><div class="bet-badge">0 W</div></div>';
+          return;
+        }
+        el.playersList.innerHTML = players.map((p) => `
+          <div class="player-item">
+            <div class="player-left">
+              <div class="avatar">${avatarLetter(p.username)}</div>
+              <div class="player-meta">
+                <div class="player-name">${p.username}</div>
+                <div class="player-sub">Баланс: ${Number(p.balance || 0).toLocaleString('ru-RU')} W</div>
+              </div>
+            </div>
+            <div class="bet-badge">${Number(p.amount || p.total_bet || 0).toLocaleString('ru-RU')} W</div>
+          </div>
+        `).join('');
+      }
+
+      function renderNumbersGrid() {
+        const lucky = (state.currentRound && state.currentRound.lucky_numbers) ? state.currentRound.lucky_numbers : [];
+        const luckyMap = new Map(lucky.map((item) => [String(item.number), Number(item.multiplier || 0)]));
+        const numbers = Array.from({ length: 37 }, (_, i) => String(i));
+        el.numbersGrid.innerHTML = numbers.map((num) => {
+          const color = wheelColor(num, lucky);
+          const badge = luckyMap.has(num) ? `<div class="badge">x${luckyMap.get(num)}</div>` : '';
+          const amount = Number((state.cellTotals && state.cellTotals[num]) || 0);
+          return `<button class="num-btn ${color}" data-cell="${num}" type="button"><span>${num}</span>${badge}<div class="amount">${amount ? `${amount.toLocaleString('ru-RU')} W` : 'ставка'}</div></button>`;
+        }).join('');
+        el.numbersGrid.querySelectorAll('[data-cell]').forEach((btn) => {
+          btn.addEventListener('click', () => placeBet(btn.dataset.cell || '0'));
+        });
+        setSelectedCell(state.selectedCell || '0');
+      }
+
+      function renderRecentRounds() {
+        const rounds = (state.recentRounds || []).slice(0, 8);
+        el.recentGrid.innerHTML = rounds.map((round) => `
+          <div class="recent-card-item ${round.result_color || 'blue'}" data-fair-round="${round.id}">
+            <div class="recent-number">${round.result_number || '—'}</div>
+            <div class="recent-meta">#${round.round_index}</div>
+            <div class="recent-meta">${round.status === 'settled' ? 'fair' : 'live'}</div>
+          </div>
+        `).join('');
+        el.recentGrid.querySelectorAll('[data-fair-round]').forEach((card) => {
+          card.addEventListener('click', () => openFairModal(Number(card.dataset.fairRound)));
+        });
+      }
+
+      function renderEverything(snapshot) {
+        state.room = snapshot.room || state.room;
+        state.currentRound = snapshot.current_round || state.currentRound;
+        state.recentRounds = snapshot.recent_rounds || state.recentRounds;
+        state.players = snapshot.players || snapshot.live_players || state.players;
+        state.cellTotals = snapshot.cell_totals || state.cellTotals;
+        if (typeof snapshot.balance !== 'undefined') setBalance(snapshot.balance);
+        renderHistory();
+        renderCurrentStats();
+        renderPlayers();
+        renderNumbersGrid();
+        renderRecentRounds();
+        updateCountdown();
+      }
+
+      async function loadRoom() {
+        if (state.fetchBusy) return;
+        state.fetchBusy = true;
+        try {
+          const snapshot = await requestJson('/api/wheel-plus/room', { init_data: state.initData });
+          renderEverything(snapshot);
+        } catch (error) {
+          console.error(error);
+          safeAlert(error.message || 'Не удалось загрузить комнату');
+        } finally {
+          state.fetchBusy = false;
+        }
+      }
+
+      async function placeBet(cellKey) {
+        const amount = Math.floor(Number(el.betAmount.value || 0));
+        if (!Number.isFinite(amount) || amount <= 0) { safeAlert('Укажи корректную ставку'); return; }
+        if (amount > state.balance) { safeAlert('Недостаточно W'); return; }
+        state.selectedCell = String(cellKey);
+        el.selectedCell.textContent = state.selectedCell;
+        try {
+          const data = await requestJson('/api/wheel-plus/bet', { init_data: state.initData, cell_key: String(cellKey), amount });
+          if (typeof data.balance !== 'undefined') setBalance(data.balance);
+          if (data.room) state.room = data.room;
+          if (data.current_round) state.currentRound = data.current_round;
+          if (data.recent_rounds) state.recentRounds = data.recent_rounds;
+          if (data.players) state.players = data.players;
+          if (data.cell_totals) state.cellTotals = data.cell_totals;
+          renderCurrentStats();
+          renderPlayers();
+          renderNumbersGrid();
+          renderRecentRounds();
+          safeAlert(`Ставка ${amount.toLocaleString('ru-RU')} W на ${cellKey} принята`);
+        } catch (error) {
+          console.error(error);
+          safeAlert(error.message || 'Не удалось поставить');
+        }
+      }
+
+      async function openFairModal(roundId) {
+        if (!roundId) return;
+        try {
+          const data = await requestJson('/api/wheel-plus/reveal', { init_data: state.initData, round_id: roundId });
+          const fair = data.fair || {};
+          const round = data.round || {};
+          el.modalSubtitle.textContent = `Раунд #${round.round_index || roundId}`;
+          el.fairContent.innerHTML = `
+            <div class="fair-line"><b>Результат:</b> ${fair.result_number || '—'} (${String(fair.result_color || '').toUpperCase() || '—'})</div>
+            <div class="fair-line"><b>Server seed hash:</b> ${fair.server_seed_hash || '—'}</div>
+            <div class="fair-line"><b>Server seed:</b> ${fair.server_seed || '—'}</div>
+            <div class="fair-line"><b>Client seed:</b> ${fair.client_seed || '—'}</div>
+            <div class="fair-line"><b>Nonce:</b> ${fair.nonce ?? '—'}</div>
+            <div class="fair-line"><b>Total bet:</b> ${Number(round.total_bet || 0).toLocaleString('ru-RU')} W</div>
+            <div class="fair-line"><b>Total payout:</b> ${Number(round.total_payout || 0).toLocaleString('ru-RU')} W</div>
+            <div class="fair-line"><b>Lucky numbers:</b> ${(round.lucky_numbers || []).map((item) => `${item.number}×${item.multiplier}`).join(', ') || '—'}</div>
+          `;
+          el.fairModal.style.display = 'flex';
+        } catch (error) {
+          safeAlert(error.message || 'Раунд ещё не раскрыт');
+        }
+      }
+
+      function closeFairModal() { el.fairModal.style.display = 'none'; }
+
+      function wireInputs() {
+        el.backBtn.addEventListener('click', () => { window.location.href = 'index.html'; });
+        el.betNowBtn.addEventListener('click', () => placeBet(state.selectedCell || '0'));
+        el.modalClose.addEventListener('click', closeFairModal);
+        el.fairModal.addEventListener('click', (e) => { if (e.target === el.fairModal) closeFairModal(); });
+        document.querySelectorAll('[data-chip]').forEach((chip) => {
+          chip.addEventListener('click', () => {
+            const current = Math.max(0, Number(el.betAmount.value || 0));
+            el.betAmount.value = String(current + Number(chip.dataset.chip || 0));
+          });
+        });
+      }
+
+      function tick() { updateCountdown(); if (state.currentRound && state.currentRound.betting_ends_at) { const end = new Date(state.currentRound.betting_ends_at).getTime(); if (end - Date.now() <= 0 && !state.fetchBusy) loadRoom(); } }
+
+      function boot() {
+        el.backBtn = document.getElementById('back-btn');
+        el.historyLine = document.getElementById('history-line');
+        el.luckyTitle = document.getElementById('lucky-title');
+        el.luckyRow = document.getElementById('lucky-row');
+        el.wheel = document.getElementById('wheel-render-canvas');
+        el.centerEmoji = document.getElementById('wp-center-emoji');
+        el.centerText = document.getElementById('wp-center-text');
+        el.roomSubtitle = document.getElementById('room-status');
+        el.roundIndex = document.getElementById('round-index');
+        el.roundBets = document.getElementById('round-bets');
+        el.roundPlayers = document.getElementById('round-players');
+        el.roundPayout = document.getElementById('round-payout');
+        el.balance = document.getElementById('balance');
+        el.selectedCell = document.getElementById('selected-cell');
+        el.playerTotalBet = document.getElementById('player-total-bet');
+        el.countdown = document.getElementById('countdown');
+        el.betAmount = document.getElementById('bet-amount');
+        el.betNowBtn = document.getElementById('bet-now-btn');
+        el.numbersGrid = document.getElementById('numbers-grid');
+        el.playersList = document.getElementById('players-list');
+        el.recentGrid = document.getElementById('recent-grid');
+        el.onlineCount = document.getElementById('online-count');
+        el.resultBox = document.getElementById('result-box');
+        el.fairModal = document.getElementById('fair-modal');
+        el.modalClose = document.getElementById('modal-close');
+        el.modalSubtitle = document.getElementById('modal-subtitle');
+        el.fairContent = document.getElementById('fair-content');
+        el.roomStatus = document.getElementById('room-status');
+
+        wireInputs();
+        if (tg && typeof tg.ready === 'function') tg.ready();
+        if (tg && typeof tg.expand === 'function') tg.expand();
+        loadRoom();
+        state.refreshTimer = window.setInterval(loadRoom, 4000);
+        state.countdownTimer = window.setInterval(tick, 1000);
+      }
+
+      document.readyState === 'loading'
+        ? document.addEventListener('DOMContentLoaded', boot, { once: true })
+        : boot();
+    })();
+  </script>
 </body>
 </html>
