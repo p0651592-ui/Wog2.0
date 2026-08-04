@@ -14,14 +14,22 @@ if [[ -f .env ]]; then
 fi
 
 HOST="${HOST:-127.0.0.1}"
-PORT="${PORT:-8000}"
+PORT="${PORT:-10000}"
+
+UVICORN_ARGS=(
+  main:app
+  --host "${HOST}"
+  --port "${PORT}"
+  --proxy-headers
+  --forwarded-allow-ips 127.0.0.1,::1
+)
 
 if [[ -x "${VENV_BIN}/uvicorn" ]]; then
-  exec "${VENV_BIN}/uvicorn" main:app --host "${HOST}" --port "${PORT}"
+  exec "${VENV_BIN}/uvicorn" "${UVICORN_ARGS[@]}"
 fi
 
 if command -v uvicorn >/dev/null 2>&1; then
-  exec uvicorn main:app --host "${HOST}" --port "${PORT}"
+  exec uvicorn "${UVICORN_ARGS[@]}"
 fi
 
 echo "uvicorn is not installed" >&2
