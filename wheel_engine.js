@@ -1,148 +1,298 @@
-// ============================================================================
-// WOG Wheel Plus engine
-// Cleaned version: stable state, safe DOM access, configurable backend calls
-// ============================================================================
+(() => {
+  const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+  const API_BASE = (window.WOG_CONFIG && window.WOG_CONFIG.API_BASE_URL)
+    ? String(window.WOG_CONFIG.API_BASE_URL).replace(/\/$/, '')
+    : (window.WOG_API_BASE || localStorage.getItem('wog_api_base') || '').replace(/\/$/, '');
 
-const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-const API_BASE = (window.WOG_API_BASE || localStorage.getItem('wog_api_base') || '').replace(/\/$/, '');
-const MY_ADMIN_ID = 6682822292;
+  const POLL_INTERVAL_MS = 1000;
+  const WHEEL_SEQUENCE = [
+    '0', '28', '9', '26', '30', '11', '7', '20', '32', '17', '5', '22',
+    '34', '15', '3', '24', '36', '13', '1', '00', '27', '10', '25', '29',
+    '12', '8', '19', '31', '18', '6', '21', '33', '16', '4', '23', '35',
+    '14', '2',
+  ];
 
-const WHEEL_NUMBERS = [
-    0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10,
-    5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
-];
+  const RED_NUMBERS = new Set(['1', '3', '5', '7', '9', '12', '14', '16', '18', '19', '21', '23', '25', '27', '30', '32', '34', '36']);
+  const BLACK_NUMBERS = new Set(['2', '4', '6', '8', '10', '11', '13', '15', '17', '20', '22', '24', '26', '28', '29', '31', '33', '35']);
 
-const NUMBER_COLORS = {
-    0: 'green', 1: 'red', 2: 'black', 3: 'red', 4: 'black', 5: 'red',
-    6: 'black', 7: 'red', 8: 'black', 9: 'red', 10: 'black', 11: 'black',
-    12: 'red', 13: 'black', 14: 'red', 15: 'black', 16: 'red', 17: 'black',
-    18: 'red', 19: 'red', 20: 'black', 21: 'red', 22: 'black', 23: 'red',
-    24: 'black', 25: 'red', 26: 'black', 27: 'red', 28: 'black', 29: 'black',
-    30: 'red', 31: 'black', 32: 'red', 33: 'black', 34: 'red', 35: 'black', 36: 'red'
-};
+  const BET_LABELS = {
+    red: 'Красное',
+    black: 'Чёрное',
+    even: 'Чёт',
+    odd: 'Нечёт',
+    low: '1–18',
+    high: '19–36',
+    doz1: '1-я дюжина',
+    doz2: '2-я дюжина',
+    doz3: '3-я дюжина',
+    column1: '1-й столбец',
+    column2: '2-й столбец',
+    column3: '3-й столбец',
+    num0: '0',
+    zero: '0',
+  };
 
-const MULTIPLIER_OPTIONS = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500];
+  const CELL_TO_ID = {
+    red: 'cell-red',
+    black: 'cell-black',
+    even: 'cell-even',
+    odd: 'cell-odd',
+    low: 'cell-low',
+    high: 'cell-high',
+    doz1: 'cell-doz1',
+    doz2: 'cell-doz2',
+    doz3: 'cell-doz3',
+    zero: 'cell-zero',
+    num0: 'cell-num0',
+  };
 
-const state = {
-    userId: MY_ADMIN_ID,
+  const state = {
+    initData: tg && tg.initData ? tg.initData : '',
+    userId: tg && tg.initDataUnsafe && tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 0,
     username: 'Guest_Player',
     firstName: 'Guest',
     photoUrl: '',
-    playerBalance: 0,
-    activeBetAmount: 100,
-    currentRoundBets: {},
-    totalRoundBetSum: 0,
-    isGameSessionActive: false,
-    countdownTimerInterval: null,
-    secondsRemaining: 20,
-    roundSecretSalt: '',
-    roundWinningNumber: 0,
-    roundLuckyNumbersList: [],
-    currentWheelRotationAngle: 0,
-    ballCurrentPhysicsAngle: 0,
-};
+    balance: 0,
+    profile: null,
+    room: null,
+    round: null,
+    history: [],
+    historyMap: new Map(),
+    livePlayers: [],
+    cellTotals: {},
+    pollTimer: null,
+    started: false,
+    settling: false,
+    lastSeenSettledRoundId: 0,
+    wheelRotation: 0,
+    modalMode: 'result',
+  };
 
-const WogLogger = {
-    info: (msg, data = '') => console.log(`[WOG-INFO] [${new Date().toISOString()}] ${msg}`, data),
-    warn: (msg, data = '') => console.warn(`[WOG-WARN] [${new Date().toISOString()}] ${msg}`, data),
-    error: (msg, err = '') => console.error(`[WOG-ERROR] [${new Date().toISOString()}] ${msg}`, err),
-};
+  const $ = (id) => document.getElementById(id);
 
-function el(id) {
-    return document.getElementById(id);
-}
+  function apiUrl(path) {
+    return API_BASE ? `${API_BASE}${path.startsWith('/') ? path : `/${path}`}` : path;
+  }
 
-function apiUrl(path) {
-    return API_BASE ? `${API_BASE}${path}` : path;
-}
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
-function safeJson(res) {
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
-}
+  function formatMoney(value) {
+    return Number(value || 0).toLocaleString('ru-RU');
+  }
 
-function setText(id, value) {
-    const node = el(id);
-    if (node) node.innerText = value;
-}
+  function formatPlayerName(player) {
+    return player?.name || player?.username || 'noname';
+  }
 
-function setHtml(id, value) {
-    const node = el(id);
-    if (node) node.innerHTML = value;
-}
-
-function triggerHaptic(kind = 'light') {
-    try {
-        if (tg && tg.HapticFeedback && typeof tg.HapticFeedback.impactOccurred === 'function' && kind === 'light') {
-            tg.HapticFeedback.impactOccurred('light');
-        } else if (tg && tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function' && kind !== 'light') {
-            tg.HapticFeedback.notificationOccurred(kind);
-        }
-    } catch (err) {
-        WogLogger.warn('Haptic feedback failed', err);
+  function safeAlert(message) {
+    const text = String(message);
+    if (tg && typeof tg.showAlert === 'function') {
+      tg.showAlert(text);
+    } else {
+      alert(text);
     }
-}
+  }
 
-function setupTelegram() {
+  function notify(message) {
+    const text = String(message);
+    if (tg && typeof tg.showPopup === 'function') {
+      tg.showPopup({ title: 'WOG', message: text, buttons: [{ type: 'ok', text: 'Ок' }] });
+    } else {
+      safeAlert(text);
+    }
+  }
+
+  function triggerHaptic(kind = 'light') {
+    try {
+      if (!tg || !tg.HapticFeedback) return;
+      if (kind === 'light' && typeof tg.HapticFeedback.impactOccurred === 'function') {
+        tg.HapticFeedback.impactOccurred('light');
+      } else if (typeof tg.HapticFeedback.notificationOccurred === 'function') {
+        tg.HapticFeedback.notificationOccurred(kind);
+      }
+    } catch (_) {
+      /* no-op */
+    }
+  }
+
+  async function requestJson(path, payload) {
+    const response = await fetch(apiUrl(path), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    let data = null;
+    try {
+      data = await response.json();
+    } catch (_) {
+      data = null;
+    }
+
+    if (!response.ok) {
+      throw new Error((data && (data.detail || data.message)) ? (data.detail || data.message) : `Ошибка сервера (${response.status})`);
+    }
+
+    return data;
+  }
+
+  function setText(id, value) {
+    const node = $(id);
+    if (node) node.innerText = value;
+  }
+
+  function setHtml(id, value) {
+    const node = $(id);
+    if (node) node.innerHTML = value;
+  }
+
+  function setBalance(value) {
+    state.balance = Math.max(0, Number(value) || 0);
+    setText('wp-balance-display', `${formatMoney(state.balance)} W`);
+  }
+
+  function setTotalBet(value) {
+    setText('wp-player-total-bet', `${formatMoney(value || 0)} W`);
+  }
+
+  function setProfile(profile) {
+    state.profile = profile || null;
+    if (!profile) return;
+
+    if (profile.telegram_id !== undefined && profile.telegram_id !== null) {
+      state.userId = Number(profile.telegram_id) || state.userId;
+    }
+    if (profile.username) state.username = profile.username;
+    if (profile.first_name) state.firstName = profile.first_name;
+  }
+
+  function setupTelegram() {
     if (!tg) return;
     try {
-        tg.expand();
-        tg.ready();
-        if (tg.BackButton) {
-            tg.BackButton.show();
-            tg.BackButton.offClick();
-            tg.BackButton.onClick(exitRouletteToLobby);
-        }
-        if (typeof tg.enableClosingConfirmation === 'function') {
-            tg.enableClosingConfirmation();
-        }
-    } catch (err) {
-        WogLogger.error('Telegram init failed', err);
+      tg.expand();
+      tg.ready();
+      if (tg.BackButton) {
+        tg.BackButton.show();
+        tg.BackButton.offClick();
+        tg.BackButton.onClick(exitRouletteToLobby);
+      }
+      if (typeof tg.enableClosingConfirmation === 'function') {
+        tg.enableClosingConfirmation();
+      }
+    } catch (_) {
+      /* no-op */
     }
 
     if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-        const user = tg.initDataUnsafe.user;
-        state.userId = user.id || MY_ADMIN_ID;
-        state.username = user.username || user.first_name || 'User';
-        state.firstName = user.first_name || 'User';
-        state.photoUrl = user.photo_url || '';
+      const user = tg.initDataUnsafe.user;
+      state.userId = user.id || state.userId;
+      state.username = user.username || user.first_name || state.username;
+      state.firstName = user.first_name || state.firstName;
+      state.photoUrl = user.photo_url || '';
     }
-}
+  }
 
-function renderProfile() {
-    const avatar = el('avatar-container');
+  function renderProfile() {
+    const avatar = $('avatar-container');
     if (avatar) {
-        if (state.photoUrl) {
-            avatar.innerHTML = `<img src="${state.photoUrl}" class="avatar-img" alt="Avatar">`;
-        } else {
-            avatar.innerText = state.firstName ? state.firstName.charAt(0).toUpperCase() : 'W';
-        }
+      if (state.photoUrl) {
+        avatar.innerHTML = `<img src="${escapeHtml(state.photoUrl)}" class="avatar-img" alt="Avatar">`;
+      } else {
+        avatar.innerText = state.firstName ? state.firstName.charAt(0).toUpperCase() : 'W';
+      }
     }
 
-    const usernameDisplay = el('username-display');
+    const usernameDisplay = $('username-display');
     if (usernameDisplay) {
-        usernameDisplay.innerText = state.firstName + (state.username && state.username !== state.firstName ? ` (@${state.username})` : '');
+      usernameDisplay.innerText = state.username
+        ? `${state.firstName}${state.username && state.username !== state.firstName ? ` (@${state.username})` : ''}`
+        : state.firstName;
     }
 
-    const statusDisplay = el('status-display');
+    const statusDisplay = $('status-display');
     if (statusDisplay) {
-        if (Number(state.userId) === MY_ADMIN_ID) {
-            statusDisplay.innerText = 'ADMIN';
-            statusDisplay.style.color = 'var(--neon-gold)';
-        } else {
-            statusDisplay.innerText = 'PLAYER';
-            statusDisplay.style.color = 'var(--text-muted)';
-        }
+      statusDisplay.innerText = state.profile?.status || 'PLAYER';
+      statusDisplay.style.color = state.profile?.status === 'blocked' ? 'var(--neon-red)' : 'var(--text-muted)';
     }
 
-    const adminBtn = el('admin-trigger-btn');
+    const adminBtn = $('admin-trigger-btn');
     if (adminBtn) {
-        adminBtn.style.display = Number(state.userId) === MY_ADMIN_ID ? 'block' : 'none';
+      const isAdmin = state.profile?.role ? ['admin', 'owner'].includes(String(state.profile.role).toLowerCase()) : Number(state.userId) === 6682822292;
+      adminBtn.style.display = isAdmin ? 'block' : 'none';
     }
-}
+  }
 
-function buildNumbersKeyboardLayout() {
-    const container = el('wp-num-keys-generator-box');
+  function drawWheelCanvas() {
+    const canvas = $('wheel-render-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const size = canvas.width;
+    const center = size / 2;
+    const radius = center - 12;
+    const step = (Math.PI * 2) / WHEEL_SEQUENCE.length;
+
+    ctx.clearRect(0, 0, size, size);
+    ctx.save();
+    ctx.translate(center, center);
+    ctx.rotate((-Math.PI / 2) + (state.wheelRotation * Math.PI / 180));
+
+    WHEEL_SEQUENCE.forEach((num, index) => {
+      const start = index * step;
+      const end = start + step;
+      const color = num === '0' || num === '00' ? '#05c46b' : RED_NUMBERS.has(num) ? '#ff3838' : '#1e2336';
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.arc(0, 0, radius, start, end);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      ctx.save();
+      ctx.rotate(start + (step / 2));
+      ctx.translate(radius * 0.70, 0);
+      ctx.rotate(Math.PI / 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(num), 0, 0);
+      ctx.restore();
+    });
+
+    ctx.restore();
+
+    ctx.beginPath();
+    ctx.arc(center, center, center * 0.37, 0, Math.PI * 2);
+    ctx.fillStyle = '#090c15';
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#222938';
+    ctx.stroke();
+  }
+
+  function animateWheelToResult(resultNumber) {
+    const canvas = $('wheel-render-canvas');
+    if (!canvas) return;
+    const index = Math.max(0, WHEEL_SEQUENCE.indexOf(String(resultNumber)));
+    const step = 360 / WHEEL_SEQUENCE.length;
+    const spins = 6;
+    const landing = 360 - (index * step) - (step / 2);
+    state.wheelRotation += (spins * 360) + landing;
+    canvas.style.transition = 'transform 4.8s cubic-bezier(.15,.85,.08,1)';
+    canvas.style.transform = `rotate(${state.wheelRotation}deg)`;
+  }
+
+  function buildNumbersKeyboardLayout() {
+    const container = $('wp-num-keys-generator-box');
     if (!container) return;
 
     container.innerHTML = '';
@@ -154,626 +304,492 @@ function buildNumbersKeyboardLayout() {
     zeroBtn.onclick = () => placeBetOnCell('num0');
     container.appendChild(zeroBtn);
 
-    for (let i = 1; i <= 36; i++) {
-        const btn = document.createElement('button');
-        const btnColorClass = NUMBER_COLORS[i] === 'red' ? 'wp-btn-red' : 'wp-btn-black';
-        btn.className = `wp-bet-trigger-btn ${btnColorClass}`;
-        btn.id = `cell-num${i}`;
-        btn.innerHTML = `${i} <span class="wp-badge-x">x30</span>`;
-        btn.onclick = () => placeBetOnCell(`num${i}`);
-        container.appendChild(btn);
+    for (let i = 1; i <= 36; i += 1) {
+      const btn = document.createElement('button');
+      const btnColorClass = RED_NUMBERS.has(String(i)) ? 'wp-btn-red' : 'wp-btn-black';
+      btn.className = `wp-bet-trigger-btn ${btnColorClass}`;
+      btn.id = `cell-num${i}`;
+      btn.innerHTML = `${i} <span class="wp-badge-x">x30</span>`;
+      btn.onclick = () => placeBetOnCell(`num${i}`);
+      container.appendChild(btn);
     }
-}
+  }
 
-function formatCasinoValue(num) {
-    const value = Number(num) || 0;
-    if (value >= 1.0e+12) return (value / 1.0e+12).toFixed(1).replace(/\.0$/, '') + 'T';
-    if (value >= 1.0e+9) return (value / 1.0e+9).toFixed(1).replace(/\.0$/, '') + 'B';
-    if (value >= 1.0e+6) return (value / 1.0e+6).toFixed(1).replace(/\.0$/, '') + 'M';
-    if (value >= 1.0e+3) return (value / 1.0e+3).toFixed(1).replace(/\.0$/, '') + 'K';
-    return String(value);
-}
+  function ensureLivePlayersPanel() {
+    const chips = document.querySelector('.wp-quick-chips-grid');
+    if (!chips) return null;
 
-function refreshUI() {
-    setText('wp-balance-display', state.playerBalance);
-    setText('wp-player-total-bet', `${state.totalRoundBetSum} W`);
-    setText('wp-bet-field-value', state.activeBetAmount);
-}
-
-async function syncBalanceFromServer() {
-    if (!tg || !tg.initData) return;
-
-    try {
-        const res = await fetch(apiUrl('/api/user'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                id: state.userId,
-                first_name: state.firstName,
-                username: state.username,
-                photo_url: state.photoUrl,
-                auth_data: tg.initData,
-            }),
-        });
-
-        const data = await safeJson(res);
-        if (data && data.balance !== undefined) {
-            state.playerBalance = Number(data.balance) || 0;
-            refreshUI();
-        }
-    } catch (err) {
-        WogLogger.warn('Balance sync failed', err);
-    }
-}
-
-async function adjustRemoteBalance(delta) {
-    if (!tg || !tg.initData || !delta) return;
-    try {
-        const res = await fetch(apiUrl('/api/balance'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: state.userId, amount: delta }),
-        });
-        const data = await safeJson(res);
-        if (data && data.balance !== undefined) {
-            state.playerBalance = Number(data.balance) || state.playerBalance;
-            refreshUI();
-        }
-    } catch (err) {
-        WogLogger.warn('Remote balance update failed', err);
-    }
-}
-
-function modifyBetSize(action) {
-    if (state.isGameSessionActive && state.secondsRemaining <= 0) return;
-    const field = el('wp-bet-field');
-    if (!field) return;
-
-    let current = parseInt(field.value, 10);
-    if (!Number.isFinite(current) || current <= 0) current = state.activeBetAmount || 100;
-
-    if (action === 'x2') current = Math.min(state.playerBalance, current * 2);
-    if (action === '/2') current = Math.max(10, Math.floor(current / 2));
-
-    state.activeBetAmount = current;
-    field.value = current;
-}
-
-function addChipValue(amount) {
-    if (state.isGameSessionActive && state.secondsRemaining <= 0) return;
-    const field = el('wp-bet-field');
-    if (!field) return;
-
-    const add = Number(amount) || 0;
-    let current = parseInt(field.value, 10);
-    if (!Number.isFinite(current) || current < 0) current = 0;
-
-    let next = current + add;
-    if (next > state.playerBalance) next = state.playerBalance;
-
-    state.activeBetAmount = next;
-    field.value = next;
-}
-
-function toggleKeyboardLayout(layoutName) {
-    const mainView = el('wp-main-table-view');
-    const numKeysView = el('wp-numbers-keyboard-view');
-    if (!mainView || !numKeysView) return;
-
-    if (layoutName === 'numbers') {
-        mainView.style.display = 'none';
-        numKeysView.style.display = 'grid';
-    } else {
-        mainView.style.display = 'flex';
-        numKeysView.style.display = 'none';
-    }
-}
-
-function placeBetOnCell(cellId) {
-    if (state.isGameSessionActive && state.secondsRemaining <= 0) return;
-
-    const field = el('wp-bet-field');
-    if (!field) return;
-
-    const bet = parseInt(field.value, 10) || 0;
-    if (bet <= 0 || state.playerBalance < bet) return;
-
-    state.activeBetAmount = bet;
-    state.currentRoundBets[cellId] = (state.currentRoundBets[cellId] || 0) + bet;
-    state.playerBalance -= bet;
-    state.totalRoundBetSum += bet;
-
-    const targetBtn = el(`cell-${cellId}`);
-    if (targetBtn) {
-        targetBtn.classList.add('wp-bet-active-glow', 'has-bets-placed');
-        let chip = targetBtn.querySelector('.wp-live-chip-badge');
-        if (!chip) {
-            chip = document.createElement('div');
-            chip.className = 'wp-live-chip-badge';
-            targetBtn.appendChild(chip);
-        }
-        chip.innerText = formatCasinoValue(state.currentRoundBets[cellId]);
+    let panel = $('wp-live-players-panel');
+    if (!panel) {
+      panel = document.createElement('div');
+      panel.id = 'wp-live-players-panel';
+      panel.style.cssText = 'background: var(--bg-card); border: 1px solid var(--border-neon); border-radius: var(--radius-premium); padding: 12px; display:flex; flex-direction:column; gap:10px; width:100%;';
+      panel.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+          <div style="font-size:13px;font-weight:900;color:var(--text-main);">Реальные игроки в комнате</div>
+          <div id="wp-room-live-count" style="font-size:11px;font-weight:800;color:var(--text-muted);">0 игроков</div>
+        </div>
+        <div id="wp-room-live-list" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;"></div>
+      `;
+      chips.insertAdjacentElement('afterend', panel);
     }
 
-    refreshUI();
+    return panel;
+  }
+
+  function renderLivePlayers(players) {
+    const panel = ensureLivePlayersPanel();
+    if (!panel) return;
+
+    const list = $('wp-room-live-list');
+    const count = $('wp-room-live-count');
+    if (!list || !count) return;
+
+    count.innerText = `${players.length} игроков`;
+    list.innerHTML = '';
+
+    if (!players.length) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'color:var(--text-muted);font-size:12px;font-weight:700;padding:4px 0;';
+      empty.innerText = 'Пока ставок нет. Будь первым.';
+      list.appendChild(empty);
+      return;
+    }
+
+    players.forEach((player) => {
+      const card = document.createElement('div');
+      card.style.cssText = 'min-width: 150px; background:#101523; border:1px solid var(--border-neon); border-radius:14px; padding:10px; display:flex; flex-direction:column; gap:6px;';
+      const initials = formatPlayerName(player).slice(0, 1).toUpperCase();
+      const cells = Array.isArray(player.cells) ? player.cells.map((c) => BET_LABELS[_normalizeCellForLabel(c)] || c).slice(0, 3).join(', ') : '';
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--bg-inner);border:1px solid var(--border-neon);font-weight:900;color:var(--gold);flex:0 0 auto;">${escapeHtml(initials)}</div>
+          <div style="min-width:0;">
+            <div style="font-size:12px;font-weight:900;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(formatPlayerName(player))}</div>
+            <div style="font-size:10px;color:var(--text-muted);font-weight:700;">${escapeHtml(player.status || 'active')}</div>
+          </div>
+        </div>
+        <div style="font-size:12px;font-weight:900;color:var(--gold);">${formatMoney(player.amount)} W</div>
+        <div style="font-size:10px;color:var(--text-muted);font-weight:700;line-height:1.3;">${cells ? `Ставки: ${escapeHtml(cells)}` : 'Ставки на столе'}</div>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  function _normalizeCellForLabel(cellKey) {
+    const key = String(cellKey || '').toLowerCase();
+    if (key === 'dozen1') return 'doz1';
+    if (key === 'dozen2') return 'doz2';
+    if (key === 'dozen3') return 'doz3';
+    return key;
+  }
+
+  function renderCellTotals(cellTotals) {
+    const totals = cellTotals || {};
+    Object.entries(CELL_TO_ID).forEach(([key, id]) => {
+      const btn = $(id);
+      if (!btn) return;
+      const total = Number(totals[key] || 0);
+      let badge = btn.querySelector('.wp-live-chip-badge');
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.className = 'wp-live-chip-badge';
+        btn.appendChild(badge);
+      }
+      if (total > 0) {
+        badge.innerText = formatMoney(total);
+        btn.classList.add('has-bets-placed');
+      } else {
+        badge.innerText = '';
+        btn.classList.remove('has-bets-placed');
+      }
+    });
+
+    for (let i = 0; i <= 36; i += 1) {
+      const id = `cell-num${i}`;
+      const btn = $(id);
+      if (!btn) continue;
+      const key = `num${i}`;
+      const total = Number(totals[key] || 0);
+      let badge = btn.querySelector('.wp-live-chip-badge');
+      if (!badge) {
+        badge = document.createElement('div');
+        badge.className = 'wp-live-chip-badge';
+        btn.appendChild(badge);
+      }
+      if (total > 0) {
+        badge.innerText = formatMoney(total);
+        btn.classList.add('has-bets-placed');
+      } else {
+        badge.innerText = '';
+        btn.classList.remove('has-bets-placed');
+      }
+    }
+  }
+
+  function renderLuckyNumbers(luckyNumbers) {
+    const slots = Array.isArray(luckyNumbers) ? luckyNumbers.slice(0, 3) : [];
+    const ids = [
+      { num: 'lucky-num-1', mult: 'lucky-mult-1' },
+      { num: 'lucky-num-2', mult: 'lucky-mult-2' },
+      { num: 'lucky-num-3', mult: 'lucky-mult-3' },
+    ];
+
+    ids.forEach((pair, index) => {
+      const item = slots[index];
+      const num = $(pair.num);
+      const mult = $(pair.mult);
+      if (num) num.innerText = item ? String(item.number) : '-';
+      if (mult) mult.innerText = item ? `x${item.multiplier}` : '0X';
+    });
+  }
+
+  function renderHistory(history) {
+    const line = $('wp-history-line');
+    if (!line) return;
+
+    line.innerHTML = '';
+    history.forEach((round) => {
+      state.historyMap.set(round.id, round);
+      const bubble = document.createElement('button');
+      bubble.type = 'button';
+      bubble.className = `hist-circle ${round.result_color || 'black'}`;
+      bubble.innerText = String(round.result_number ?? '-');
+      bubble.onclick = () => openFairnessPopup(round);
+      line.appendChild(bubble);
+    });
+  }
+
+  function updateRoomHeader(room, round) {
+    const emoji = $('wp-center-emoji');
+    const text = $('wp-center-text');
+    if (!room || !round) return;
+
+    if (room.status === 'betting') {
+      if (emoji) emoji.innerText = '⏳';
+      if (text) text.innerText = `${room.seconds_remaining || 0} сек`;
+    } else if (room.status === 'settled') {
+      if (emoji) emoji.innerText = '🎰';
+      if (text) text.innerText = `Выпало ${round.result_number || '—'}`;
+    }
+  }
+
+  function showModal({ title, number, badge, message, buttonText = 'Понятно', mode = 'result' }) {
+    state.modalMode = mode;
+    const overlay = $('wp-result-modal-popup');
+    const titleEl = overlay ? overlay.querySelector('.section-title') : null;
+    const numberEl = $('modal-winning-number');
+    const badgeEl = $('modal-winning-multiplier-badge');
+    const messageEl = $('modal-player-win-status-text');
+    const buttonEl = overlay ? overlay.querySelector('.wp-modal-confirm-btn') : null;
+
+    if (titleEl) titleEl.innerText = title || 'Результат';
+    if (numberEl) numberEl.innerText = String(number ?? '—');
+    if (badgeEl) badgeEl.innerText = badge || '';
+    if (messageEl) messageEl.innerHTML = message || '';
+    if (buttonEl) buttonEl.innerText = buttonText;
+    if (overlay) overlay.style.display = 'flex';
+  }
+
+  function closeResultModalPopup() {
+    const overlay = $('wp-result-modal-popup');
+    if (overlay) overlay.style.display = 'none';
+  }
+
+  function openRoundResultModal(round) {
+    const lucky = Array.isArray(round.lucky_numbers) ? round.lucky_numbers.map((item) => `${item.number} ×${item.multiplier}`).join(', ') : '—';
+    showModal({
+      title: `Раунд #${round.id}`,
+      number: round.result_number,
+      badge: `x${round.result_color === 'green' ? 30 : round.total_payout && round.total_bet ? Math.max(1, Math.round(round.total_payout / Math.max(round.total_bet, 1))) : 0}`,
+      message: `
+        <div style="display:flex;flex-direction:column;gap:6px;text-align:left;">
+          <div><b>Цвет:</b> ${escapeHtml(round.result_color || '—')}</div>
+          <div><b>Ставок в раунде:</b> ${formatMoney(round.total_bet || 0)} W</div>
+          <div><b>Выплата:</b> ${formatMoney(round.total_payout || 0)} W</div>
+          <div><b>Lucky Numbers:</b> ${escapeHtml(lucky)}</div>
+        </div>
+      `,
+      buttonText: 'Понятно',
+      mode: 'result',
+    });
+    triggerHaptic('success');
+  }
+
+  function openFairnessPopup(round) {
+    if (!round) return;
+    const lucky = Array.isArray(round.lucky_numbers) ? round.lucky_numbers.map((item) => `${item.number} ×${item.multiplier}`).join(', ') : '—';
+    showModal({
+      title: `Проверка честности #${round.id}`,
+      number: round.result_number,
+      badge: 'Provably Fair',
+      message: `
+        <div style="display:flex;flex-direction:column;gap:6px;text-align:left;font-size:12px;line-height:1.45;word-break:break-word;">
+          <div><b>SHA-256:</b> ${escapeHtml(round.server_seed_hash || '—')}</div>
+          <div><b>Server seed:</b> ${escapeHtml(round.server_seed || '—')}</div>
+          <div><b>Client seed:</b> ${escapeHtml(round.client_seed || 'wheel-plus-room')}</div>
+          <div><b>Nonce:</b> ${escapeHtml(round.nonce ?? '—')}</div>
+          <div><b>Результат:</b> ${escapeHtml(round.result_number || '—')} (${escapeHtml(round.result_color || '—')})</div>
+          <div><b>Ставок:</b> ${formatMoney(round.total_bet || 0)} W</div>
+          <div><b>Выплата:</b> ${formatMoney(round.total_payout || 0)} W</div>
+          <div><b>Lucky Numbers:</b> ${escapeHtml(lucky)}</div>
+        </div>
+      `,
+      buttonText: 'Закрыть',
+      mode: 'fairness',
+    });
     triggerHaptic('light');
+  }
 
-    if (!state.isGameSessionActive) {
-        startRoundCountdownTimer();
-    }
-
-    adjustRemoteBalance(-bet);
-}
-
-function startRoundCountdownTimer() {
-    state.isGameSessionActive = true;
-    state.secondsRemaining = 20;
-
-    const emoji = el('wp-center-emoji');
-    const text = el('wp-center-text');
-    if (emoji) emoji.innerText = '⏳';
-    if (text) text.innerText = `${state.secondsRemaining} сек`;
-
-    if (state.countdownTimerInterval) clearInterval(state.countdownTimerInterval);
-
-    state.countdownTimerInterval = setInterval(async () => {
-        state.secondsRemaining -= 1;
-
-        if (state.secondsRemaining > 0) {
-            if (text) text.innerText = `${state.secondsRemaining} сек`;
-            return;
-        }
-
-        clearInterval(state.countdownTimerInterval);
-        state.countdownTimerInterval = null;
-        await generateSecureRoundData();
-
-        if (emoji) emoji.innerText = '🎰';
-        if (text) text.innerText = 'БОНУСЫ!';
-
-        const field = el('wp-bet-field');
-        if (field) field.disabled = true;
-
-        animateLuckyNumbersSlots();
-    }, 1000);
-}
-
-async function generateSecureRoundData() {
-    state.roundWinningNumber = Math.floor(Math.random() * 37);
-    const availableNumbers = Array.from({ length: 37 }, (_, i) => i);
-    state.roundLuckyNumbersList = [];
-
-    for (let i = 0; i < 3; i++) {
-        const randomIndex = Math.floor(Math.random() * availableNumbers.length);
-        const selectedNum = Number(availableNumbers.splice(randomIndex, 1)[0]);
-        const selectedMult = MULTIPLIER_OPTIONS[Math.floor(Math.random() * MULTIPLIER_OPTIONS.length)];
-        state.roundLuckyNumbersList.push({ num: selectedNum, mult: selectedMult });
-    }
-
-    state.roundSecretSalt = Math.random().toString(36).slice(2, 15);
-
-    try {
-        if (window.crypto && crypto.subtle) {
-            const luckyString = state.roundLuckyNumbersList.map(item => `${item.num}:x${item.mult}`).join(',');
-            const raw = `${state.roundSecretSalt}|${state.roundWinningNumber}|lucky:[${luckyString}]`;
-            const buffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
-            const hash = Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-            setText('wp-crypto-hash-sha256', hash);
-        }
-    } catch (err) {
-        WogLogger.warn('Hash generation failed', err);
-    }
-}
-
-function animateLuckyNumbersSlots() {
-    let currentFrame = 0;
-    const maxAnimationFrames = 90;
-    const num1 = el('lucky-num-1');
-    const num2 = el('lucky-num-2');
-    const num3 = el('lucky-num-3');
-    const mult1 = el('lucky-mult-1');
-    const mult2 = el('lucky-mult-2');
-    const mult3 = el('lucky-mult-3');
-
-    if (num1) num1.style.filter = 'blur(3px)';
-    if (num2) num2.style.filter = 'blur(3px)';
-    if (num3) num3.style.filter = 'blur(3px)';
-
-    function tick() {
-        currentFrame += 1;
-
-        if (currentFrame < 30) {
-            if (num1) num1.innerText = Math.floor(Math.random() * 37);
-            if (mult1) mult1.innerText = `${MULTIPLIER_OPTIONS[Math.floor(Math.random() * MULTIPLIER_OPTIONS.length)]}X`;
-        } else if (currentFrame === 30 && num1) {
-            num1.style.filter = 'none';
-            fixSingleLuckySlotUI(0);
-        }
-
-        if (currentFrame < 60) {
-            if (num2) num2.innerText = Math.floor(Math.random() * 37);
-            if (mult2) mult2.innerText = `${MULTIPLIER_OPTIONS[Math.floor(Math.random() * MULTIPLIER_OPTIONS.length)]}X`;
-        } else if (currentFrame === 60 && num2) {
-            num2.style.filter = 'none';
-            fixSingleLuckySlotUI(1);
-        }
-
-        if (currentFrame < 85) {
-            if (num3) num3.innerText = Math.floor(Math.random() * 37);
-            if (mult3) mult3.innerText = `${MULTIPLIER_OPTIONS[Math.floor(Math.random() * MULTIPLIER_OPTIONS.length)]}X`;
-        } else if (currentFrame === 85 && num3) {
-            num3.style.filter = 'none';
-            fixSingleLuckySlotUI(2);
-        }
-
-        if (currentFrame <= maxAnimationFrames) {
-            requestAnimationFrame(tick);
-        } else {
-            setTimeout(() => initiateWheelSpinAnimation(), 450);
-        }
-    }
-
-    requestAnimationFrame(tick);
-}
-
-function fixSingleLuckySlotUI(slotIndex) {
-    const data = state.roundLuckyNumbersList[slotIndex];
+  function applyRoomState(data) {
     if (!data) return;
 
-    const numElement = el(`lucky-num-${slotIndex + 1}`);
-    const multElement = el(`lucky-mult-${slotIndex + 1}`);
-    if (!numElement || !multElement) return;
-
-    numElement.innerText = data.num;
-    multElement.innerText = `${data.mult}X`;
-
-    const box = numElement.parentElement;
-    if (box) {
-        box.style.transform = 'scale(1.12)';
-        setTimeout(() => { box.style.transform = 'scale(1)'; }, 150);
-
-        if (data.mult >= 300) {
-            box.style.borderColor = 'var(--neon-gold)';
-            box.style.boxShadow = '0 0 15px rgba(245, 158, 11, 0.4)';
-            multElement.className = 'wp-bonus-multiplier wp-m100';
-        } else if (data.mult >= 100) {
-            box.style.borderColor = 'var(--neon-cyan)';
-            box.style.boxShadow = '0 0 15px rgba(34, 211, 238, 0.35)';
-            multElement.className = 'wp-bonus-multiplier wp-m100';
-        } else {
-            box.style.borderColor = 'var(--neon-blue)';
-            box.style.boxShadow = '0 0 15px rgba(47, 107, 242, 0.35)';
-            multElement.className = 'wp-bonus-multiplier wp-m50';
-        }
+    if (data.profile) setProfile(data.profile);
+    if (typeof data.balance !== 'undefined') setBalance(data.balance);
+    if (data.room) state.room = data.room;
+    if (data.round) state.round = data.round;
+    if (Array.isArray(data.history)) {
+      state.history = data.history;
+      state.historyMap = new Map(data.history.map((item) => [item.id, item]));
     }
+    if (Array.isArray(data.live_players)) state.livePlayers = data.live_players;
+    if (data.cell_totals) state.cellTotals = data.cell_totals;
 
-    triggerHaptic('medium');
-}
-
-function updateLuckyNumbersUI() {
-    for (let i = 0; i < 3; i++) {
-        const data = state.roundLuckyNumbersList[i];
-        if (!data) continue;
-        const numElement = el(`lucky-num-${i + 1}`);
-        const multElement = el(`lucky-mult-${i + 1}`);
-        if (!numElement || !multElement) continue;
-
-        numElement.innerText = data.num;
-        multElement.innerText = `${data.mult}X`;
-    }
-}
-
-const canvas = el('wheel-render-canvas');
-const ctx = canvas ? canvas.getContext('2d') : null;
-
-function drawPremiumRouletteWheel(wheelAngle = 0) {
-    if (!canvas || !ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-    const outerRadius = canvas.width / 2 - 10;
-    const arcLength = (2 * Math.PI) / WHEEL_NUMBERS.length;
-
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(wheelAngle);
-
-    for (let i = 0; i < WHEEL_NUMBERS.length; i++) {
-        const number = WHEEL_NUMBERS[i];
-        const startAngle = i * arcLength - Math.PI / 2 - arcLength / 2;
-        const endAngle = startAngle + arcLength;
-
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.arc(0, 0, outerRadius, startAngle, endAngle);
-        ctx.closePath();
-
-        if (number === 0) ctx.fillStyle = '#10b981';
-        else if (NUMBER_COLORS[number] === 'red') ctx.fillStyle = '#e52e4d';
-        else ctx.fillStyle = '#151a30';
-
-        ctx.fill();
-        ctx.strokeStyle = '#29315c';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-
-        ctx.save();
-        ctx.rotate(startAngle + arcLength / 2 + Math.PI / 2);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 15px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(String(number), 0, -outerRadius + 30);
-        ctx.restore();
-    }
-
-    ctx.beginPath();
-    ctx.arc(0, 0, outerRadius - 45, 0, 2 * Math.PI);
-    ctx.fillStyle = '#0c0f1d';
-    ctx.fill();
-    ctx.strokeStyle = '#29315c';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    ctx.restore();
-}
-
-function updateWheelViewWithBall(wheelAngle, ballAngle) {
-    drawPremiumRouletteWheel(wheelAngle);
-    if (!canvas || !ctx) return;
-
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-    const outerRadius = canvas.width / 2 - 10;
-
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(ballAngle);
-    ctx.beginPath();
-    ctx.arc(0, -outerRadius + 22, 9, 0, 2 * Math.PI);
-    ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = '#ffffff';
-    ctx.shadowBlur = 10;
-    ctx.fill();
-    ctx.restore();
-}
-
-function initiateWheelSpinAnimation() {
-    const targetSectorIndex = WHEEL_NUMBERS.indexOf(state.roundWinningNumber);
-    const anglePerSector = (2 * Math.PI) / WHEEL_NUMBERS.length;
-
-    if (!canvas || !ctx) {
-        finalizeRoundResultsAndPayouts();
-        return;
-    }
-
-    const finalWheelRotationAngle = (2 * Math.PI * 4) + (Math.random() * Math.PI * 2);
-    const wheelRemainderAngle = finalWheelRotationAngle % (2 * Math.PI);
-    const finalBallRotationAngle = -(2 * Math.PI * 5) - (targetSectorIndex * anglePerSector) + wheelRemainderAngle;
-
-    let frame = 0;
-    const totalFrames = 240;
-
-    function step() {
-        frame += 1;
-        const progress = 1 - Math.pow(1 - (frame / totalFrames), 3);
-        state.currentWheelRotationAngle = finalWheelRotationAngle * progress;
-        state.ballCurrentPhysicsAngle = finalBallRotationAngle * progress;
-        updateWheelViewWithBall(state.currentWheelRotationAngle, state.ballCurrentPhysicsAngle);
-
-        if (frame < totalFrames) {
-            requestAnimationFrame(step);
-        } else {
-            state.currentWheelRotationAngle = wheelRemainderAngle;
-            state.ballCurrentPhysicsAngle = finalBallRotationAngle;
-            updateWheelViewWithBall(state.currentWheelRotationAngle, state.ballCurrentPhysicsAngle);
-            finalizeRoundResultsAndPayouts();
-        }
-    }
-
-    requestAnimationFrame(step);
-}
-
-function finalizeRoundResultsAndPayouts() {
-    let totalAmountWonThisRound = 0;
-    const winningColor = NUMBER_COLORS[state.roundWinningNumber];
-    let luckyMultiplierBonus = 1;
-    let isLuckyHit = false;
-
-    state.roundLuckyNumbersList.forEach(bonus => {
-        if (Number(bonus.num) === state.roundWinningNumber) {
-            luckyMultiplierBonus = bonus.mult;
-            isLuckyHit = true;
-        }
-    });
-
-    for (const cellId in state.currentRoundBets) {
-        const betValue = Number(state.currentRoundBets[cellId]) || 0;
-        if (betValue <= 0) continue;
-
-        if (cellId === 'red' && winningColor === 'red') totalAmountWonThisRound += betValue * 2;
-        else if (cellId === 'black' && winningColor === 'black') totalAmountWonThisRound += betValue * 2;
-        else if (cellId === 'zero' && state.roundWinningNumber === 0) totalAmountWonThisRound += betValue * 30;
-        else if (cellId === 'even' && state.roundWinningNumber !== 0 && state.roundWinningNumber % 2 === 0) totalAmountWonThisRound += betValue * 2;
-        else if (cellId === 'odd' && state.roundWinningNumber % 2 !== 0) totalAmountWonThisRound += betValue * 2;
-        else if (cellId === 'low' && state.roundWinningNumber >= 1 && state.roundWinningNumber <= 18) totalAmountWonThisRound += betValue * 2;
-        else if (cellId === 'high' && state.roundWinningNumber >= 19 && state.roundWinningNumber <= 36) totalAmountWonThisRound += betValue * 2;
-        else if (cellId === 'doz1' && state.roundWinningNumber >= 1 && state.roundWinningNumber <= 12) totalAmountWonThisRound += betValue * 3;
-        else if (cellId === 'doz2' && state.roundWinningNumber >= 13 && state.roundWinningNumber <= 24) totalAmountWonThisRound += betValue * 3;
-        else if (cellId === 'doz3' && state.roundWinningNumber >= 25 && state.roundWinningNumber <= 36) totalAmountWonThisRound += betValue * 3;
-        else if (cellId.startsWith('num')) {
-            const parsed = parseInt(cellId.replace('num', ''), 10);
-            if (parsed === state.roundWinningNumber) {
-                totalAmountWonThisRound += betValue * (isLuckyHit ? luckyMultiplierBonus : 30);
-            }
-        }
-    }
-
-    state.playerBalance += totalAmountWonThisRound;
-    refreshUI();
-
-    if (totalAmountWonThisRound > 0) {
-        adjustRemoteBalance(totalAmountWonThisRound);
-    }
-
-    displayRoundWinnerModalPopup(totalAmountWonThisRound, isLuckyHit, luckyMultiplierBonus);
-}
-
-function displayRoundWinnerModalPopup(amountWon, isLuckyHit, luckyBonus) {
-    const modalNum = el('modal-winning-number');
-    if (modalNum) {
-        modalNum.innerText = state.roundWinningNumber;
-        modalNum.style.color = state.roundWinningNumber === 0 ? 'var(--neon-green)' : NUMBER_COLORS[state.roundWinningNumber] === 'red' ? 'var(--neon-red)' : '#ffffff';
-    }
-
-    const badge = el('modal-winning-multiplier-badge');
-    if (badge) {
-        if (isLuckyHit) {
-            badge.innerText = `LUCKY BONUS x${luckyBonus}!`;
-            badge.style.background = 'rgba(245, 158, 11, 0.2)';
-            badge.style.borderColor = 'var(--neon-gold)';
-            badge.style.color = '#fef08a';
-        } else {
-            badge.innerText = 'x30';
-            badge.style.background = 'rgba(16, 185, 129, 0.2)';
-            badge.style.borderColor = 'var(--neon-green)';
-            badge.style.color = '#a7f3d0';
-        }
-    }
-
-    const statusText = el('modal-player-win-status-text');
-    if (statusText) {
-        if (amountWon > 0) {
-            statusText.innerHTML = `🎉 Выиграли:<br><span style="color: var(--neon-gold); font-size: 20px; font-weight: 900;">+ ${amountWon} W</span>`;
-            triggerHaptic('success');
-        } else {
-            statusText.innerText = 'В этот раз не повезло.';
-        }
-    }
-
-    const modal = el('wp-result-modal-popup');
-    if (modal) modal.style.display = 'flex';
-
-    const historyLine = el('wp-history-line');
-    if (historyLine) {
-        const circle = document.createElement('div');
-        circle.className = `hist-circle ${NUMBER_COLORS[state.roundWinningNumber]}`;
-        circle.innerText = state.roundWinningNumber;
-        historyLine.insertBefore(circle, historyLine.firstChild);
-        while (historyLine.children.length > 10) historyLine.removeChild(historyLine.lastChild);
-    }
-}
-
-function closeResultModalPopup() {
-    const modal = el('wp-result-modal-popup');
-    if (modal) modal.style.display = 'none';
-
-    state.currentRoundBets = {};
-    state.totalRoundBetSum = 0;
-    state.activeBetAmount = 100;
-    state.isGameSessionActive = false;
-    state.secondsRemaining = 20;
-
-    document.querySelectorAll('.wp-bet-trigger-btn').forEach(btn => {
-        btn.classList.remove('wp-bet-active-glow', 'has-bets-placed');
-        const chip = btn.querySelector('.wp-live-chip-badge');
-        if (chip) chip.remove();
-    });
-
-    const field = el('wp-bet-field');
-    if (field) {
-        field.disabled = false;
-        field.value = state.activeBetAmount;
-    }
-
-    drawPremiumRouletteWheel(0);
-    refreshUI();
-}
-
-function exitRouletteToLobby() {
-    triggerHaptic('light');
-
-    if (state.isGameSessionActive && state.secondsRemaining <= 0) {
-        if (tg && typeof tg.showAlert === 'function') {
-            tg.showAlert('⚠️ Дождитесь окончания раунда.');
-            return;
-        }
-    }
-
-    if (state.countdownTimerInterval) {
-        clearInterval(state.countdownTimerInterval);
-        state.countdownTimerInterval = null;
-    }
-
-    location.href = 'index.html';
-}
-
-function openAdminMenu() {
-    let choice = prompt('УПРАВЛЕНИЕ WOG:\n1 - Обновить баланс\n2 - Синхронизировать баланс\n3 - Перезагрузить игру', '1');
-    if (!choice) return;
-
-    if (choice === '1') {
-        const amount = prompt('Сколько добавить/убавить?', '100000');
-        if (amount && !isNaN(amount)) {
-            adjustRemoteBalance(parseInt(amount, 10));
-        }
-    } else if (choice === '2') {
-        syncBalanceFromServer();
-    } else if (choice === '3') {
-        location.reload();
-    }
-}
-
-async function initGameEngineOnLoad() {
-    setupTelegram();
     renderProfile();
-    buildNumbersKeyboardLayout();
-    drawPremiumRouletteWheel(0);
-    await generateSecureRoundData();
-    updateLuckyNumbersUI();
+    renderLivePlayers(state.livePlayers);
+    renderCellTotals(state.cellTotals);
+    renderLuckyNumbers(state.round?.lucky_numbers || []);
+    renderHistory(state.history);
+    updateRoomHeader(state.room, state.round);
+    if (state.room) setTotalBet(state.room.total_bet || 0);
 
-    const field = el('wp-bet-field');
-    if (field) {
-        field.value = state.activeBetAmount;
-        field.addEventListener('change', () => {
-            const next = parseInt(field.value, 10) || 0;
-            state.activeBetAmount = Math.max(10, next);
-            field.value = state.activeBetAmount;
-        });
+    if (data.settled_round && data.settled_round.id !== state.lastSeenSettledRoundId) {
+      state.lastSeenSettledRoundId = data.settled_round.id;
+      openRoundResultModal(data.settled_round);
+      animateWheelToResult(data.settled_round.result_number);
     }
+  }
 
-    const balDisplay = el('wp-balance-display');
-    if (balDisplay) balDisplay.innerText = 'Загрузка...';
+  async function syncRoomState() {
+    if (!state.initData || state.settling) return;
+    try {
+      const data = await requestJson('/api/wheel-plus/state', { init_data: state.initData });
+      applyRoomState(data);
+      if (data.room && data.room.status === 'betting' && Number(data.room.seconds_remaining || 0) <= 0) {
+        await generateSecureRoundData();
+      }
+    } catch (error) {
+      console.warn('Room sync failed:', error.message);
+    }
+  }
 
-    if (tg && tg.initData) {
-        await syncBalanceFromServer();
+  function ensurePolling() {
+    if (state.started) return;
+    state.started = true;
+    if (state.pollTimer) clearInterval(state.pollTimer);
+    state.pollTimer = setInterval(() => {
+      syncRoomState().catch(() => {});
+    }, POLL_INTERVAL_MS);
+  }
+
+  function modifyBetSize(action) {
+    const field = $('wp-bet-field');
+    if (!field) return;
+    const balance = Math.max(0, Number(state.balance) || 0);
+    let current = Math.floor(Number(field.value || 0));
+    if (!Number.isFinite(current) || current <= 0) current = 100;
+    if (action === 'x2') current = Math.min(balance || current * 2, current * 2);
+    if (action === '/2') current = Math.max(10, Math.floor(current / 2));
+    if (balance > 0) current = Math.min(current, balance);
+    field.value = current;
+    triggerHaptic('light');
+  }
+
+  function addChipValue(amount) {
+    const field = $('wp-bet-field');
+    if (!field) return;
+    const balance = Math.max(0, Number(state.balance) || 0);
+    let current = Math.floor(Number(field.value || 0));
+    if (!Number.isFinite(current) || current < 0) current = 0;
+    let next = current + Number(amount || 0);
+    if (balance > 0) next = Math.min(next, balance);
+    field.value = Math.max(0, next);
+    triggerHaptic('light');
+  }
+
+  function toggleKeyboardLayout(layoutName) {
+    const mainView = $('wp-main-table-view');
+    const numKeysView = $('wp-numbers-keyboard-view');
+    if (!mainView || !numKeysView) return;
+    if (layoutName === 'numbers') {
+      mainView.style.display = 'none';
+      numKeysView.style.display = 'grid';
     } else {
-        state.playerBalance = 100000;
-        refreshUI();
+      mainView.style.display = 'flex';
+      numKeysView.style.display = 'none';
     }
-}
+    triggerHaptic('light');
+  }
 
-window.modifyBetSize = modifyBetSize;
-window.addChipValue = addChipValue;
-window.toggleKeyboardLayout = toggleKeyboardLayout;
-window.placeBetOnCell = placeBetOnCell;
-window.startRoundCountdownTimer = startRoundCountdownTimer;
-window.generateSecureRoundData = generateSecureRoundData;
-window.animateLuckyNumbersSlots = animateLuckyNumbersSlots;
-window.fixSingleLuckySlotUI = fixSingleLuckySlotUI;
-window.updateLuckyNumbersUI = updateLuckyNumbersUI;
-window.drawPremiumRouletteWheel = drawPremiumRouletteWheel;
-window.updateWheelViewWithBall = updateWheelViewWithBall;
-window.initiateWheelSpinAnimation = initiateWheelSpinAnimation;
-window.finalizeRoundResultsAndPayouts = finalizeRoundResultsAndPayouts;
-window.displayRoundWinnerModalPopup = displayRoundWinnerModalPopup;
-window.closeResultModalPopup = closeResultModalPopup;
-window.exitRouletteToLobby = exitRouletteToLobby;
-window.openAdminMenu = openAdminMenu;
-window.refreshUI = refreshUI;
-window.syncBalanceFromServer = syncBalanceFromServer;
+  function canPlaceBet() {
+    const room = state.room;
+    return !!room && room.status === 'betting' && Number(room.seconds_remaining || 0) > 0 && !state.settling;
+  }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initGameEngineOnLoad);
-} else {
-    initGameEngineOnLoad();
-}
+  async function placeBetOnCell(cellId) {
+    const field = $('wp-bet-field');
+    if (!field) return;
+
+    const amount = Math.floor(Number(field.value || 0));
+    if (!Number.isFinite(amount) || amount <= 0) {
+      notify('Укажи корректную ставку');
+      return;
+    }
+    if (amount > state.balance) {
+      notify('Недостаточно WC');
+      return;
+    }
+    if (!canPlaceBet()) {
+      notify('Ставки уже закрыты');
+      return;
+    }
+
+    try {
+      const data = await requestJson('/api/wheel-plus/bet', {
+        init_data: state.initData,
+        cell_key: cellId,
+        amount,
+      });
+      applyRoomState(data);
+      triggerHaptic('light');
+      ensurePolling();
+    } catch (error) {
+      notify(error.message || 'Не удалось поставить ставку');
+    }
+  }
+
+  async function generateSecureRoundData() {
+    if (state.settling) return;
+    state.settling = true;
+    try {
+      const data = await requestJson('/api/wheel-plus/settle', { init_data: state.initData });
+      applyRoomState(data);
+      if (data.settled_round) {
+        animateWheelToResult(data.settled_round.result_number);
+      }
+    } catch (error) {
+      console.warn('Settle failed:', error.message);
+    } finally {
+      state.settling = false;
+    }
+  }
+
+  function animateLuckyNumbersSlots() {
+    const ids = [
+      ['lucky-num-1', 'lucky-mult-1'],
+      ['lucky-num-2', 'lucky-mult-2'],
+      ['lucky-num-3', 'lucky-mult-3'],
+    ];
+    ids.forEach(([numId, multId]) => {
+      const num = $(numId);
+      const mult = $(multId);
+      if (num) num.style.animation = 'none';
+      if (mult) mult.style.animation = 'none';
+      window.requestAnimationFrame(() => {
+        if (num) num.style.animation = 'wpBetPulse 0.5s ease';
+        if (mult) mult.style.animation = 'wpBetPulse 0.5s ease';
+      });
+    });
+  }
+
+  function exitRouletteToLobby() {
+    window.location.href = 'index.html';
+  }
+
+  async function initialSync() {
+    if (!state.initData) {
+      setBalance(0);
+      setText('wp-center-text', 'Нужен Telegram WebApp');
+      return;
+    }
+    try {
+      const data = await requestJson('/api/wheel-plus/state', { init_data: state.initData });
+      applyRoomState(data);
+      ensurePolling();
+    } catch (error) {
+      console.warn(error.message || error);
+      try {
+        const profile = await requestJson('/api/profile/me', { init_data: state.initData });
+        setProfile(profile);
+        setBalance(profile.balance || 0);
+        renderProfile();
+      } catch (_) {
+        /* no-op */
+      }
+    }
+  }
+
+  function wireStaticControls() {
+    const backBtn = document.querySelector('.wp-back-lobby-btn');
+    if (backBtn) backBtn.addEventListener('click', exitRouletteToLobby);
+
+    const modalBtn = $('wp-result-modal-popup');
+    if (modalBtn) {
+      modalBtn.addEventListener('click', (event) => {
+        if (event.target === modalBtn) closeResultModalPopup();
+      });
+    }
+
+    const confirmBtn = $('modal-winning-multiplier-badge');
+    if (confirmBtn) confirmBtn.style.cursor = 'default';
+
+    const field = $('wp-bet-field');
+    if (field) {
+      field.addEventListener('input', () => {
+        const balance = Math.max(0, Number(state.balance) || 0);
+        let value = Math.floor(Number(field.value || 0));
+        if (!Number.isFinite(value) || value < 0) value = 0;
+        if (balance > 0 && value > balance) value = balance;
+        field.value = value;
+      });
+    }
+
+    const hiddenCloseBtn = document.querySelector('.wp-modal-confirm-btn');
+    if (hiddenCloseBtn) {
+      hiddenCloseBtn.onclick = closeResultModalPopup;
+    }
+  }
+
+  window.exitRouletteToLobby = exitRouletteToLobby;
+  window.modifyBetSize = modifyBetSize;
+  window.addChipValue = addChipValue;
+  window.toggleKeyboardLayout = toggleKeyboardLayout;
+  window.placeBetOnCell = placeBetOnCell;
+  window.startRoundCountdownTimer = ensurePolling;
+  window.generateSecureRoundData = generateSecureRoundData;
+  window.animateLuckyNumbersSlots = animateLuckyNumbersSlots;
+  window.closeResultModalPopup = closeResultModalPopup;
+  window.openFairnessPopup = openFairnessPopup;
+
+  function boot() {
+    setupTelegram();
+    buildNumbersKeyboardLayout();
+    drawWheelCanvas();
+    wireStaticControls();
+    ensureLivePlayersPanel();
+    initialSync();
+    if (window.ResizeObserver) {
+      const canvas = $('wheel-render-canvas');
+      if (canvas) {
+        const observer = new ResizeObserver(() => drawWheelCanvas());
+        observer.observe(canvas);
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
+})();
