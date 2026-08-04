@@ -6,10 +6,10 @@
 
   const POLL_INTERVAL_MS = 1000;
   const WHEEL_SEQUENCE = [
-    '0', '28', '9', '26', '30', '11', '7', '20', '32', '17', '5', '22',
-    '34', '15', '3', '24', '36', '13', '1', '00', '27', '10', '25', '29',
-    '12', '8', '19', '31', '18', '6', '21', '33', '16', '4', '23', '35',
-    '14', '2',
+    '0', '32', '15', '19', '4', '21', '2', '25', '17', '34', '6', '27',
+    '13', '36', '11', '30', '8', '23', '10', '5', '24', '16', '33', '1',
+    '20', '14', '31', '9', '22', '18', '29', '7', '28', '12', '35', '3',
+    '26',
   ];
 
   const RED_NUMBERS = new Set(['1', '3', '5', '7', '9', '12', '14', '16', '18', '19', '21', '23', '25', '27', '30', '32', '34', '36']);
@@ -65,39 +65,23 @@
     settling: false,
     lastSeenSettledRoundId: 0,
     wheelRotation: 0,
-    modalMode: 'result',
   };
 
   const $ = (id) => document.getElementById(id);
-
-  function apiUrl(path) {
-    return API_BASE ? `${API_BASE}${path.startsWith('/') ? path : `/${path}`}` : path;
-  }
-
-  function escapeHtml(value) {
-    return String(value ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
-
-  function formatMoney(value) {
-    return Number(value || 0).toLocaleString('ru-RU');
-  }
-
-  function formatPlayerName(player) {
-    return player?.name || player?.username || 'noname';
-  }
+  const apiUrl = (path) => (API_BASE ? `${API_BASE}${path.startsWith('/') ? path : `/${path}`}` : path);
+  const escapeHtml = (value) => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+  const formatMoney = (value) => Number(value || 0).toLocaleString('ru-RU');
+  const formatPlayerName = (player) => player?.name || player?.username || 'noname';
 
   function safeAlert(message) {
     const text = String(message);
-    if (tg && typeof tg.showAlert === 'function') {
-      tg.showAlert(text);
-    } else {
-      alert(text);
-    }
+    if (tg && typeof tg.showAlert === 'function') tg.showAlert(text);
+    else alert(text);
   }
 
   function notify(message) {
@@ -117,9 +101,7 @@
       } else if (typeof tg.HapticFeedback.notificationOccurred === 'function') {
         tg.HapticFeedback.notificationOccurred(kind);
       }
-    } catch (_) {
-      /* no-op */
-    }
+    } catch (_) {}
   }
 
   async function requestJson(path, payload) {
@@ -128,29 +110,15 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-
     let data = null;
-    try {
-      data = await response.json();
-    } catch (_) {
-      data = null;
-    }
-
-    if (!response.ok) {
-      throw new Error((data && (data.detail || data.message)) ? (data.detail || data.message) : `Ошибка сервера (${response.status})`);
-    }
-
+    try { data = await response.json(); } catch (_) { data = null; }
+    if (!response.ok) throw new Error((data && (data.detail || data.message)) ? (data.detail || data.message) : `Ошибка сервера (${response.status})`);
     return data;
   }
 
   function setText(id, value) {
     const node = $(id);
     if (node) node.innerText = value;
-  }
-
-  function setHtml(id, value) {
-    const node = $(id);
-    if (node) node.innerHTML = value;
   }
 
   function setBalance(value) {
@@ -165,10 +133,7 @@
   function setProfile(profile) {
     state.profile = profile || null;
     if (!profile) return;
-
-    if (profile.telegram_id !== undefined && profile.telegram_id !== null) {
-      state.userId = Number(profile.telegram_id) || state.userId;
-    }
+    if (profile.telegram_id !== undefined && profile.telegram_id !== null) state.userId = Number(profile.telegram_id) || state.userId;
     if (profile.username) state.username = profile.username;
     if (profile.first_name) state.firstName = profile.first_name;
   }
@@ -183,13 +148,8 @@
         tg.BackButton.offClick();
         tg.BackButton.onClick(exitRouletteToLobby);
       }
-      if (typeof tg.enableClosingConfirmation === 'function') {
-        tg.enableClosingConfirmation();
-      }
-    } catch (_) {
-      /* no-op */
-    }
-
+      if (typeof tg.enableClosingConfirmation === 'function') tg.enableClosingConfirmation();
+    } catch (_) {}
     if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
       const user = tg.initDataUnsafe.user;
       state.userId = user.id || state.userId;
@@ -202,11 +162,8 @@
   function renderProfile() {
     const avatar = $('avatar-container');
     if (avatar) {
-      if (state.photoUrl) {
-        avatar.innerHTML = `<img src="${escapeHtml(state.photoUrl)}" class="avatar-img" alt="Avatar">`;
-      } else {
-        avatar.innerText = state.firstName ? state.firstName.charAt(0).toUpperCase() : 'W';
-      }
+      if (state.photoUrl) avatar.innerHTML = `<img src="${escapeHtml(state.photoUrl)}" class="avatar-img" alt="Avatar">`;
+      else avatar.innerText = state.firstName ? state.firstName.charAt(0).toUpperCase() : 'W';
     }
 
     const usernameDisplay = $('username-display');
@@ -248,7 +205,7 @@
     WHEEL_SEQUENCE.forEach((num, index) => {
       const start = index * step;
       const end = start + step;
-      const color = num === '0' || num === '00' ? '#05c46b' : RED_NUMBERS.has(num) ? '#ff3838' : '#1e2336';
+      const color = num === '0' ? '#05c46b' : RED_NUMBERS.has(num) ? '#ff3838' : '#1e2336';
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.arc(0, 0, radius, start, end);
@@ -294,7 +251,6 @@
   function buildNumbersKeyboardLayout() {
     const container = $('wp-num-keys-generator-box');
     if (!container) return;
-
     container.innerHTML = '';
 
     const zeroBtn = document.createElement('button');
@@ -315,10 +271,18 @@
     }
   }
 
+  function _normalizeCellForLabel(cellKey) {
+    const key = String(cellKey || '').toLowerCase();
+    if (key === 'dozen1') return 'doz1';
+    if (key === 'dozen2') return 'doz2';
+    if (key === 'dozen3') return 'doz3';
+    if (key === 'num0' || key === 'zero' || key === '0') return 'zero';
+    return key;
+  }
+
   function ensureLivePlayersPanel() {
     const chips = document.querySelector('.wp-quick-chips-grid');
     if (!chips) return null;
-
     let panel = $('wp-live-players-panel');
     if (!panel) {
       panel = document.createElement('div');
@@ -333,14 +297,11 @@
       `;
       chips.insertAdjacentElement('afterend', panel);
     }
-
     return panel;
   }
 
   function renderLivePlayers(players) {
-    const panel = ensureLivePlayersPanel();
-    if (!panel) return;
-
+    ensureLivePlayersPanel();
     const list = $('wp-room-live-list');
     const count = $('wp-room-live-count');
     if (!list || !count) return;
@@ -376,14 +337,6 @@
     });
   }
 
-  function _normalizeCellForLabel(cellKey) {
-    const key = String(cellKey || '').toLowerCase();
-    if (key === 'dozen1') return 'doz1';
-    if (key === 'dozen2') return 'doz2';
-    if (key === 'dozen3') return 'doz3';
-    return key;
-  }
-
   function renderCellTotals(cellTotals) {
     const totals = cellTotals || {};
     Object.entries(CELL_TO_ID).forEach(([key, id]) => {
@@ -406,11 +359,9 @@
     });
 
     for (let i = 0; i <= 36; i += 1) {
-      const id = `cell-num${i}`;
-      const btn = $(id);
+      const btn = $(`cell-num${i}`);
       if (!btn) continue;
-      const key = `num${i}`;
-      const total = Number(totals[key] || 0);
+      const total = Number(totals[`num${i}`] || 0);
       let badge = btn.querySelector('.wp-live-chip-badge');
       if (!badge) {
         badge = document.createElement('div');
@@ -434,7 +385,6 @@
       { num: 'lucky-num-2', mult: 'lucky-mult-2' },
       { num: 'lucky-num-3', mult: 'lucky-mult-3' },
     ];
-
     ids.forEach((pair, index) => {
       const item = slots[index];
       const num = $(pair.num);
@@ -447,7 +397,6 @@
   function renderHistory(history) {
     const line = $('wp-history-line');
     if (!line) return;
-
     line.innerHTML = '';
     history.forEach((round) => {
       state.historyMap.set(round.id, round);
@@ -464,7 +413,6 @@
     const emoji = $('wp-center-emoji');
     const text = $('wp-center-text');
     if (!room || !round) return;
-
     if (room.status === 'betting') {
       if (emoji) emoji.innerText = '⏳';
       if (text) text.innerText = `${room.seconds_remaining || 0} сек`;
@@ -474,8 +422,7 @@
     }
   }
 
-  function showModal({ title, number, badge, message, buttonText = 'Понятно', mode = 'result' }) {
-    state.modalMode = mode;
+  function showModal({ title, number, badge, message, buttonText = 'Понятно' }) {
     const overlay = $('wp-result-modal-popup');
     const titleEl = overlay ? overlay.querySelector('.section-title') : null;
     const numberEl = $('modal-winning-number');
@@ -511,7 +458,6 @@
         </div>
       `,
       buttonText: 'Понятно',
-      mode: 'result',
     });
     triggerHaptic('success');
   }
@@ -536,14 +482,12 @@
         </div>
       `,
       buttonText: 'Закрыть',
-      mode: 'fairness',
     });
     triggerHaptic('light');
   }
 
   function applyRoomState(data) {
     if (!data) return;
-
     if (data.profile) setProfile(data.profile);
     if (typeof data.balance !== 'undefined') setBalance(data.balance);
     if (data.room) state.room = data.room;
@@ -587,9 +531,7 @@
     if (state.started) return;
     state.started = true;
     if (state.pollTimer) clearInterval(state.pollTimer);
-    state.pollTimer = setInterval(() => {
-      syncRoomState().catch(() => {});
-    }, POLL_INTERVAL_MS);
+    state.pollTimer = setInterval(() => { syncRoomState().catch(() => {}); }, POLL_INTERVAL_MS);
   }
 
   function modifyBetSize(action) {
@@ -639,7 +581,6 @@
   async function placeBetOnCell(cellId) {
     const field = $('wp-bet-field');
     if (!field) return;
-
     const amount = Math.floor(Number(field.value || 0));
     if (!Number.isFinite(amount) || amount <= 0) {
       notify('Укажи корректную ставку');
@@ -674,9 +615,7 @@
     try {
       const data = await requestJson('/api/wheel-plus/settle', { init_data: state.initData });
       applyRoomState(data);
-      if (data.settled_round) {
-        animateWheelToResult(data.settled_round.result_number);
-      }
+      if (data.settled_round) animateWheelToResult(data.settled_round.result_number);
     } catch (error) {
       console.warn('Settle failed:', error.message);
     } finally {
@@ -685,12 +624,7 @@
   }
 
   function animateLuckyNumbersSlots() {
-    const ids = [
-      ['lucky-num-1', 'lucky-mult-1'],
-      ['lucky-num-2', 'lucky-mult-2'],
-      ['lucky-num-3', 'lucky-mult-3'],
-    ];
-    ids.forEach(([numId, multId]) => {
+    [['lucky-num-1', 'lucky-mult-1'], ['lucky-num-2', 'lucky-mult-2'], ['lucky-num-3', 'lucky-mult-3']].forEach(([numId, multId]) => {
       const num = $(numId);
       const mult = $(multId);
       if (num) num.style.animation = 'none';
@@ -723,9 +657,7 @@
         setProfile(profile);
         setBalance(profile.balance || 0);
         renderProfile();
-      } catch (_) {
-        /* no-op */
-      }
+      } catch (_) {}
     }
   }
 
@@ -740,9 +672,6 @@
       });
     }
 
-    const confirmBtn = $('modal-winning-multiplier-badge');
-    if (confirmBtn) confirmBtn.style.cursor = 'default';
-
     const field = $('wp-bet-field');
     if (field) {
       field.addEventListener('input', () => {
@@ -755,9 +684,7 @@
     }
 
     const hiddenCloseBtn = document.querySelector('.wp-modal-confirm-btn');
-    if (hiddenCloseBtn) {
-      hiddenCloseBtn.onclick = closeResultModalPopup;
-    }
+    if (hiddenCloseBtn) hiddenCloseBtn.onclick = closeResultModalPopup;
   }
 
   window.exitRouletteToLobby = exitRouletteToLobby;
@@ -776,20 +703,11 @@
     buildNumbersKeyboardLayout();
     drawWheelCanvas();
     wireStaticControls();
-    ensureLivePlayersPanel();
     initialSync();
-    if (window.ResizeObserver) {
-      const canvas = $('wheel-render-canvas');
-      if (canvas) {
-        const observer = new ResizeObserver(() => drawWheelCanvas());
-        observer.observe(canvas);
-      }
-    }
+    window.addEventListener('resize', drawWheelCanvas, { passive: true });
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot, { once: true });
-  } else {
-    boot();
-  }
+  document.readyState === 'loading'
+    ? document.addEventListener('DOMContentLoaded', boot, { once: true })
+    : boot();
 })();
