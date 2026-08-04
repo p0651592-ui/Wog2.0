@@ -1,0 +1,17 @@
+[Unit]
+Description=WOG Casino FastAPI backend
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/Wog2.0
+EnvironmentFile=/root/Wog2.0/.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/env bash -lc 'cd /root/Wog2.0 && /usr/bin/python3 -m uvicorn main:app --host 127.0.0.1 --port ${PORT:-10000}'
+Restart=always
+RestartSec=3
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target
